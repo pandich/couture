@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -19,9 +20,6 @@ const (
 	LevelWarn Level = "WARN"
 	// LevelError log level for errors
 	LevelError Level = "ERROR"
-
-	// MessageMissing for when an event lacks a message
-	MessageMissing Message = "⁉"
 )
 
 type (
@@ -32,7 +30,7 @@ type (
 	// Level a log level.
 	Level string
 	// LineNumber  a line number.
-	LineNumber uint32
+	LineNumber string
 	// ThreadName a thread name.
 	ThreadName string
 	// ClassName a class name.
@@ -53,65 +51,43 @@ type (
 		Timestamp Timestamp
 		// Level the level. This field is required, and should default to LevelMissing if not present.
 		Level Level
-		// Message the message. This field is required, and should default to MessageMissing if not present.
+		// Message the message. This field is required.
 		Message Message
 		// MethodName the method name. This field is optional.
-		MethodName *MethodName
+		MethodName MethodName
 		// LineNumber the line number. This field is optional.
-		LineNumber *LineNumber
+		LineNumber LineNumber
 		// ThreadName the thread name. This field is optional.
-		ThreadName *ThreadName
+		ThreadName ThreadName
 		// ClassName the class name. This field is optional.
-		ClassName *ClassName
+		ClassName ClassName
 		// Exception the exception. This field is optional.
 		Exception *Exception
 	}
 )
-
-// NewEvent creates an event with sensible defaults for nil required values.
-func NewEvent(
-	timestamp time.Time,
-	level Level,
-	message Message,
-	methodName *MethodName,
-	lineNumber *LineNumber,
-	threadName *ThreadName,
-	className *ClassName,
-	stackTrace *StackTrace,
-) *Event {
-	var exception *Exception
-	if stackTrace != nil {
-		exception = &Exception{
-			StackTrace: *stackTrace,
-		}
-	}
-
-	return &Event{
-		Timestamp:  Timestamp(timestamp.Format(time.RFC3339)),
-		Level:      level,
-		Message:    message,
-		MethodName: methodName,
-		LineNumber: lineNumber,
-		ThreadName: threadName,
-		ClassName:  className,
-		Exception:  exception,
-	}
-}
 
 func (e Event) GoString() string {
 	var ex = ""
 	if e.Exception != nil {
 		ex = "\nException: " + string((*e.Exception).StackTrace)
 	}
+	var ln = string(e.LineNumber)
+	if i, err := strconv.ParseInt(string(e.LineNumber), 10, 64); err == nil {
+		ln = fmt.Sprintf("%-4d", i)
+	}
 	return fmt.Sprintf(
-		"%s [%-5s] (%s) %s#%s@%d - %s%s",
+		"%s [%-5s] (%s) %s#%s@%s - %s%s",
 		e.Timestamp,
 		e.Level,
-		*e.ThreadName,
-		*e.ClassName,
-		*e.MethodName,
-		*e.LineNumber,
+		e.ThreadName,
+		e.ClassName,
+		e.MethodName,
+		ln,
 		e.Message,
 		ex,
 	)
+}
+
+func AsTimestamp(t time.Time) Timestamp {
+	return Timestamp(t.Format(time.RFC3339))
 }

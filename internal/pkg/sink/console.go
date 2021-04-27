@@ -1,3 +1,15 @@
 package sink
 
-// future home of pretty colorful output
+import (
+	"couture/pkg/couture/model"
+	"fmt"
+)
+
+var Console Sink = consoleSink{}
+
+type consoleSink struct {
+}
+
+func (l consoleSink) ConsumeEvent(event *model.Event) {
+	fmt.Printf("%#v\n", *event)
+}
