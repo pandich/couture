@@ -1,15 +1,16 @@
 package sink
 
 import (
-	"couture/pkg/couture/model"
+	"couture/internal/pkg/model"
 )
 
 type (
-	// Sink of events. Responsible for consuming an event.
-	// Implementations go here. Each implementation struct should be unexported and exposed with a var.
-	// See consoleSink for an example.
+	//Implementations go here. Each implementation struct should be unexported and exposed with a var.
+	//For each implementation, update cmd/couture/cli/sink.
+
+	//Sink of events. Responsible for consuming an event.
 	Sink interface {
-		// ConsumeEvent consumes an event, typically for display.
-		ConsumeEvent(event *model.Event)
+		//Accept consumes an event, typically for display.
+		Accept(event *model.Event)
 	}
 )

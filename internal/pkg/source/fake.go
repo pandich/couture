@@ -1,19 +1,22 @@
 package source
 
 import (
-	"couture/pkg/couture/model"
+	"couture/internal/pkg/model"
 	"github.com/brianvoe/gofakeit/v6"
 	"math/rand"
 	"strconv"
 	"time"
 )
 
-var Fake Source = fakeSource{}
-
-type fakeSource struct {
+func NewFake(_ string) interface{} {
+	return Fake{}
 }
 
-func (f fakeSource) ProvideEvent() (*model.Event, error) {
+//Fake provides fake data.
+type Fake struct {
+}
+
+func (f Fake) Poll() (*model.Event, error) {
 	if rand.Intn(100) >= 90 {
 		return nil, nil
 	}
