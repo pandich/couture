@@ -8,8 +8,8 @@ import (
 var (
 	//sinkCLI contains sink-specific cli args.
 	sinkCLI struct {
-		GoString *sink.GoString `group:"Output Options" help:"Dump string representation of event." name:"string" aliases:"go-string,str" xor:"console"`
-		Json     *sink.Json     `group:"Output Options" help:"Dump JSON representation of event." name:"json" xor:"console"`
+		GoString *sink.GoString `group:"Output" help:"Dump string representation of event." name:"string" aliases:"go-string,str" xor:"console"`
+		Json     *sink.Json     `group:"Output" help:"Dump JSON representation of event." name:"json" xor:"console"`
 	}
 
 	//sinkMappers contains sink-specific converters from string to a sink.Sink instance.
