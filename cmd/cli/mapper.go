@@ -40,11 +40,24 @@ func (m creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) err
 		token := ctx.Scan.Pop()
 		switch config := token.Value.(type) {
 		case string:
+			var t = target.Type()
+			if t.Kind() != reflect.Ptr {
+				t = t.Elem()
+			}
 			creator, ok := m.creators[target.Type()]
 			if !ok {
 				return errors.Errorf("unknown type (%T) with config %s", token.Value, config)
 			}
-			target.Set(reflect.Append(target, reflect.ValueOf(creator(config))))
+			c := creator(config)
+			switch target.Kind() {
+			case reflect.Slice:
+				target.Set(reflect.Append(target, reflect.ValueOf(c)))
+			case reflect.Ptr:
+				target.Elem().Set(reflect.ValueOf(c))
+			default:
+				target.Set(reflect.ValueOf(c))
+			}
+
 		default:
 			return errors.Errorf("expected string but got %q (%T)", token.Value, token.Value)
 		}
