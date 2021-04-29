@@ -8,20 +8,20 @@ import (
 var (
 	//sourceCLI contains source-specific cli args.
 	sourceCLI struct {
-		Fakes []source.Fake `group:"Input Options" help:"A filename, URI, or pattern." name:"file" aliases:"files"`
+		Fake *source.Fake `group:"Input Options" name:"fake" hidden:"true"`
 	}
 
 	//sourceMappers contains source-specific converters from string to a source.Source instance.
 	sourceMappers = []kong.Option{
-		mapper(many(source.Fake{}), source.NewFake),
+		mapper(one(source.Fake{}), source.NewFake),
 	}
 )
 
 //Sources returns all source.Source instances defined by the cli.
 func Sources() []interface{} {
 	var sources []interface{}
-	for _, src := range sourceCLI.Fakes {
-		sources = append(sources, src)
+	if sourceCLI.Fake != nil {
+		sources = append(sources, *sourceCLI.Fake)
 	}
 	return sources
 }
