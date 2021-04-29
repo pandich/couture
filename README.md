@@ -20,18 +20,18 @@ Installs to `$HOME/bin/couture`:
 
 ### Entry Points
 
-* [Command](file://./cmd/couture.go) - CLI command.
-* [Manager](file://./internal/pkg/manager/manager.go) - Couture source/sink manager.
+* [Command](cmd/couture.go) - CLI command.
+* [Manager](internal/pkg/manager/manager.go) - Couture source/sink manager.
 
 
-* [Source Definitions](file://./internal/pkg/source/source.go) - Where sources are defined.
-* [Source CLI Definition](file://./cmd/cli/source.go) - Where CLI arguments and parsing is defined for a source.
-* [Source Config Definition](file://./cmd/config/source.go) - Where configuration setup and parsing is defined for a source.
+* [Source Definitions](internal/pkg/source/source.go) - Where sources are defined.
+* [Source CLI Definition](cmd/cli/source.go) - Where CLI arguments and parsing is defined for a source.
+* [Source Config Definition](cmd/config/source.go) - Where configuration setup and parsing is defined for a source.
 
 
-* [Sink Definitions](file://./internal/pkg/sink/sink.go) - Where sinks are defined.
-* [Sink CLI Definition](file://./cmd/cli/sink.go) - Where CLI arguments and parsing is defined for a sink.
-* [Sink Config Definition](file://./cmd/config/sink.go) - Where configuration setup and parsing is defined for a sink.
+* [Sink Definitions](internal/pkg/sink/sink.go) - Where sinks are defined.
+* [Sink CLI Definition](cmd/cli/sink.go) - Where CLI arguments and parsing is defined for a sink.
+* [Sink Config Definition](cmd/config/sink.go) - Where configuration setup and parsing is defined for a sink.
 
 
 ### Libraries Used
