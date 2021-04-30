@@ -30,6 +30,7 @@ func one(i interface{}) reflect.Type {
 }
 
 //many specified that a slice of instances of the type is being mapped.
+//goland:noinspection GoUnusedFunction
 func many(i interface{}) reflect.Type {
 	return reflect.SliceOf(reflect.TypeOf(i))
 }
@@ -40,22 +41,18 @@ func (m creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) err
 		token := ctx.Scan.Pop()
 		switch config := token.Value.(type) {
 		case string:
-			var t = target.Type()
-			if t.Kind() != reflect.Ptr {
-				t = t.Elem()
-			}
 			creator, ok := m.creators[target.Type()]
 			if !ok {
 				return errors.Errorf("unknown type (%T) with config %s", token.Value, config)
 			}
-			c := creator(config)
+			value := reflect.ValueOf(creator(config))
 			switch target.Kind() {
 			case reflect.Slice:
-				target.Set(reflect.Append(target, reflect.ValueOf(c)))
+				target.Set(reflect.Append(target, value))
 			case reflect.Ptr:
-				target.Elem().Set(reflect.ValueOf(c))
+				target.Elem().Set(value)
 			default:
-				target.Set(reflect.ValueOf(c))
+				target.Set(value)
 			}
 
 		default:
