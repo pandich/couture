@@ -1,0 +1,38 @@
+package cli
+
+import (
+	"couture/internal/pkg/manager"
+	"github.com/alecthomas/kong"
+)
+
+//coreOptions contain the core kong cli options.
+var coreOptions = []kong.Option{
+	kong.Name("couture"),
+	kong.Description("Tail multiple log sources."),
+	kong.ShortUsageOnError(),
+	kong.ConfigureHelp(kong.HelpOptions{
+		Tree:     true,
+		Indenter: kong.TreeIndenter,
+	}),
+}
+
+//Options from the parsed CLI.
+func Options() []interface{} {
+	var opts []interface{}
+	if coreCli.ClearScreen {
+		opts = append(opts, manager.ClearScreenDisplayOption())
+	}
+	if coreCli.Verbose {
+		opts = append(opts, manager.VerboseDisplayOption())
+	}
+	if coreCli.Quiet {
+		opts = append(opts, manager.QuietDisplayOption())
+	}
+	if coreCli.ShowPrefix {
+		opts = append(opts, manager.ShowPrefixDisplayOption())
+	}
+	if coreCli.ShortNames {
+		opts = append(opts, manager.ShortNamesDisplayOption())
+	}
+	return opts
+}

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"couture/internal/pkg/sink"
-	"errors"
 	"github.com/alecthomas/kong"
 )
 
@@ -22,10 +21,6 @@ var (
 	sinkMappers []kong.Option
 )
 
-var (
-	ErrNoSinks = errors.New("at least one sinks must be specified")
-)
-
 //Sinks returns all sink.Sink instances defined by the cli.
 func Sinks() []interface{} {
 	var sinks []interface{}
@@ -35,13 +30,4 @@ func Sinks() []interface{} {
 		sinks = append(sinks, *sinkCLI.Json)
 	}
 	return sinks
-}
-
-type sinksValidator struct{}
-
-func (v sinksValidator) Validate() error {
-	if len(Sinks()) == 0 {
-		return ErrNoSinks
-	}
-	return nil
 }

@@ -2,22 +2,17 @@ package cli
 
 import (
 	"couture/internal/pkg/source"
-	"errors"
 	"github.com/alecthomas/kong"
 )
-
-//sourceCLI contains source-specific cli args.
-var sourceCLI struct {
-	Fake *source.Fake `group:"Input" name:"fake" hidden:"true"`
-}
 
 func init() {
 	sourceMappers = append(sourceMappers, mapper(source.Fake{}, source.NewFake)...)
 }
 
-var (
-	ErrNoSources = errors.New("at least one source must be specified")
-)
+//sourceCLI contains source-specific cli args.
+var sourceCLI struct {
+	Fake *source.Fake `group:"Input" name:"fake" hidden:"true"`
+}
 
 //sourceMappers contains source-specific converters from string to a source.Source instance.
 var sourceMappers []kong.Option
@@ -29,13 +24,4 @@ func Sources() []interface{} {
 		sources = append(sources, *sourceCLI.Fake)
 	}
 	return sources
-}
-
-type sourcesValidator struct{}
-
-func (v sourcesValidator) Validate() error {
-	if len(Sources()) == 0 {
-		return ErrNoSources
-	}
-	return nil
 }

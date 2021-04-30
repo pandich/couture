@@ -9,10 +9,11 @@ import (
 )
 
 var (
-	regexpType  = reflect.PtrTo(reflect.TypeOf(regexp.Regexp{}))
+	//coreMappers are kong.Mapper mappers exposed via kong.Option structs.
 	coreMappers = []kong.Option{
-		kong.TypeMapper(regexpType, regexpMapper{}),
-		kong.TypeMapper(reflect.SliceOf(regexpType), regexpMapper{}),
+		//regexp
+		kong.TypeMapper(reflect.PtrTo(reflect.TypeOf(regexp.Regexp{})), regexpMapper{}),
+		kong.TypeMapper(reflect.SliceOf(reflect.PtrTo(reflect.TypeOf(regexp.Regexp{}))), regexpMapper{}),
 	}
 )
 
