@@ -17,22 +17,14 @@ type (
 	}
 )
 
-//mapper creates a new kong.Option registering a kong.Mapper for a creator.
-func mapper(t reflect.Type, creator creator) kong.Option {
-	return kong.TypeMapper(t, creatorMapper{creators: creators{
-		t: creator,
-	}})
-}
-
-//one specified that a single one instance of the type is being mapped.
-func one(i interface{}) reflect.Type {
-	return reflect.PtrTo(reflect.TypeOf(i))
-}
-
-//many specified that a slice of instances of the type is being mapped.
-//goland:noinspection GoUnusedFunction
-func many(i interface{}) reflect.Type {
-	return reflect.SliceOf(reflect.TypeOf(i))
+//mapper creates a new kong.Option registering a kong.Mapper for a creator for required, optional, and slice types.
+func mapper(i interface{}, creator creator) []kong.Option {
+	t := reflect.TypeOf(i)
+	return []kong.Option{
+		kong.TypeMapper(t, creatorMapper{creators: creators{reflect.PtrTo(t): creator}}),
+		kong.TypeMapper(reflect.PtrTo(t), creatorMapper{creators: creators{reflect.PtrTo(t): creator}}),
+		kong.TypeMapper(reflect.SliceOf(t), creatorMapper{creators: creators{reflect.SliceOf(t): creator}}),
+	}
 }
 
 //Decode decodes expecting a string argument to a type know it.

@@ -5,6 +5,11 @@ import (
 	"github.com/alecthomas/kong"
 )
 
+func init() {
+	sinkMappers = append(sinkMappers, mapper(sink.GoString{}, sink.NewGoString)...)
+	sinkMappers = append(sinkMappers, mapper(sink.Json{}, sink.NewJson)...)
+}
+
 var (
 	//sinkCLI contains sink-specific cli args.
 	sinkCLI struct {
@@ -13,10 +18,7 @@ var (
 	}
 
 	//sinkMappers contains sink-specific converters from string to a sink.Sink instance.
-	sinkMappers = []kong.Option{
-		mapper(one(sink.GoString{}), sink.NewGoString),
-		mapper(one(sink.Json{}), sink.NewJson),
-	}
+	sinkMappers []kong.Option
 )
 
 //Sinks returns all sink.Sink instances defined by the cli.
