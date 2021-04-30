@@ -20,7 +20,7 @@ type coreValidator struct{}
 func (c coreValidator) Validate() error {
 	var ea []error
 	if coreCli.LineCount > maxLineCount {
-		ea = append(ea, errors.New(fmt.Sprintf("line count may not be greater than %d", maxLineCount)))
+		ea = append(ea, fmt.Errorf("line count may not be greater than %d", maxLineCount))
 	}
 	if len(Sources()) == 0 {
 		ea = append(ea, errors.New("at least one source must be specified"))
@@ -29,10 +29,7 @@ func (c coreValidator) Validate() error {
 		ea = append(ea, errors.New("at least one destination must be specified"))
 	}
 	if coreCli.PollCadence < minPollCadence || coreCli.PollCadence > maxPollCadence {
-		ea = append(
-			ea,
-			errors.New(fmt.Sprintf("poll cadence must be between %v and %v", minPollCadence, maxPollCadence)),
-		)
+		ea = append(ea, fmt.Errorf("interval must be >= %v and <= %v", minPollCadence, maxPollCadence))
 	}
 	if len(ea) > 0 {
 		return multierror.New(ea)
