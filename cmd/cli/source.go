@@ -5,17 +5,16 @@ import (
 	"github.com/alecthomas/kong"
 )
 
-func init() {
-	sourceMappers = append(sourceMappers, mapper(source.Fake{}, source.NewFake)...)
-}
-
 //sourceCLI contains source-specific cli args.
 var sourceCLI struct {
-	Fake *source.Fake `group:"Input" name:"fake" hidden:"true"`
+	Fake *source.Fake `group:"Input Options" name:"fake" hidden:"true"`
+	// Files []source.File `group:"Input Options" name:"file" short:"F"`
 }
 
-//sourceMappers contains source-specific converters from string to a source.Source instance.
-var sourceMappers []kong.Option
+func init() {
+	sourceMappers = append(sourceMappers, mapper(source.Fake{}, source.NewFake)...)
+	// sourceMappers = append(sourceMappers, mapper(source.File{}, source.NewFile)...)
+}
 
 //Sources returns all source.Source instances defined by the cli.
 func Sources() []interface{} {
@@ -23,5 +22,9 @@ func Sources() []interface{} {
 	if sourceCLI.Fake != nil {
 		sources = append(sources, *sourceCLI.Fake)
 	}
+	// sources = append(sources, sourceCLI.Files)
 	return sources
 }
+
+//sourceMappers contains source-specific converters from string to a source.Source instance.
+var sourceMappers []kong.Option

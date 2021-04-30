@@ -1,5 +1,7 @@
 package cli
 
+//See https://github.com/alecthomas/kong for documentation on the command-line parsing.
+
 import (
 	"couture/internal/pkg/model"
 	"github.com/alecthomas/kong"

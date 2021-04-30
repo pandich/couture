@@ -5,21 +5,16 @@ import (
 	"github.com/alecthomas/kong"
 )
 
+//sinkCLI contains sink-specific cli args.
+var sinkCLI struct {
+	GoString *sink.GoString `group:"Output Options" help:"Dump string representation of event." name:"string" aliases:"go-string,str" xor:"console"`
+	Json     *sink.Json     `group:"Output Options" help:"Dump JSON representation of event." name:"json" xor:"console"`
+}
+
 func init() {
 	sinkMappers = append(sinkMappers, mapper(sink.GoString{}, sink.NewGoString)...)
 	sinkMappers = append(sinkMappers, mapper(sink.Json{}, sink.NewJson)...)
 }
-
-var (
-	//sinkCLI contains sink-specific cli args.
-	sinkCLI struct {
-		GoString *sink.GoString `group:"Output" help:"Dump string representation of event." name:"string" aliases:"go-string,str" xor:"console"`
-		Json     *sink.Json     `group:"Output" help:"Dump JSON representation of event." name:"json" xor:"console"`
-	}
-
-	//sinkMappers contains sink-specific converters from string to a sink.Sink instance.
-	sinkMappers []kong.Option
-)
 
 //Sinks returns all sink.Sink instances defined by the cli.
 func Sinks() []interface{} {
@@ -31,3 +26,6 @@ func Sinks() []interface{} {
 	}
 	return sinks
 }
+
+//sinkMappers contains sink-specific converters from string to a sink.Sink instance.
+var sinkMappers []kong.Option
