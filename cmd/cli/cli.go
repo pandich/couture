@@ -15,6 +15,7 @@ func init() {
 }
 
 //coreCli contains all global arguments.
+//TODO continue porting https://github.com/gaggle-net/ldt-scripts/blob/main/cloudwatch/aws-log-tail/src/main/kotlin/com/gaggle/awstail/config.kt
 var coreCli struct {
 	AwsRegion  string `group:"AWS Options" help:"AWS region" default:"us-west-2" name:"aws-region" aliases:"region" env:"AWS_REGION"`
 	AwsProfile string `group:"AWS Options" help:"AWS profile" default:"integration" name:"aws-profile" aliases:"profile" env:"AWS_PROFILE"`
