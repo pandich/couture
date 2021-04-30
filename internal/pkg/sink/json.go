@@ -7,6 +7,7 @@ import (
 	"log"
 )
 
+//NewJson provides a configured Json sink.
 func NewJson(config string) interface{} {
 	return Json{pretty: config == "pretty"}
 }

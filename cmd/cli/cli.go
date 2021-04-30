@@ -23,10 +23,10 @@ var coreCli struct {
 	ShowPrefix  bool `group:"Display Options" help:"Display a prefix before each log line indicting its source." name:"prefix" default:"true" negatable:"true"`
 	ShortNames  bool `group:"Display Options" help:"Display a abbreviated source names." name:"short-names" aliases:"short" default:"true" negatable:"true"`
 
-	Follow      bool          `group:"Behavioral Options" help:"Follow the logs." default:"true" name:"follow" short:"f" negatable:"true"`
-	PollCadence time.Duration `group:"Behavioral Options" help:"How long to sleep between polls. (Applies only to some sources.)" default:"2s" name:"interval" aliases:"sleep" short:"i"`
-	LineCount   uint32        `group:"Behavioral Options" help:"How many lines of history to include. (Applies only to some sources.)" default:"20" name:"lines" aliases:"count" short:"c"`
-	Since       time.Duration `group:"Behavioral Options" help:"How far back to search for events." default:"5m" name:"since" aliases:"back,lookback" short:"b"`
+	Follow       bool          `group:"Behavioral Options" help:"Follow the logs." default:"true" name:"follow" short:"f" negatable:"true"`
+	PollInterval time.Duration `group:"Behavioral Options" help:"How long to sleep between polls. (Applies only to some sources.)" default:"2s" name:"interval" aliases:"sleep" short:"i"`
+	LineCount    uint32        `group:"Behavioral Options" help:"How many lines of history to include. (Applies only to some sources.)" default:"20" name:"lines" aliases:"count" short:"c"`
+	Since        time.Duration `group:"Behavioral Options" help:"How far back to search for events." default:"5m" name:"since" aliases:"back,lookback" short:"b"`
 
 	Patterns []*regexp.Regexp `group:"Filtering Options" help:"Filter patterns." name:"filter" short:"f" sep:","`
 	LogLevel model.Level      `group:"Filtering Options" help:"Minimum log level to display (${enum})." default:"DEBUG" name:"log-level" aliases:"level" short:"l" enum:"ERROR,WARN,INFO,DEBUG,TRACE"`

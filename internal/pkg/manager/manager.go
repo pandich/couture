@@ -1,21 +1,20 @@
 package manager
 
 import (
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/sink"
-	"couture/internal/pkg/source"
-	"fmt"
 	"github.com/asaskevich/EventBus"
 	"sync"
 	"time"
 )
 
-const (
-	//eventTopic is the topic for all sources and sinks to communicate over.
-	eventTopic = "topic:event"
-	//errorTopic is the topic for all errors.
-	errorTopic = "topic:error"
-)
+//NewManager creates an empty manager.
+func NewManager() *Manager {
+	var mgr Manager = &busBasedManager{
+		wg:           &sync.WaitGroup{},
+		bus:          EventBus.New(),
+		pollInterval: 1 * time.Second,
+	}
+	return &mgr
+}
 
 type (
 	//eventHandler is an event listener function
@@ -56,142 +55,13 @@ type (
 		//bus is the event bus used to route events between pollers and sinks
 		bus EventBus.Bus
 		//pollers is the set of source polling functions to start as goroutines. Each source has exactly one poller.
-		pollers       []func(wg *sync.WaitGroup)
-		pushers       []managed
-		sleepInterval time.Duration
-		options       managerOptions
+		pollers []func(wg *sync.WaitGroup)
+		//pollInterval is the frequency with which the pollers are polled.
+		pollInterval time.Duration
+		//pushers is the set of sources which push to the event queue. Their lifecycle follows the manager's lifecycle.
+		//(i.e. Start and Stop)
+		pushers []managed
+		//options contains general settings and toggles.
+		options managerOptions
 	}
 )
-
-//NewManager creates an empty manager.
-func NewManager() *Manager {
-	var mgr Manager = &busBasedManager{
-		wg:            &sync.WaitGroup{},
-		bus:           EventBus.New(),
-		sleepInterval: 1 * time.Second,
-	}
-	return &mgr
-}
-
-// Start the service.
-func (m *busBasedManager) Start() error {
-	m.running = true
-	for _, poller := range m.pollers {
-		m.wg.Add(1)
-		go poller(m.wg)
-	}
-	for _, pusher := range m.pushers {
-		m.wg.Add(1)
-		if err := pusher.Start(m.wg); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (m *busBasedManager) MustStart() {
-	if err := (*m).Start(); err != nil {
-		panic(err)
-	}
-	(*m).Wait()
-}
-
-func (m *busBasedManager) Stop() {
-	m.running = false
-	for _, pusher := range m.pushers {
-		pusher.Stop()
-	}
-}
-
-func (m *busBasedManager) Wait() {
-	m.wg.Wait()
-}
-
-func (m *busBasedManager) Register(ia ...interface{}) error {
-	for _, i := range ia {
-		switch v := i.(type) {
-		case source.PollableSource:
-			if err := m.registerPollableSource(v); err != nil {
-				return err
-			}
-		case source.PushingSource:
-			if err := m.registerPushingSource(v); err != nil {
-				return err
-			}
-		case sink.Sink:
-			if err := m.registerSink(v); err != nil {
-				return err
-			}
-		case Option:
-			if err := m.registerOption(v); err != nil {
-				return err
-			}
-		case errorHandler:
-			if err := m.registerErrorHandler(v); err != nil {
-				return err
-			}
-		case eventHandler:
-			if err := m.registerEventHandler(v); err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf("uknown type %T", v)
-		}
-	}
-	return nil
-}
-
-func (m *busBasedManager) MustRegister(ia ...interface{}) {
-	if err := m.Register(ia...); err != nil {
-		panic(err)
-	}
-}
-
-//registerPushingSource registers a source that pushes events into the queue.
-func (m *busBasedManager) registerPushingSource(src source.PushingSource) error {
-	src.SetCallback(func(ia ...interface{}) {
-		m.bus.Publish(eventTopic, ia)
-	})
-	m.pushers = append(m.pushers, src)
-	return nil
-}
-
-//registerPollableSource registers one or more sources to be polled for events.
-//If no events are available the source pauses for sleepInterval.
-func (m *busBasedManager) registerPollableSource(src source.PollableSource) error {
-	m.pollers = append(m.pollers, func(wg *sync.WaitGroup) {
-		defer wg.Done()
-		for m.running {
-			var err error
-			var evt *model.Event
-			for evt, err = src.Poll(); m.running && err == nil && evt != nil; evt, err = src.Poll() {
-				m.bus.Publish(eventTopic, evt)
-			}
-			if err != nil {
-				m.bus.Publish(errorTopic, err)
-			}
-			time.Sleep(m.sleepInterval)
-		}
-	})
-	return nil
-}
-
-//registerSink registers one or more sinks.
-func (m *busBasedManager) registerSink(sink sink.Sink) error {
-	return m.bus.SubscribeAsync(eventTopic, sink.Accept, false)
-}
-
-//registerEventHandler registers one or more functions to be written to. Functions are not part of the wait group.
-func (m *busBasedManager) registerEventHandler(f eventHandler) error {
-	return m.bus.SubscribeAsync(eventTopic, f, false)
-}
-
-//registerErrorHandler registers a function for error handling
-func (m *busBasedManager) registerErrorHandler(f errorHandler) error {
-	return m.bus.SubscribeAsync(errorTopic, f, false)
-}
-
-//registerOption registers an Option.
-func (m *busBasedManager) registerOption(option Option) error {
-	return option.Apply(&m.options)
-}

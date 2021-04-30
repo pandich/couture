@@ -1,18 +1,24 @@
 # Couture
+
 ![Couture](https://static.thenounproject.com/png/566246-200.png)
 
-### Overview
+## Overview
 
-TODO
+_TODO_
+
+### Execution
+
+    bin/couture
+
+## Development
 
 ### Build
 
-Build:
-    Builds to `target/couture`:
+Builds to `bin/couture`:
 
     make
 
-Install:
+### Install
 
 Installs to `$HOME/bin/couture`:
 
@@ -23,18 +29,19 @@ Installs to `$HOME/bin/couture`:
 * [Command](cmd/couture.go) - CLI command.
 * [Manager](internal/pkg/manager/manager.go) - Couture source/sink manager.
 
+---
 
 * [Source Definitions](internal/pkg/source/source.go) - Where sources are defined.
 * [Source CLI Definition](cmd/cli/source.go) - Where CLI arguments and parsing is defined for a source.
 * [Source Config Definition](cmd/config/source.go) - Where configuration setup and parsing is defined for a source.
 
+---
 
 * [Sink Definitions](internal/pkg/sink/sink.go) - Where sinks are defined.
 * [Sink CLI Definition](cmd/cli/sink.go) - Where CLI arguments and parsing is defined for a sink.
 * [Sink Config Definition](cmd/config/sink.go) - Where configuration setup and parsing is defined for a sink.
 
-
-### Libraries Used
+## Libraries Used
 
 * CLI Parsing: [Kong](https://github.com/alecthomas/kong)
 * Configuration: [Configuro](https://github.com/sherifabdlnaby/configuro)
@@ -43,11 +50,11 @@ Installs to `$HOME/bin/couture`:
 * Colorization: [Aurora](https://github.com/logrusorgru/aurora)
 * Terminal Management: [Termdash](https://github.com/mum4k/termdash)
 
-### Limitations
+## Limitations
 
 * Can't tail resources from multiple AWS regions or profiles simultaneously.
 
-### Future Ideas
+## Future Ideas
 
 * AWS CodePipeline events?
 * ElasticSearch

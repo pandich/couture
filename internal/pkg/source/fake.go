@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+//NewFake provides a configured Fake source.
 func NewFake(_ string) interface{} {
 	return Fake{}
 }

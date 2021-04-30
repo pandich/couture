@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+//NewGoString provides a configured GoString sink.
 func NewGoString(_ string) interface{} {
 	return GoString{}
 }

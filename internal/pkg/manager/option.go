@@ -39,9 +39,11 @@ type (
 		shortNames  bool
 		showPrefix  bool
 	}
+
 	Option interface {
 		Apply(manager *managerOptions) error
 	}
+
 	baseOption struct {
 		f func(*managerOptions) error
 	}
