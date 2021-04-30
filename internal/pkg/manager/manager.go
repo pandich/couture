@@ -6,14 +6,16 @@ import (
 	"couture/internal/pkg/source"
 	"fmt"
 	"github.com/asaskevich/EventBus"
-	"log"
 	"sync"
 	"time"
 )
 
-//eventTopic is the topic for all sources and sinks to communicate over.
-const eventTopic = "topic:event"
-const errorTopic = "topic:error"
+const (
+	//eventTopic is the topic for all sources and sinks to communicate over.
+	eventTopic = "topic:event"
+	//errorTopic is the topic for all errors.
+	errorTopic = "topic:error"
+)
 
 type (
 	//eventHandler is an event listener function
@@ -28,8 +30,6 @@ type (
 		//Stop the managed entity.
 		Stop()
 	}
-
-	Option interface{}
 
 	//Manager manages the lifecycle of sources, and the routing of their events to the sinks.
 	Manager interface {
@@ -59,6 +59,7 @@ type (
 		pollers       []func(wg *sync.WaitGroup)
 		pushers       []managed
 		sleepInterval time.Duration
+		options       managerOptions
 	}
 )
 
@@ -90,7 +91,7 @@ func (m *busBasedManager) Start() error {
 
 func (m *busBasedManager) MustStart() {
 	if err := (*m).Start(); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	(*m).Wait()
 }
@@ -142,7 +143,7 @@ func (m *busBasedManager) Register(ia ...interface{}) error {
 
 func (m *busBasedManager) MustRegister(ia ...interface{}) {
 	if err := m.Register(ia...); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
@@ -167,7 +168,6 @@ func (m *busBasedManager) registerPollableSource(src source.PollableSource) erro
 				m.bus.Publish(eventTopic, evt)
 			}
 			if err != nil {
-				log.Println(fmt.Errorf("%s", err))
 				m.bus.Publish(errorTopic, err)
 			}
 			time.Sleep(m.sleepInterval)
@@ -191,7 +191,7 @@ func (m *busBasedManager) registerErrorHandler(f errorHandler) error {
 	return m.bus.SubscribeAsync(errorTopic, f, false)
 }
 
-func (m *busBasedManager) registerOption(_ Option) error {
-	// TODO
-	return nil
+//registerOption registers an Option.
+func (m *busBasedManager) registerOption(option Option) error {
+	return option.Apply(&m.options)
 }

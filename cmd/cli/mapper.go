@@ -1,13 +1,23 @@
 package cli
 
 import (
+	"fmt"
 	"github.com/alecthomas/kong"
 	"github.com/pkg/errors"
 	"reflect"
+	"regexp"
+)
+
+var (
+	regexpType  = reflect.PtrTo(reflect.TypeOf(regexp.Regexp{}))
+	coreMappers = []kong.Option{
+		kong.TypeMapper(regexpType, regexpMapper{}),
+		kong.TypeMapper(reflect.SliceOf(regexpType), regexpMapper{}),
+	}
 )
 
 type (
-	//creator converts a string into a resource (e.g. source or sink)
+	//creator converts a string into a resource (e.g. source or sink).
 	creator func(config string) interface{}
 	//creators maps reflect.Type to creator.
 	creators map[reflect.Type]creator
@@ -15,6 +25,8 @@ type (
 	creatorMapper struct {
 		creators creators
 	}
+	//regexpMapper uses regexp.Compile to compile the specified pattern.
+	regexpMapper struct{}
 )
 
 //mapper creates a new kong.Option registering a kong.Mapper for a creator for required, optional, and slice types.
@@ -27,7 +39,6 @@ func mapper(i interface{}, creator creator) []kong.Option {
 	}
 }
 
-//Decode decodes expecting a string argument to a type know it.
 func (m creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
 	if ctx.Scan.Peek().Type == kong.FlagValueToken {
 		token := ctx.Scan.Pop()
@@ -50,6 +61,21 @@ func (m creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) err
 		default:
 			return errors.Errorf("expected string but got %q (%T)", token.Value, token.Value)
 		}
+	}
+	return nil
+}
+
+func (m regexpMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
+	token := ctx.Scan.Pop()
+	switch pattern := token.Value.(type) {
+	case string:
+		filter, err := regexp.Compile(pattern)
+		if err != nil {
+			return err
+		}
+		target.Set(reflect.Append(target, reflect.ValueOf(filter)))
+	default:
+		return fmt.Errorf("bad type %T %v", token, token)
 	}
 	return nil
 }
