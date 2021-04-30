@@ -46,8 +46,8 @@ var (
 	}
 )
 
-//Parse parses all arguments, including all sources and sinks.
-func Parse() *kong.Context {
+//MustLoad parses all arguments, including all sources and sinks.
+func MustLoad() *kong.Context {
 	var opts []kong.Option
 	opts = append(opts, coreOptions...)
 	opts = append(opts, sourceMappers...)
@@ -55,4 +55,9 @@ func Parse() *kong.Context {
 	ctx := kong.Parse(&coreCli, opts...)
 	log.Printf("%+v\n", coreCli)
 	return ctx
+}
+
+//Options from the parsed CLI.
+func Options() []interface{} {
+	return []interface{}{}
 }

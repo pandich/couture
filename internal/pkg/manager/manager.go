@@ -29,6 +29,8 @@ type (
 		Stop()
 	}
 
+	Option interface{}
+
 	//Manager manages the lifecycle of sources, and the routing of their events to the sinks.
 	Manager interface {
 		//Start the manager.
@@ -119,6 +121,10 @@ func (m *busBasedManager) Register(ia ...interface{}) error {
 			if err := m.registerSink(v); err != nil {
 				return err
 			}
+		case Option:
+			if err := m.registerOption(v); err != nil {
+				return err
+			}
 		case errorHandler:
 			if err := m.registerErrorHandler(v); err != nil {
 				return err
@@ -183,4 +189,9 @@ func (m *busBasedManager) registerEventHandler(f eventHandler) error {
 //registerErrorHandler registers a function for error handling
 func (m *busBasedManager) registerErrorHandler(f errorHandler) error {
 	return m.bus.SubscribeAsync(errorTopic, f, false)
+}
+
+func (m *busBasedManager) registerOption(_ Option) error {
+	// TODO
+	return nil
 }
