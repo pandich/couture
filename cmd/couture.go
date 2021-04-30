@@ -22,4 +22,5 @@ func main() {
 	(*mgr).MustRegister(config.Sinks()...)
 
 	(*mgr).MustStart()
+	(*mgr).Wait()
 }

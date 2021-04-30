@@ -52,7 +52,13 @@ Installs to `$HOME/bin/couture`:
 
 ## Limitations
 
-* Can't tail resources from multiple AWS regions or profiles simultaneously.
+### Sources
+
+Sources currently lack fine-grained configuration:
+
+* Only a single AWS region/profile combination may be used.
+* Only a single poll interval may be used.
+* Only a single look-back duration or line count may be used.
 
 ## Future Ideas
 

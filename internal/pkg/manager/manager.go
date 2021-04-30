@@ -17,19 +17,6 @@ func NewManager() *Manager {
 }
 
 type (
-	//eventHandler is an event listener function
-	eventHandler func([]*interface{})
-	//errorHandler handles errors when they occur.
-	errorHandler func([]*interface{})
-
-	//managed represents a startable/stoppable entity.
-	managed interface {
-		//Start the managed entity.
-		Start(group *sync.WaitGroup) error
-		//Stop the managed entity.
-		Stop()
-	}
-
 	//Manager manages the lifecycle of sources, and the routing of their events to the sinks.
 	Manager interface {
 		//Start the manager.
@@ -52,16 +39,30 @@ type (
 		wg *sync.WaitGroup
 		//running indicates to all pollers whether or not the manager is running.
 		running bool
-		//bus is the event bus used to route events between pollers and sinks
-		bus EventBus.Bus
-		//pollers is the set of source polling functions to start as goroutines. Each source has exactly one poller.
-		pollers []func(wg *sync.WaitGroup)
-		//pollInterval is the frequency with which the pollers are polled.
-		pollInterval time.Duration
-		//pushers is the set of sources which push to the event queue. Their lifecycle follows the manager's lifecycle.
-		//(i.e. Start and Stop)
-		pushers []managed
+
 		//options contains general settings and toggles.
 		options managerOptions
+
+		//bus is the event bus used to route events between pollers and sinks
+		bus EventBus.Bus
+
+		//pollers is the set of source polling functions to start as goroutines. Each source has exactly one poller.
+		pollers []polling
+		//pollInterval is the frequency with which the pollers are polled.
+		pollInterval time.Duration
+
+		//pushers is the set of sources which push to the event queue. Their lifecycle follows the manager's lifecycle.
+		//(i.e. Start and Stop)
+		pushers []pushing
+	}
+
+	polling func(wg *sync.WaitGroup)
+
+	//pushing represents a startable/stoppable entity.
+	pushing interface {
+		//Start the pushing entity.
+		Start(group *sync.WaitGroup) error
+		//Stop the pushing entity.
+		Stop()
 	}
 )

@@ -19,7 +19,6 @@ func (m *busBasedManager) MustStart() {
 	if err := (*m).Start(); err != nil {
 		panic(err)
 	}
-	(*m).Wait()
 }
 
 func (m *busBasedManager) Stop() {

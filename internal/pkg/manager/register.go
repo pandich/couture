@@ -16,9 +16,16 @@ const (
 	errorTopic = "topic:error"
 )
 
-func (m *busBasedManager) Register(ia ...interface{}) error {
-	for _, i := range ia {
-		switch v := i.(type) {
+type (
+	//eventHandler is an event listener function
+	eventHandler func([]*interface{})
+	//errorHandler handles errors when they occur.
+	errorHandler func([]*interface{})
+)
+
+func (m *busBasedManager) Register(registrants ...interface{}) error {
+	for _, registrant := range registrants {
+		switch v := registrant.(type) {
 		case source.PollableSource:
 			if err := m.registerPollableSource(v); err != nil {
 				return err
@@ -44,7 +51,7 @@ func (m *busBasedManager) Register(ia ...interface{}) error {
 				return err
 			}
 		default:
-			return fmt.Errorf("uknown type %T", v)
+			return fmt.Errorf("uknown type %T %v", registrant, registrant)
 		}
 	}
 	return nil
@@ -102,5 +109,6 @@ func (m *busBasedManager) registerErrorHandler(f errorHandler) error {
 
 //registerOption registers an Option.
 func (m *busBasedManager) registerOption(option Option) error {
-	return option.Apply(&m.options)
+	option.Apply(&m.options)
+	return nil
 }

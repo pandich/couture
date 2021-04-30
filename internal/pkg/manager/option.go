@@ -1,34 +1,19 @@
 package manager
 
 func VerboseDisplayOption() interface{} {
-	return baseOption{f: func(m *managerOptions) error {
-		m.verbose = true
-		return nil
-	}}
+	return baseOption{applier: func(m *managerOptions) { m.verbose = true }}
 }
 func QuietDisplayOption() interface{} {
-	return baseOption{f: func(m *managerOptions) error {
-		m.quiet = true
-		return nil
-	}}
+	return baseOption{applier: func(m *managerOptions) { m.quiet = true }}
 }
 func ClearScreenDisplayOption() interface{} {
-	return baseOption{f: func(m *managerOptions) error {
-		m.clearScreen = true
-		return nil
-	}}
+	return baseOption{applier: func(m *managerOptions) { m.clearScreen = true }}
 }
 func ShowPrefixDisplayOption() interface{} {
-	return baseOption{f: func(m *managerOptions) error {
-		m.showPrefix = true
-		return nil
-	}}
+	return baseOption{applier: func(m *managerOptions) { m.showPrefix = true }}
 }
 func ShortNamesDisplayOption() interface{} {
-	return baseOption{f: func(m *managerOptions) error {
-		m.shortNames = true
-		return nil
-	}}
+	return baseOption{applier: func(m *managerOptions) { m.shortNames = true }}
 }
 
 type (
@@ -41,14 +26,14 @@ type (
 	}
 
 	Option interface {
-		Apply(manager *managerOptions) error
+		Apply(manager *managerOptions)
 	}
 
 	baseOption struct {
-		f func(*managerOptions) error
+		applier func(*managerOptions)
 	}
 )
 
-func (b baseOption) Apply(mgr *managerOptions) error {
-	return b.f(mgr)
+func (b baseOption) Apply(mgrOptions *managerOptions) {
+	b.applier(mgrOptions)
 }
