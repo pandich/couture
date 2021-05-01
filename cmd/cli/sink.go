@@ -9,13 +9,13 @@ import (
 var sinkCLI struct {
 	GoString *sink.GoString `group:"sink" help:"Dump string representation of event." name:"string" aliases:"go-string,str" xor:"console"`
 	Json     *sink.Json     `group:"sink" help:"Dump JSON representation of event." name:"json" xor:"console"`
-	Logrus   *sink.Logrus   `group:"sink" help:"Formatting log output." name:"log" xor:"console"`
+	Ansi     *sink.Ansi     `group:"sink" help:"ANSI output." name:"ansi" xor:"console"`
 }
 
 func init() {
 	sinkMappers = append(sinkMappers, mapper(sink.GoString{}, sink.NewGoString)...)
 	sinkMappers = append(sinkMappers, mapper(sink.Json{}, sink.NewJson)...)
-	sinkMappers = append(sinkMappers, mapper(sink.Logrus{}, sink.NewLogrus)...)
+	sinkMappers = append(sinkMappers, mapper(sink.Ansi{}, sink.NewAnsi)...)
 }
 
 //Sinks returns all sink.Sink instances defined by the cli.
@@ -27,8 +27,8 @@ func Sinks() []interface{} {
 	if sinkCLI.Json != nil {
 		sinks = append(sinks, *sinkCLI.Json)
 	}
-	if sinkCLI.Logrus != nil {
-		sinks = append(sinks, *sinkCLI.Logrus)
+	if sinkCLI.Ansi != nil {
+		sinks = append(sinks, *sinkCLI.Ansi)
 	}
 	return sinks
 }

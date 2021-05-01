@@ -13,8 +13,6 @@ var (
 
 //goland:noinspection GoUnusedConst
 const (
-	//LevelMissing log level when no valid level is present
-	LevelMissing LogLevel = ""
 	//LevelTrace log level for tracing
 	LevelTrace LogLevel = "TRACE"
 	//LevelDebug log level for debugging
@@ -54,7 +52,7 @@ type (
 	Event struct {
 		//Timestamp the timestamp. This field is required, and should default to time.Now() if not present.
 		Timestamp Timestamp
-		//Level the level. This field is required, and should default to LevelMissing if not present.
+		//Level the level. This field is required, and should default to LevelInfo if not present.
 		Level LogLevel
 		//Message the message. This field is required.
 		Message Message
@@ -70,6 +68,14 @@ type (
 		Exception *Exception
 	}
 )
+
+func (e Event) LineNumberAsInt() uint64 {
+	i, err := strconv.ParseUint(string(e.LineNumber), 10, 64)
+	if err != nil {
+		return 0
+	}
+	return i
+}
 
 func (e Event) GoString() string {
 	var ex = ""
@@ -91,4 +97,11 @@ func (e Event) GoString() string {
 		e.Message,
 		ex,
 	)
+}
+
+func (e Event) StackTrace() *StackTrace {
+	if e.Exception != nil && e.Exception.StackTrace != "" {
+		return &e.Exception.StackTrace
+	}
+	return nil
 }
