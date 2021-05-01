@@ -2,6 +2,7 @@ package sink
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/source"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -18,7 +19,7 @@ type Json struct {
 	pretty bool
 }
 
-func (s Json) Accept(event model.Event) {
+func (s Json) Accept(src source.Source, event model.Event) {
 	var txt []byte
 	var err error
 	if s.pretty {
@@ -30,5 +31,5 @@ func (s Json) Accept(event model.Event) {
 	if err != nil {
 		log.Println(fmt.Errorf("failed to marshal event: %v", err))
 	}
-	fmt.Println(string(txt))
+	fmt.Println(src.Name() + "|" + string(txt))
 }

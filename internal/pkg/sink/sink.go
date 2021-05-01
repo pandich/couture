@@ -2,6 +2,7 @@ package sink
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/source"
 )
 
 type (
@@ -11,6 +12,6 @@ type (
 	//Sink of events. Responsible for consuming an event.
 	Sink interface {
 		//Accept consumes an event, typically for display.
-		Accept(event model.Event)
+		Accept(src source.Source, event model.Event)
 	}
 )

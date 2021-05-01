@@ -1,6 +1,15 @@
 package manager
 
+import (
+	"fmt"
+)
+
+const cls = "\033[H\033[2J"
+
 func (m *busBasedManager) Start() error {
+	if m.options.clearScreen {
+		fmt.Print(cls)
+	}
 	m.running = true
 	for _, poller := range m.pollers {
 		m.wg.Add(1)

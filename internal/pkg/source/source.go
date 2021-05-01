@@ -10,7 +10,9 @@ type (
 	//For each implementation, update cmd/couture/cli/source.
 
 	//Source of events. Responsible for ingest and conversion to the standard format.
-	Source interface{}
+	Source interface {
+		Name() string
+	}
 
 	//PushingSource calls a callback for each event.
 	PushingSource interface {

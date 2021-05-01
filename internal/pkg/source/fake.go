@@ -17,6 +17,10 @@ func NewFake(_ string) interface{} {
 type Fake struct {
 }
 
+func (f Fake) Name() string {
+	return "fake"
+}
+
 func (f Fake) Poll() (model.Event, error) {
 	if rand.Intn(100) >= 90 {
 		return model.Event{}, model.ErrNoMoreEvents

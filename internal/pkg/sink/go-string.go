@@ -2,6 +2,7 @@ package sink
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/source"
 	"fmt"
 )
 
@@ -14,6 +15,6 @@ func NewGoString(_ string) interface{} {
 type GoString struct {
 }
 
-func (s GoString) Accept(event model.Event) {
-	fmt.Printf("%+v\n", event)
+func (s GoString) Accept(src source.Source, event model.Event) {
+	fmt.Printf("%s %+v\n", src.Name(), event)
 }

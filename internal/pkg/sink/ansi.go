@@ -2,6 +2,7 @@ package sink
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/source"
 	"fmt"
 	. "github.com/logrusorgru/aurora"
 	"time"
@@ -31,7 +32,7 @@ var (
 type Ansi struct {
 }
 
-func (s Ansi) Accept(event model.Event) {
+func (s Ansi) Accept(src source.Source, event model.Event) {
 	var ok bool
 
 	var levelColor func(arg interface{}) Value
@@ -46,7 +47,8 @@ func (s Ansi) Accept(event model.Event) {
 	}
 
 	fmt.Println(Sprintf(
-		"%s %-5s (%-20s) %-40s %s%s",
+		"%10s|%s %-5s (%-20s) %-40s %s%s",
+		BgBlue(src.Name()),
 		timeColor(time.Time(event.Timestamp).Format(time.RFC3339)),
 		levelColor(event.Level),
 		threadColor(event.ThreadName),
