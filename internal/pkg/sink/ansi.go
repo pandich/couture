@@ -17,9 +17,9 @@ var (
 	logLevelColors = map[model.LogLevel]func(interface{}) Value{
 		model.LevelTrace: White,
 		model.LevelDebug: BrightWhite,
-		model.LevelInfo:  Green,
-		model.LevelWarn:  Yellow,
-		model.LevelError: Red,
+		model.LevelInfo:  BrightGreen,
+		model.LevelWarn:  BrightYellow,
+		model.LevelError: exceptionColor,
 	}
 	threadColor    = Blue
 	callerColor    = Yellow
