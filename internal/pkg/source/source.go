@@ -27,6 +27,6 @@ type (
 	PollableSource interface {
 		Source
 		//Poll performs a non-blocking poll for an event. Nil is returned if no event is available.
-		Poll() (*model.Event, error)
+		Poll() (model.Event, error)
 	}
 )

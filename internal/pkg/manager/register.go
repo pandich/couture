@@ -79,11 +79,11 @@ func (m *busBasedManager) registerPollableSource(src source.PollableSource) erro
 		defer wg.Done()
 		for m.running {
 			var err error
-			var evt *model.Event
-			for evt, err = src.Poll(); m.running && err == nil && evt != nil; evt, err = src.Poll() {
+			var evt model.Event
+			for evt, err = src.Poll(); m.running && err == nil; evt, err = src.Poll() {
 				m.bus.Publish(eventTopic, evt)
 			}
-			if err != nil {
+			if err != nil && err != model.ErrNoMoreEvents {
 				m.bus.Publish(errorTopic, err)
 			}
 			time.Sleep(m.pollInterval)

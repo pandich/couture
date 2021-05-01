@@ -14,6 +14,14 @@ var coreOptions = []kong.Option{
 		Tree:     true,
 		Indenter: kong.TreeIndenter,
 	}),
+	kong.ExplicitGroups([]kong.Group{
+		{Key: "aws", Title: "AWS Options"},
+		{Key: "display", Title: "Display Options"},
+		{Key: "behavior", Title: "Behavioral Options"},
+		{Key: "source", Title: "Input Options"},
+		{Key: "sink", Title: "Output Options"},
+		{Key: "filter", Title: "Filtering Options"},
+	}),
 }
 
 //Options from the parsed CLI.

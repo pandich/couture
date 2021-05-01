@@ -18,7 +18,7 @@ type Json struct {
 	pretty bool
 }
 
-func (s Json) Accept(event *model.Event) {
+func (s Json) Accept(event model.Event) {
 	var txt []byte
 	var err error
 	if s.pretty {

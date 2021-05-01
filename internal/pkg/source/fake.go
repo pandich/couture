@@ -17,12 +17,12 @@ func NewFake(_ string) interface{} {
 type Fake struct {
 }
 
-func (f Fake) Poll() (*model.Event, error) {
+func (f Fake) Poll() (model.Event, error) {
 	if rand.Intn(100) >= 90 {
-		return nil, nil
+		return model.Event{}, model.ErrNoMoreEvents
 	}
-	return &model.Event{
-		Timestamp:  model.AsTimestamp(time.Now()),
+	return model.Event{
+		Timestamp:  model.Timestamp(time.Now()),
 		Level:      model.LevelInfo,
 		Message:    model.Message(gofakeit.HipsterParagraph(1, 4, 10, "\n")),
 		MethodName: model.MethodName(gofakeit.Animal()),

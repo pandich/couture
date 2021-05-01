@@ -41,27 +41,27 @@ func mapper(i interface{}, creator creator) []kong.Option {
 }
 
 func (m creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
-	if ctx.Scan.Peek().Type == kong.FlagValueToken {
-		token := ctx.Scan.Pop()
-		switch config := token.Value.(type) {
-		case string:
-			creator, ok := m.creators[target.Type()]
-			if !ok {
-				return errors.Errorf("unknown type (%T) with config %s", token.Value, config)
-			}
-			value := reflect.ValueOf(creator(config))
-			switch target.Kind() {
-			case reflect.Slice:
-				target.Set(reflect.Append(target, value))
-			case reflect.Ptr:
-				target.Elem().Set(value)
-			default:
-				target.Set(value)
-			}
-
-		default:
-			return errors.Errorf("expected string but got %q (%T)", token.Value, token.Value)
-		}
+	var arg string
+	switch ctx.Scan.Peek().Type {
+	case kong.PositionalArgumentToken:
+	case kong.ShortFlagTailToken:
+	case kong.FlagValueToken:
+		arg = ctx.Scan.Pop().String()
+	default:
+		arg = ""
+	}
+	creator, ok := m.creators[target.Type()]
+	if !ok {
+		return errors.Errorf("unknown type %v", target.Type())
+	}
+	value := reflect.ValueOf(creator(arg))
+	switch target.Kind() {
+	case reflect.Slice:
+		target.Set(reflect.Append(target, value))
+	case reflect.Ptr:
+		target.Elem().Set(value)
+	default:
+		target.Set(value)
 	}
 	return nil
 }

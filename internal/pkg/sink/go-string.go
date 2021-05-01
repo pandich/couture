@@ -14,6 +14,6 @@ func NewGoString(_ string) interface{} {
 type GoString struct {
 }
 
-func (s GoString) Accept(event *model.Event) {
-	fmt.Printf("%+v\n", *event)
+func (s GoString) Accept(event model.Event) {
+	fmt.Printf("%+v\n", event)
 }

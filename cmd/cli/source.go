@@ -7,7 +7,7 @@ import (
 
 //sourceCLI contains source-specific cli args.
 var sourceCLI struct {
-	Fake *source.Fake `group:"Input Options" name:"fake" hidden:"true"`
+	Fake *source.Fake `group:"source" name:"fake" hidden:"true"`
 	// Files []source.File `group:"Input Options" name:"file" short:"F"`
 }
 

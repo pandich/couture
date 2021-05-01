@@ -2,33 +2,38 @@ package model
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"strconv"
 	"time"
+)
+
+var (
+	ErrNoMoreEvents = errors.New("no more events")
 )
 
 //goland:noinspection GoUnusedConst
 const (
 	//LevelMissing log level when no valid level is present
-	LevelMissing Level = ""
+	LevelMissing LogLevel = ""
 	//LevelTrace log level for tracing
-	LevelTrace Level = "TRACE"
+	LevelTrace LogLevel = "TRACE"
 	//LevelDebug log level for debugging
-	LevelDebug Level = "DEBUG"
+	LevelDebug LogLevel = "DEBUG"
 	//LevelInfo log level for information
-	LevelInfo Level = "INFO"
+	LevelInfo LogLevel = "INFO"
 	//LevelWarn log level for warnings
-	LevelWarn Level = "WARN"
+	LevelWarn LogLevel = "WARN"
 	//LevelError log level for errors
-	LevelError Level = "ERROR"
+	LevelError LogLevel = "ERROR"
 )
 
 type (
-	//Timestamp ISO-8601 timestamp of when an event occurred.
-	Timestamp string
+	//Timestamp When the even occurred.
+	Timestamp time.Time
 	//MethodName a method name.
 	MethodName string
-	//Level a log level.
-	Level string
+	//LogLevel a log level.
+	LogLevel string
 	//LineNumber  a line number.
 	LineNumber string
 	//ThreadName a thread name.
@@ -50,7 +55,7 @@ type (
 		//Timestamp the timestamp. This field is required, and should default to time.Now() if not present.
 		Timestamp Timestamp
 		//Level the level. This field is required, and should default to LevelMissing if not present.
-		Level Level
+		Level LogLevel
 		//Message the message. This field is required.
 		Message Message
 		//MethodName the method name. This field is optional.
@@ -86,8 +91,4 @@ func (e Event) GoString() string {
 		e.Message,
 		ex,
 	)
-}
-
-func AsTimestamp(t time.Time) Timestamp {
-	return Timestamp(t.Format(time.RFC3339))
 }

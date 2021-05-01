@@ -46,9 +46,9 @@ Installs to `$HOME/bin/couture`:
 * CLI Parsing: [Kong](https://github.com/alecthomas/kong)
 * Configuration: [Configuro](https://github.com/sherifabdlnaby/configuro)
 * Event Bus: [EventBus](https://github.com/asaskevich/EventBus)
-* AWS: [AWS SDK](https://github.com/aws/aws-sdk-go)
-* Colorization: [Aurora](https://github.com/logrusorgru/aurora)
+* Logging: [Logrus](https://github.com/sirupsen/logrus)
 * Terminal Management: [Termdash](https://github.com/mum4k/termdash)
+* AWS: [AWS SDK](https://github.com/aws/aws-sdk-go)
 
 ## Limitations
 
