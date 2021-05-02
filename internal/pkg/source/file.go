@@ -6,39 +6,45 @@ import (
 	"github.com/pkg/errors"
 	"io"
 	"log"
+	"net/url"
 	"os"
 	"path"
+	"reflect"
 	"sync"
 	"time"
 )
 
 // https://stackoverflow.com/questions/31120987/tail-f-like-generator
 
-func NewFile(filename string) interface{} {
-	return File{filename: filename}
+//init registers the type with the typeRegistry.
+func init() {
+	typeRegistry[reflect.TypeOf(File{})] = func(srcUrl url.URL) interface{} {
+		return File{baseSource: baseSource{srcUrl: srcUrl}}
+	}
+	registry = append(registry, File{})
 }
 
 type File struct {
 	io.ReadCloser
+	baseSource
 	running  bool
-	filename string
 	callback PushingCallback
 }
 
-func (s File) String() string {
-	return path.Base(s.filename)
+func (source File) CanHandle(url url.URL) bool {
+	return url.Scheme == "file"
 }
 
-func (s File) GoString() string {
-	return "📁" + s.String()
+func (source File) String() string {
+	return path.Base(source.srcUrl.Path)
 }
 
-func (s File) Name() string {
-	return s.filename
+func (source File) GoString() string {
+	return "❯ " + source.String()
 }
 
-func (s File) Start(wg *sync.WaitGroup, callback PushingCallback) error {
-	logFile, err := os.Open(s.filename)
+func (source File) Start(wg *sync.WaitGroup, callback PushingCallback) error {
+	logFile, err := os.Open(source.srcUrl.Path)
 	if err != nil {
 		return err
 	}
@@ -47,32 +53,32 @@ func (s File) Start(wg *sync.WaitGroup, callback PushingCallback) error {
 	f := func() {
 		defer func() { _ = logFile.Close() }()
 		defer wg.Done()
-		for s.running {
-			var evt = model.Event{}
-			if err := decoder.Decode(&evt); err != nil {
+		for source.running {
+			var event = model.Event{}
+			if err := decoder.Decode(&event); err != nil {
 				if err != io.EOF {
-					log.Println(errors.Wrap(err, s.Name()+": could not decode event"))
+					log.Println(errors.Wrap(err, source.String()+": could not decode event"))
 					return
 				}
 			} else {
-				callback(evt)
+				callback(event)
 			}
 		}
 	}
 
-	s.running = true
+	source.running = true
 	wg.Add(1)
 	go f()
 	return nil
 }
 
-func (s File) Stop() {
-	s.running = false
+func (source File) Stop() {
+	source.running = false
 }
 
-func (s File) Read(b []byte) (int, error) {
+func (source File) Read(b []byte) (int, error) {
 	for {
-		n, err := s.ReadCloser.Read(b)
+		n, err := source.ReadCloser.Read(b)
 		if n > 0 {
 			return n, nil
 		}

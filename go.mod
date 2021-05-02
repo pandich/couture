@@ -8,6 +8,7 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.4.1
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mattn/go-isatty v0.0.12
+	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/pkg/errors v0.8.1
 	gopkg.in/multierror.v1 v1.0.2
 )

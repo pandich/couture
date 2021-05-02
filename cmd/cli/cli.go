@@ -19,11 +19,11 @@ var coreCli struct {
 	AwsRegion  string `group:"aws" help:"AWS region" default:"us-west-2" name:"aws-region" aliases:"region" env:"AWS_REGION"`
 	AwsProfile string `group:"aws" help:"AWS profile" default:"integration" name:"aws-profile" aliases:"profile" env:"AWS_PROFILE"`
 
-	Quiet       bool `group:"display" help:"Only log lines are displayed. Header and diagnostics are suppressed." name:"quiet" aliases:"silent" short:"q" xor:"verbosity"`
-	Verbose     bool `group:"display" help:"Display additional diagnostic data." name:"verbose" short:"v" xor:"verbosity"`
-	ClearScreen bool `group:"display" help:"Clear screen prior to start." name:"clear" default:"true" negatable:"true"`
-	ShowPrefix  bool `group:"display" help:"Display a prefix before each log line indicting its source." name:"prefix" default:"true" negatable:"true"`
-	ShortNames  bool `group:"display" help:"Display a abbreviated source names." name:"short-names" aliases:"short" default:"true" negatable:"true"`
+	Quiet      bool `group:"display" help:"Only log lines are displayed. Header and diagnostics are suppressed." name:"quiet" aliases:"silent" short:"q" xor:"verbosity"`
+	Verbose    bool `group:"display" help:"Display additional diagnostic data." name:"verbose" short:"v" xor:"verbosity"`
+	ShowPrefix bool `group:"display" help:"Display a prefix before each log line indicting its source." name:"prefix" default:"true" negatable:"true"`
+	ShortNames bool `group:"display" help:"Display a abbreviated source names." name:"short-names" aliases:"short" default:"true" negatable:"true"`
+	Wrap       uint `group:"display" help:"Wrap output to the specified width." name:"wrap" short:"w" default:"0"`
 
 	Follow       bool          `group:"behavior" help:"Follow the logs." default:"false" name:"follow" short:"f" negatable:"true"`
 	PollInterval time.Duration `group:"behavior" help:"How long to sleep between polls. (Applies only to some sources.)" default:"2s" name:"interval" aliases:"sleep" short:"i"`
@@ -31,7 +31,7 @@ var coreCli struct {
 	Since        time.Duration `group:"behavior" help:"How far back to search for events." default:"5m" name:"since" aliases:"back,lookback" short:"b"`
 
 	Patterns []*regexp.Regexp `group:"filter" help:"Filter patterns." name:"filter" short:"f" sep:","`
-	LogLevel model.LogLevel   `group:"filter" help:"Minimum log level to display (${enum})." default:"DEBUG" name:"log-level" aliases:"level" short:"l" enum:"ERROR,WARN,INFO,DEBUG,TRACE"`
+	LogLevel model.Level      `group:"filter" help:"Minimum log level to display (${enum})." default:"DEBUG" name:"log-level" aliases:"level" short:"l" enum:"ERROR,WARN,INFO,DEBUG,TRACE"`
 
 	coreValidator
 	kong.Plugins

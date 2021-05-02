@@ -9,27 +9,28 @@ import (
 )
 
 //NewJson provides a configured Json sink.
-func NewJson(config string) interface{} {
-	return Json{pretty: config == "pretty"}
+func NewJson(options Options, config string) interface{} {
+	return Json{baseSink: baseSink{options: options}, pretty: config == "pretty"}
 }
 
 //Json uses json.Marshal to display the value.
 type Json struct {
+	baseSink
 	//pretty determines whether or not to pretty-print the JSON.
 	pretty bool
 }
 
-func (s Json) Accept(src source.Source, event model.Event) {
+func (sink Json) Accept(src source.Source, event model.Event) {
 	var txt []byte
 	var err error
-	if s.pretty {
+	if sink.pretty {
 		txt, err = json.MarshalIndent(&event, "", "  ")
 	} else {
 		txt, err = json.Marshal(&event)
 
 	}
 	if err != nil {
-		log.Println(fmt.Errorf("failed to marshal event: %v", err))
+		log.Println(fmt.Errorf("failed to marshal event: %s\n%v", txt, err))
 	}
-	fmt.Println(src.Name() + "|" + string(txt))
+	fmt.Println(fmt.Sprintf(src.String() + "|" + string(txt)))
 }

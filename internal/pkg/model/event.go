@@ -14,15 +14,15 @@ var (
 //goland:noinspection GoUnusedConst
 const (
 	//LevelTrace log level for tracing
-	LevelTrace LogLevel = "TRACE"
+	LevelTrace Level = "TRACE"
 	//LevelDebug log level for debugging
-	LevelDebug LogLevel = "DEBUG"
+	LevelDebug Level = "DEBUG"
 	//LevelInfo log level for information
-	LevelInfo LogLevel = "INFO"
+	LevelInfo Level = "INFO"
 	//LevelWarn log level for warnings
-	LevelWarn LogLevel = "WARN"
+	LevelWarn Level = "WARN"
 	//LevelError log level for errors
-	LevelError LogLevel = "ERROR"
+	LevelError Level = "ERROR"
 )
 
 type (
@@ -30,8 +30,8 @@ type (
 	Timestamp time.Time
 	//MethodName a method name.
 	MethodName string
-	//LogLevel a log level.
-	LogLevel string
+	//Level a log level.
+	Level string
 	//LineNumber  a line number.
 	LineNumber string
 	//ThreadName a thread name.
@@ -55,7 +55,7 @@ type (
 		//Timestamp the timestamp. This field is required, and should default to time.Now() if not present.
 		Timestamp Timestamp
 		//Level the level. This field is required, and should default to LevelInfo if not present.
-		Level LogLevel
+		Level Level
 		//Message the message. This field is required.
 		Message Message
 		//MethodName the method name. This field is optional.
@@ -71,47 +71,43 @@ type (
 	}
 )
 
-func (t ThreadName) GoString() string {
-	return "🧵" + string(t)
-}
-
-func (e Event) LineNumberAsInt() uint64 {
-	i, err := strconv.ParseUint(string(e.LineNumber), 10, 64)
+func (event Event) LineNumberAsInt() uint64 {
+	i, err := strconv.ParseUint(string(event.LineNumber), 10, 64)
 	if err != nil {
 		return 0
 	}
 	return i
 }
 
-func (e Event) Caller() Caller {
-	return Caller(fmt.Sprintf("%s:%s#%-4d", e.ClassName, e.MethodName, e.LineNumberAsInt()))
+func (event Event) Caller() Caller {
+	return Caller(fmt.Sprintf("%s:%s#%-4d", event.ClassName, event.MethodName, event.LineNumberAsInt()))
 }
 
-func (e Event) GoString() string {
+func (event Event) GoString() string {
 	var ex = ""
-	if e.Exception != nil {
-		ex = "\nException: " + string((*e.Exception).StackTrace)
+	if event.Exception != nil {
+		ex = "\nException: " + string((*event.Exception).StackTrace)
 	}
-	var ln = string(e.LineNumber)
-	if i, err := strconv.ParseInt(string(e.LineNumber), 10, 64); err == nil {
+	var ln = string(event.LineNumber)
+	if i, err := strconv.ParseInt(string(event.LineNumber), 10, 64); err == nil {
 		ln = fmt.Sprintf("%-4d", i)
 	}
 	return fmt.Sprintf(
 		"%s [%-5s] (%s) %s#%s@%s - %s%s",
-		e.Timestamp,
-		e.Level,
-		e.ThreadName,
-		e.ClassName,
-		e.MethodName,
+		event.Timestamp,
+		event.Level,
+		event.ThreadName,
+		event.ClassName,
+		event.MethodName,
 		ln,
-		e.Message,
+		event.Message,
 		ex,
 	)
 }
 
-func (e Event) StackTrace(prefix string) StackTrace {
-	if e.Exception != nil {
-		return StackTrace(prefix + string(e.Exception.StackTrace))
+func (event Event) StackTrace(prefix string) StackTrace {
+	if event.Exception != nil {
+		return StackTrace(prefix + string(event.Exception.StackTrace))
 	}
 	return ""
 }
@@ -120,23 +116,27 @@ func (t Timestamp) String() string {
 	return time.Time(t).Format(time.RFC3339)
 }
 func (t Timestamp) GoString() string {
-	return "⌚︎" + t.String()
+	return t.String()
 }
 
-func (m Message) String() string {
-	return string(m)
+func (msg Message) String() string {
+	return string(msg)
 }
-func (m Message) GoString() string {
-	return "📕" + m.String()
-}
-
-func (c Caller) String() string {
-	return string(c)
-}
-func (c Caller) GoString() string {
-	return "📞" + c.String()
+func (msg Message) GoString() string {
+	return "❞ " + msg.String()
 }
 
-func (l LogLevel) Short() string {
-	return string(l[0])
+func (caller Caller) String() string {
+	return string(caller)
+}
+func (caller Caller) GoString() string {
+	return "➤ " + caller.String()
+}
+
+func (t ThreadName) GoString() string {
+	return "⑂ " + string(t)
+}
+
+func (level Level) Short() string {
+	return string(level[0])
 }

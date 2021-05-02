@@ -4,45 +4,58 @@ import (
 	"couture/internal/pkg/model"
 	"github.com/brianvoe/gofakeit/v6"
 	"math/rand"
+	"net/url"
+	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
+//init registers the type with the typeRegistry.
+func init() {
+	typeRegistry[reflect.TypeOf(Fake{})] = NewFake
+	registry = append(registry, Fake{})
+}
+
 //NewFake provides a configured Fake source.
-func NewFake(_ string) interface{} {
-	return Fake{}
+func NewFake(srcUrl url.URL) interface{} {
+	return Fake{baseSource: baseSource{srcUrl: srcUrl}}
 }
 
 //Fake provides fake data.
 type Fake struct {
+	baseSource
 }
 
-func (f Fake) String() string {
-	return f.Name()
+func (source Fake) CanHandle(url url.URL) bool {
+	return url.Scheme == "fake"
 }
 
-func (f Fake) GoString() string {
-	return "🗑" + f.Name()
-}
-
-func (f Fake) Name() string {
+func (source Fake) String() string {
 	return "fake"
 }
 
-func (f Fake) Poll() (model.Event, error) {
+func (source Fake) GoString() string {
+	return "Ξ " + source.String()
+}
+
+func (source Fake) Poll() (model.Event, error) {
 	if rand.Intn(100) >= 90 {
 		return model.Event{}, model.ErrNoMoreEvents
 	}
 	var exception *model.Exception
-	var level = []model.LogLevel{
+	var level = []model.Level{
 		model.LevelTrace,
 		model.LevelDebug,
 		model.LevelInfo,
-		model.LevelWarn,
-		model.LevelError,
-	}[rand.Intn(5)]
-	if rand.Intn(100) > 95 {
-		stackTrace := gofakeit.Sentence(200)
+	}[rand.Intn(3)]
+	if rand.Intn(100) > 90 {
+		stackTrace := strings.Join([]string{
+			gofakeit.Sentence(10),
+			gofakeit.Sentence(10),
+			gofakeit.Sentence(10),
+			gofakeit.Sentence(10),
+		}, "\n")
 		exception = &model.Exception{StackTrace: model.StackTrace(stackTrace)}
 		level = model.LevelError
 	}

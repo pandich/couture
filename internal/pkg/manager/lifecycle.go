@@ -2,25 +2,17 @@ package manager
 
 import (
 	"couture/internal/pkg/model"
-	"fmt"
 )
 
-func clearScreen() {
-	fmt.Print("\033[H\033[2J")
-}
-
-func (m *busBasedManager) Start() error {
-	if m.options.clearScreen {
-		clearScreen()
+func (mgr *busBasedManager) Start() error {
+	mgr.running = true
+	for _, poller := range mgr.pollers {
+		mgr.wg.Add(1)
+		go poller(mgr.wg)
 	}
-	m.running = true
-	for _, poller := range m.pollers {
-		m.wg.Add(1)
-		go poller(m.wg)
-	}
-	for _, pusher := range m.pushers {
-		if err := pusher.Start(m.wg, func(evt model.Event) {
-			m.bus.Publish(eventTopic, pusher, evt)
+	for _, pusher := range mgr.pushers {
+		if err := pusher.Start(mgr.wg, func(event model.Event) {
+			mgr.bus.Publish(eventTopic, pusher, event)
 		}); err != nil {
 			return err
 		}
@@ -28,19 +20,19 @@ func (m *busBasedManager) Start() error {
 	return nil
 }
 
-func (m *busBasedManager) MustStart() {
-	if err := (*m).Start(); err != nil {
+func (mgr *busBasedManager) MustStart() {
+	if err := (*mgr).Start(); err != nil {
 		panic(err)
 	}
 }
 
-func (m *busBasedManager) Stop() {
-	m.running = false
-	for _, pusher := range m.pushers {
+func (mgr *busBasedManager) Stop() {
+	mgr.running = false
+	for _, pusher := range mgr.pushers {
 		pusher.Stop()
 	}
 }
 
-func (m *busBasedManager) Wait() {
-	m.wg.Wait()
+func (mgr *busBasedManager) Wait() {
+	mgr.wg.Wait()
 }

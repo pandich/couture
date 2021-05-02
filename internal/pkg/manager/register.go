@@ -23,31 +23,31 @@ type (
 	errorHandler func([]*interface{})
 )
 
-func (m *busBasedManager) Register(registrants ...interface{}) error {
+func (mgr *busBasedManager) Register(registrants ...interface{}) error {
 	for _, registrant := range registrants {
 		switch v := registrant.(type) {
 		case source.PollableSource:
-			if err := m.registerPollableSource(v); err != nil {
+			if err := mgr.registerPollableSource(v); err != nil {
 				return err
 			}
 		case source.PushingSource:
-			if err := m.registerPushingSource(v); err != nil {
+			if err := mgr.registerPushingSource(v); err != nil {
 				return err
 			}
 		case sink.Sink:
-			if err := m.registerSink(v); err != nil {
+			if err := mgr.registerSink(v); err != nil {
 				return err
 			}
 		case Option:
-			if err := m.registerOption(v); err != nil {
+			if err := mgr.registerOption(v); err != nil {
 				return err
 			}
 		case errorHandler:
-			if err := m.registerErrorHandler(v); err != nil {
+			if err := mgr.registerErrorHandler(v); err != nil {
 				return err
 			}
 		case eventHandler:
-			if err := m.registerEventHandler(v); err != nil {
+			if err := mgr.registerEventHandler(v); err != nil {
 				return err
 			}
 		default:
@@ -57,55 +57,55 @@ func (m *busBasedManager) Register(registrants ...interface{}) error {
 	return nil
 }
 
-func (m *busBasedManager) MustRegister(ia ...interface{}) {
-	if err := m.Register(ia...); err != nil {
+func (mgr *busBasedManager) MustRegister(ia ...interface{}) {
+	if err := mgr.Register(ia...); err != nil {
 		panic(err)
 	}
 }
 
 //registerPushingSource registers a source that pushes events into the queue.
-func (m *busBasedManager) registerPushingSource(src source.PushingSource) error {
-	m.pushers = append(m.pushers, src)
+func (mgr *busBasedManager) registerPushingSource(src source.PushingSource) error {
+	mgr.pushers = append(mgr.pushers, src)
 	return nil
 }
 
 //registerPollableSource registers one or more sources to be polled for events.
 //If no events are available the source pauses for pollInterval.
-func (m *busBasedManager) registerPollableSource(src source.PollableSource) error {
-	m.pollers = append(m.pollers, func(wg *sync.WaitGroup) {
+func (mgr *busBasedManager) registerPollableSource(src source.PollableSource) error {
+	mgr.pollers = append(mgr.pollers, func(wg *sync.WaitGroup) {
 		defer wg.Done()
-		for m.running {
+		for mgr.running {
 			var err error
-			var evt model.Event
-			for evt, err = src.Poll(); m.running && err == nil; evt, err = src.Poll() {
-				m.bus.Publish(eventTopic, src, evt)
+			var event model.Event
+			for event, err = src.Poll(); mgr.running && err == nil; event, err = src.Poll() {
+				mgr.bus.Publish(eventTopic, src, event)
 			}
 			if err != nil && err != model.ErrNoMoreEvents {
-				m.bus.Publish(errorTopic, err)
+				mgr.bus.Publish(errorTopic, err)
 			}
-			time.Sleep(m.pollInterval)
+			time.Sleep(mgr.pollInterval)
 		}
 	})
 	return nil
 }
 
 //registerSink registers one or more sinks.
-func (m *busBasedManager) registerSink(sink sink.Sink) error {
-	return m.bus.SubscribeAsync(eventTopic, sink.Accept, false)
+func (mgr *busBasedManager) registerSink(sink sink.Sink) error {
+	return mgr.bus.SubscribeAsync(eventTopic, sink.Accept, false)
 }
 
 //registerEventHandler registers one or more functions to be written to. Functions are not part of the wait group.
-func (m *busBasedManager) registerEventHandler(f eventHandler) error {
-	return m.bus.SubscribeAsync(eventTopic, f, false)
+func (mgr *busBasedManager) registerEventHandler(f eventHandler) error {
+	return mgr.bus.SubscribeAsync(eventTopic, f, false)
 }
 
 //registerErrorHandler registers a function for error handling
-func (m *busBasedManager) registerErrorHandler(f errorHandler) error {
-	return m.bus.SubscribeAsync(errorTopic, f, false)
+func (mgr *busBasedManager) registerErrorHandler(f errorHandler) error {
+	return mgr.bus.SubscribeAsync(errorTopic, f, false)
 }
 
 //registerOption registers an Option.
-func (m *busBasedManager) registerOption(option Option) error {
-	option.Apply(&m.options)
+func (mgr *busBasedManager) registerOption(option Option) error {
+	option.Apply(&mgr.options)
 	return nil
 }

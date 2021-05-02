@@ -27,9 +27,6 @@ var coreOptions = []kong.Option{
 //Options from the parsed CLI.
 func Options() []interface{} {
 	var opts []interface{}
-	if coreCli.ClearScreen {
-		opts = append(opts, manager.ClearScreenDisplayOption())
-	}
 	if coreCli.Verbose {
 		opts = append(opts, manager.VerboseDisplayOption())
 	}

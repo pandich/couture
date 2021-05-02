@@ -6,9 +6,6 @@ func VerboseDisplayOption() interface{} {
 func QuietDisplayOption() interface{} {
 	return baseOption{applier: func(m *managerOptions) { m.quiet = true }}
 }
-func ClearScreenDisplayOption() interface{} {
-	return baseOption{applier: func(m *managerOptions) { m.clearScreen = true }}
-}
 func ShowPrefixDisplayOption() interface{} {
 	return baseOption{applier: func(m *managerOptions) { m.showPrefix = true }}
 }
@@ -17,12 +14,12 @@ func ShortNamesDisplayOption() interface{} {
 }
 
 type (
+	//managerOptions
 	managerOptions struct {
-		verbose     bool
-		quiet       bool
-		clearScreen bool
-		shortNames  bool
-		showPrefix  bool
+		verbose    bool
+		quiet      bool
+		shortNames bool // TODO move into sink.Options
+		showPrefix bool // TODO move into sink.Options
 	}
 
 	Option interface {
@@ -34,6 +31,6 @@ type (
 	}
 )
 
-func (b baseOption) Apply(mgrOptions *managerOptions) {
-	b.applier(mgrOptions)
+func (opt baseOption) Apply(mgrOptions *managerOptions) {
+	opt.applier(mgrOptions)
 }

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"couture/internal/pkg/sink"
 	"fmt"
 	"github.com/alecthomas/kong"
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ var (
 
 type (
 	//creator converts a string into a resource (e.g. source or sink).
-	creator func(config string) interface{}
+	creator func(options sink.Options, config string) interface{}
 	//creators maps reflect.Type to creator.
 	creators map[reflect.Type]creator
 	//creatorMapper implements the kong.Mapper interface.
@@ -40,7 +41,7 @@ func mapper(i interface{}, creator creator) []kong.Option {
 	}
 }
 
-func (m creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
+func (mapper creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
 	var arg string
 	switch ctx.Scan.Peek().Type {
 	case kong.PositionalArgumentToken:
@@ -50,11 +51,11 @@ func (m creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) err
 	default:
 		arg = ""
 	}
-	creator, ok := m.creators[target.Type()]
+	creator, ok := mapper.creators[target.Type()]
 	if !ok {
 		return errors.Errorf("unknown type %v", target.Type())
 	}
-	value := reflect.ValueOf(creator(arg))
+	value := reflect.ValueOf(creator(cliSinkOptions, arg))
 	switch target.Kind() {
 	case reflect.Slice:
 		target.Set(reflect.Append(target, value))
@@ -66,7 +67,7 @@ func (m creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) err
 	return nil
 }
 
-func (m regexpMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
+func (mapper regexpMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
 	token := ctx.Scan.Pop()
 	switch pattern := token.Value.(type) {
 	case string:

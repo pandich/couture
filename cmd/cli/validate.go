@@ -19,7 +19,8 @@ const (
 //coreValidator validates coreCli.
 type coreValidator struct{}
 
-func (c coreValidator) Validate() error {
+//Validate provides validation for coreCli.
+func (v coreValidator) Validate() error {
 	var violations []error
 	if coreCli.LineCount > maxLineCount {
 		violations = append(violations, fmt.Errorf("line count may not be greater than %d", maxLineCount))

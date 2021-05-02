@@ -4,17 +4,23 @@ import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/source"
 	"fmt"
+	"github.com/mitchellh/go-wordwrap"
 )
 
 //NewGoString provides a configured GoString sink.
-func NewGoString(_ string) interface{} {
-	return GoString{}
+func NewGoString(options Options, _ string) interface{} {
+	return GoString{baseSink{options: options}}
 }
 
 //GoString uses the GoStringer interface to display.
 type GoString struct {
+	baseSink
 }
 
-func (s GoString) Accept(src source.Source, event model.Event) {
-	fmt.Printf("%s %+v\n", src.Name(), event)
+func (sink GoString) Accept(src source.Source, event model.Event) {
+	var line = fmt.Sprintf("%s %+v", src, event)
+	if sink.options.Wrap() > 0 {
+		line = wordwrap.WrapString(line, sink.options.Wrap())
+	}
+	fmt.Println(line)
 }
