@@ -2,6 +2,7 @@ package source
 
 import (
 	"couture/internal/pkg/model"
+	"fmt"
 	"sync"
 )
 
@@ -11,18 +12,21 @@ type (
 
 	//Source of events. Responsible for ingest and conversion to the standard format.
 	Source interface {
+		fmt.Stringer
+		fmt.GoStringer
 		Name() string
 	}
+
+	//PushingCallback is called by a PushingSource for each model.Event.
+	PushingCallback func(evt model.Event)
 
 	//PushingSource calls a callback for each event.
 	PushingSource interface {
 		Source
 		//Start collecting events.
-		Start(wg *sync.WaitGroup) error
+		Start(wg *sync.WaitGroup, callback PushingCallback) error
 		//Stop collecting events.
 		Stop()
-		//SetCallback sets the callback to call for each event.
-		SetCallback(callback func(...interface{}))
 	}
 
 	//PollableSource of events. Responsible for ingest and conversion to the standard format.

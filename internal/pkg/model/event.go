@@ -42,6 +42,8 @@ type (
 	Message string
 	//StackTrace a stack trace.
 	StackTrace string
+	//Caller represents <class>:<method>#<lime_number>.
+	Caller string
 	//Exception an exception.
 	Exception struct {
 		//StackTrace the full text of the stack trace.
@@ -69,12 +71,20 @@ type (
 	}
 )
 
+func (t ThreadName) GoString() string {
+	return "🧵" + string(t)
+}
+
 func (e Event) LineNumberAsInt() uint64 {
 	i, err := strconv.ParseUint(string(e.LineNumber), 10, 64)
 	if err != nil {
 		return 0
 	}
 	return i
+}
+
+func (e Event) Caller() Caller {
+	return Caller(fmt.Sprintf("%s:%s#%-4d", e.ClassName, e.MethodName, e.LineNumberAsInt()))
 }
 
 func (e Event) GoString() string {
@@ -99,9 +109,34 @@ func (e Event) GoString() string {
 	)
 }
 
-func (e Event) StackTrace() *StackTrace {
-	if e.Exception != nil && e.Exception.StackTrace != "" {
-		return &e.Exception.StackTrace
+func (e Event) StackTrace(prefix string) StackTrace {
+	if e.Exception != nil {
+		return StackTrace(prefix + string(e.Exception.StackTrace))
 	}
-	return nil
+	return ""
+}
+
+func (t Timestamp) String() string {
+	return time.Time(t).Format(time.RFC3339)
+}
+func (t Timestamp) GoString() string {
+	return "⌚︎" + t.String()
+}
+
+func (m Message) String() string {
+	return string(m)
+}
+func (m Message) GoString() string {
+	return "📕" + m.String()
+}
+
+func (c Caller) String() string {
+	return string(c)
+}
+func (c Caller) GoString() string {
+	return "📞" + c.String()
+}
+
+func (l LogLevel) Short() string {
+	return string(l[0])
 }

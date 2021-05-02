@@ -17,6 +17,14 @@ func NewFake(_ string) interface{} {
 type Fake struct {
 }
 
+func (f Fake) String() string {
+	return f.Name()
+}
+
+func (f Fake) GoString() string {
+	return "🗑" + f.Name()
+}
+
 func (f Fake) Name() string {
 	return "fake"
 }

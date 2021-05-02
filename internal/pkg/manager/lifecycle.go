@@ -1,14 +1,17 @@
 package manager
 
 import (
+	"couture/internal/pkg/model"
 	"fmt"
 )
 
-const cls = "\033[H\033[2J"
+func clearScreen() {
+	fmt.Print("\033[H\033[2J")
+}
 
 func (m *busBasedManager) Start() error {
 	if m.options.clearScreen {
-		fmt.Print(cls)
+		clearScreen()
 	}
 	m.running = true
 	for _, poller := range m.pollers {
@@ -16,8 +19,9 @@ func (m *busBasedManager) Start() error {
 		go poller(m.wg)
 	}
 	for _, pusher := range m.pushers {
-		m.wg.Add(1)
-		if err := pusher.Start(m.wg); err != nil {
+		if err := pusher.Start(m.wg, func(evt model.Event) {
+			m.bus.Publish(eventTopic, pusher, evt)
+		}); err != nil {
 			return err
 		}
 	}

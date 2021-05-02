@@ -65,9 +65,6 @@ func (m *busBasedManager) MustRegister(ia ...interface{}) {
 
 //registerPushingSource registers a source that pushes events into the queue.
 func (m *busBasedManager) registerPushingSource(src source.PushingSource) error {
-	src.SetCallback(func(ia ...interface{}) {
-		m.bus.Publish(eventTopic, src, ia)
-	})
 	m.pushers = append(m.pushers, src)
 	return nil
 }

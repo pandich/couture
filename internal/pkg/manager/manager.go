@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"couture/internal/pkg/source"
 	"github.com/asaskevich/EventBus"
 	"sync"
 	"time"
@@ -53,16 +54,8 @@ type (
 
 		//pushers is the set of sources which push to the event queue. Their lifecycle follows the manager's lifecycle.
 		//(i.e. Start and Stop)
-		pushers []pushing
+		pushers []source.PushingSource
 	}
 
 	polling func(wg *sync.WaitGroup)
-
-	//pushing represents a startable/stoppable entity.
-	pushing interface {
-		//Start the pushing entity.
-		Start(group *sync.WaitGroup) error
-		//Stop the pushing entity.
-		Stop()
-	}
 )
