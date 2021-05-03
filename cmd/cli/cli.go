@@ -19,8 +19,7 @@ var coreCli struct {
 	AwsRegion  string `group:"aws" help:"AWS region" default:"us-west-2" name:"aws-region" aliases:"region" env:"AWS_REGION"`
 	AwsProfile string `group:"aws" help:"AWS profile" default:"integration" name:"aws-profile" aliases:"profile" env:"AWS_PROFILE"`
 
-	Quiet      bool `group:"display" help:"Only log lines are displayed. Header and diagnostics are suppressed." name:"quiet" aliases:"silent" short:"q" xor:"verbosity"`
-	Verbose    bool `group:"display" help:"Display additional diagnostic data." name:"verbose" short:"v" xor:"verbosity"`
+	Verbosity  uint `group:"display" help:"Display additional diagnostic data." name:"verbose" short:"v" xor:"verbosity" type:"counter"`
 	ShowPrefix bool `group:"display" help:"Display a prefix before each log line indicting its source." name:"prefix" default:"true" negatable:"true"`
 	ShortNames bool `group:"display" help:"Display a abbreviated source names." name:"short-names" aliases:"short" default:"true" negatable:"true"`
 	Wrap       uint `group:"display" help:"Wrap output to the specified width." name:"wrap" short:"w" default:"0"`

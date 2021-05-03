@@ -12,15 +12,11 @@ import (
 const (
 	//eventTopic is the topic for all sources and sinks to communicate over.
 	eventTopic = "topic:event"
-	//errorTopic is the topic for all errors.
-	errorTopic = "topic:error"
 )
 
 type (
 	//eventHandler is an event listener function
 	eventHandler func([]*interface{})
-	//errorHandler handles errors when they occur.
-	errorHandler func([]*interface{})
 )
 
 func (mgr *busBasedManager) Register(registrants ...interface{}) error {
@@ -40,10 +36,6 @@ func (mgr *busBasedManager) Register(registrants ...interface{}) error {
 			}
 		case Option:
 			if err := mgr.registerOption(v); err != nil {
-				return err
-			}
-		case errorHandler:
-			if err := mgr.registerErrorHandler(v); err != nil {
 				return err
 			}
 		case eventHandler:
@@ -81,7 +73,7 @@ func (mgr *busBasedManager) registerPollableSource(src source.PollableSource) er
 				mgr.bus.Publish(eventTopic, src, event)
 			}
 			if err != nil && err != model.ErrNoMoreEvents {
-				mgr.bus.Publish(errorTopic, err)
+				// TODO
 			}
 			time.Sleep(mgr.pollInterval)
 		}
@@ -97,11 +89,6 @@ func (mgr *busBasedManager) registerSink(sink sink.Sink) error {
 //registerEventHandler registers one or more functions to be written to. Functions are not part of the wait group.
 func (mgr *busBasedManager) registerEventHandler(f eventHandler) error {
 	return mgr.bus.SubscribeAsync(eventTopic, f, false)
-}
-
-//registerErrorHandler registers a function for error handling
-func (mgr *busBasedManager) registerErrorHandler(f errorHandler) error {
-	return mgr.bus.SubscribeAsync(errorTopic, f, false)
 }
 
 //registerOption registers an Option.

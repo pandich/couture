@@ -26,12 +26,8 @@ var coreOptions = []kong.Option{
 
 //Options from the parsed CLI.
 func Options() []interface{} {
-	var opts []interface{}
-	if coreCli.Verbose {
-		opts = append(opts, manager.VerboseDisplayOption())
-	}
-	if coreCli.Quiet {
-		opts = append(opts, manager.QuietDisplayOption())
+	var opts = []interface{}{
+		manager.VerboseDisplayOption(coreCli.Verbosity),
 	}
 	if coreCli.ShowPrefix {
 		opts = append(opts, manager.ShowPrefixDisplayOption())
