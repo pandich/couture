@@ -1,23 +1,51 @@
-binary=bin/couture
+APPLICATION = couture
+SOURCE_DIRS = cmd pkg internal
+GOPATH		?= $(shell $(GO) env GOPATH)
+GOHOSTOS	?= $(shell $(GO) env GOHOSTOS)
+GOHOSTARCH	?= $(shell $(GO) env GOHOSTARCH)
+INSTALL_DIR	?= $(HOME)/bin
 
-all: fmt clean build
+BINARY		= dist/$(APPLICATION)_$(GOHOSTOS)_$(GOHOSTARCH)/$(APPLICATION)
 
-install: all
-	@echo installing
-	@cp $(binary) $(HOME)/bin/
+GO 			= go
+GO_GET 		= $(GO) get -u
+FIND_PEGS 	= find $(SOURCE_DIRS) -name '*.peg' -type f
 
-build:
-	@echo building
-	@go build -o $(binary) cmd/couture.go
+.PHONY: clean neat generate build lint install
+
+all: clean build
+
+install: build
+	@mkdir -p $(INSTALL_DIR) && cp $(BINARY) $(INSTALL_DIR)/
 
 clean:
 	@echo cleaning
-	@rm -f $(binary)
+	@rm -rf dist/
+	@$(FIND_PEGS) -exec rm -f {}.go \;
 
-fmt:
-	@echo formatting
-	@find cmd internal -name \*.go -exec go fmt {} \;
+build: generate neat
+	@echo building
+	@command -v goreleaser > /dev/null || $(GO_GET) github.com/goreleaser/goreleaser
+	@goreleaser build --snapshot --rm-dist
 
-tidy:
+generate:
+	@echo generating
+	@command -v pigeon > /dev/null || $(GO_GET) github.com/mna/pigeon
+	@$(FIND_PEGS) -exec pigeon -o {}.go {} \;
+
+neat:
 	@echo tidying
 	@go mod tidy
+
+	@echo commenting
+	@command -v gocmt > /dev/null || $(GO_GET) github.com/cuonglm/gocmt
+	@find $(SOURCE_DIRS) -type d -exec gocmt -p -i -d {} \; 2> /dev/null
+
+	@echo formatting
+	@gofmt -l -s -w $(SOURCE_DIRS)
+
+lint:
+	@echo linting
+	@command -v golangci-lint > /dev/null || $(GO_GET) github.com/golangci/golangci-lint/cmd/golangci-lint@v1.39.0
+	@golangci-lint run
+

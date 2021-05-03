@@ -1,38 +1,50 @@
 package manager
 
 import (
-	"couture/internal/pkg/model"
+	"couture/pkg/model"
+	"os"
+	"os/signal"
 )
 
-func (mgr *busBasedManager) Start() error {
-	mgr.running = true
-	for _, poller := range mgr.pollers {
+// Start the Manager. This starts all source.PushingSource instances, and begins polling all polling.Source instances.
+// Waits until it has been stopped.
+func (mgr *publishingManager) Start() error {
+	mgr.publishDiagnostic(model.LevelDebug, "Start", "starting")
+	for _, poller := range mgr.pollStarters {
 		mgr.wg.Add(1)
 		go poller(mgr.wg)
 	}
-	for _, pusher := range mgr.pushers {
-		if err := pusher.Start(mgr.wg, func(event model.Event) {
-			mgr.bus.Publish(eventTopic, pusher, event)
+	mgr.running = true
+	for _, pusher := range mgr.pushingSources {
+		if err := pusher.Start(mgr.wg, func() bool { return mgr.running }, func(event model.Event) {
+			mgr.publishEvent(pusher, event)
 		}); err != nil {
+			mgr.publishError("Start", err, "start failed for source: %s", pusher.URL())
+			mgr.running = false
 			return err
 		}
 	}
+
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel, os.Interrupt)
+	go func() {
+		for range signalChannel {
+			(*mgr).Stop()
+		}
+	}()
+
+	mgr.wg.Add(1)
+	mgr.wg.Wait()
 	return nil
 }
 
-func (mgr *busBasedManager) MustStart() {
-	if err := (*mgr).Start(); err != nil {
-		panic(err)
-	}
-}
-
-func (mgr *busBasedManager) Stop() {
+// Stop the Manager. This stops all source.PushingSource instances, and stops polling all polling.Source instances.
+func (mgr *publishingManager) Stop() {
+	mgr.publishDiagnostic(model.LevelInfo, "Stop", "stopping")
 	mgr.running = false
-	for _, pusher := range mgr.pushers {
+	for _, pusher := range mgr.pushingSources {
 		pusher.Stop()
 	}
-}
-
-func (mgr *busBasedManager) Wait() {
+	mgr.wg.Done()
 	mgr.wg.Wait()
 }

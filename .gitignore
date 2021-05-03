@@ -28,7 +28,6 @@ _testmain.go
 /misc/cgo/life/run.out
 /misc/cgo/stdio/run.out
 /misc/cgo/testso/main
-/pkg/
 /src/*.*/
 /src/cmd/cgo/zdefaultcc.go
 /src/cmd/dist/dist
@@ -47,3 +46,5 @@ _testmain.go
 /test/times.out
 .idea/
 *.iml
+dist/
+*.peg.go

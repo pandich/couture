@@ -2,36 +2,40 @@ package cli
 
 import (
 	"couture/internal/pkg/sink"
-	"fmt"
+	"errors"
 	"github.com/alecthomas/kong"
-	"github.com/pkg/errors"
+	errors2 "github.com/pkg/errors"
 	"reflect"
 	"regexp"
 )
 
 var (
-	//coreMappers are kong.Mapper mappers exposed via kong.Option structs.
+	errBadType  = errors.New("unknown type")
+	errBadEvent = errors.New("could not decode event")
+)
+var (
+	// coreMappers are kong.Mapper mappers exposed via kong.Option structs.
 	coreMappers = []kong.Option{
-		//regexp
+		// regexp
 		kong.TypeMapper(reflect.PtrTo(reflect.TypeOf(regexp.Regexp{})), regexpMapper{}),
 		kong.TypeMapper(reflect.SliceOf(reflect.PtrTo(reflect.TypeOf(regexp.Regexp{}))), regexpMapper{}),
 	}
 )
 
 type (
-	//creator converts a string into a resource (e.g. source or sink).
+	// creator converts a string into a resource (e.g. source or sink).
 	creator func(options sink.Options, config string) interface{}
-	//creators maps reflect.Type to creator.
+	// sourceCreators maps reflect.Type to creator.
 	creators map[reflect.Type]creator
-	//creatorMapper implements the kong.Mapper interface.
+	// creatorMapper implements the kong.Mapper interface.
 	creatorMapper struct {
 		creators creators
 	}
-	//regexpMapper uses regexp.Compile to compile the specified pattern.
+	// regexpMapper uses regexp.Compile to compile the specified pattern.
 	regexpMapper struct{}
 )
 
-//mapper creates a new kong.Option registering a kong.Mapper for a creator for required, optional, and slice types.
+// mapper creates a new kong.Option registering a kong.Mapper for a creator for required, optional, and slice types.
 func mapper(i interface{}, creator creator) []kong.Option {
 	t := reflect.TypeOf(i)
 	return []kong.Option{
@@ -41,6 +45,7 @@ func mapper(i interface{}, creator creator) []kong.Option {
 	}
 }
 
+// Decode ...
 func (mapper creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
 	var arg string
 	switch ctx.Scan.Peek().Type {
@@ -53,7 +58,7 @@ func (mapper creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value
 	}
 	creator, ok := mapper.creators[target.Type()]
 	if !ok {
-		return errors.Errorf("unknown type %v", target.Type())
+		return errors2.WithMessagef(errBadType, "%v %T", target, target)
 	}
 	value := reflect.ValueOf(creator(cliSinkOptions, arg))
 	switch target.Kind() {
@@ -67,17 +72,18 @@ func (mapper creatorMapper) Decode(ctx *kong.DecodeContext, target reflect.Value
 	return nil
 }
 
+// Decode ...
 func (mapper regexpMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
 	token := ctx.Scan.Pop()
 	switch pattern := token.Value.(type) {
 	case string:
 		filter, err := regexp.Compile(pattern)
 		if err != nil {
-			return err
+			return errBadEvent
 		}
 		target.Set(reflect.Append(target, reflect.ValueOf(filter)))
 	default:
-		return fmt.Errorf("bad type %T %v", token, token)
+		return errBadType
 	}
 	return nil
 }

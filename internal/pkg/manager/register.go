@@ -1,32 +1,31 @@
 package manager
 
 import (
-	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink"
-	"couture/internal/pkg/source"
-	"fmt"
+	"couture/internal/pkg/source/polling"
+	"couture/internal/pkg/source/pushing"
+	"couture/pkg/model"
+	"errors"
+	errors2 "github.com/pkg/errors"
+	"io"
 	"sync"
 	"time"
 )
 
-const (
-	//eventTopic is the topic for all sources and sinks to communicate over.
-	eventTopic = "topic:event"
+var (
+	// errBadOption is raised
+	errBadOption = errors.New("unknown manager option")
 )
 
-type (
-	//eventHandler is an event listener function
-	eventHandler func([]*interface{})
-)
-
-func (mgr *busBasedManager) Register(registrants ...interface{}) error {
+// RegisterOptions registers a configuration option, source, or sink.
+func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error {
 	for _, registrant := range registrants {
 		switch v := registrant.(type) {
-		case source.PollableSource:
-			if err := mgr.registerPollableSource(v); err != nil {
+		case polling.Source:
+			if err := mgr.registerPollingSource(v); err != nil {
 				return err
 			}
-		case source.PushingSource:
+		case pushing.Source:
 			if err := mgr.registerPushingSource(v); err != nil {
 				return err
 			}
@@ -34,65 +33,57 @@ func (mgr *busBasedManager) Register(registrants ...interface{}) error {
 			if err := mgr.registerSink(v); err != nil {
 				return err
 			}
-		case Option:
+		case option:
 			if err := mgr.registerOption(v); err != nil {
 				return err
 			}
-		case eventHandler:
-			if err := mgr.registerEventHandler(v); err != nil {
-				return err
-			}
 		default:
-			return fmt.Errorf("uknown type %T %v", registrant, registrant)
+			return errors2.Wrapf(errBadOption, "%v %T", v, v)
 		}
 	}
 	return nil
 }
 
-func (mgr *busBasedManager) MustRegister(ia ...interface{}) {
-	if err := mgr.Register(ia...); err != nil {
-		panic(err)
-	}
-}
-
-//registerPushingSource registers a source that pushes events into the queue.
-func (mgr *busBasedManager) registerPushingSource(src source.PushingSource) error {
-	mgr.pushers = append(mgr.pushers, src)
+// registerPushingSource registers a source that pushes events into the queue.
+func (mgr *publishingManager) registerPushingSource(src pushing.Source) error {
+	mgr.pushingSources = append(mgr.pushingSources, src)
 	return nil
 }
 
-//registerPollableSource registers one or more sources to be polled for events.
-//If no events are available the source pauses for pollInterval.
-func (mgr *busBasedManager) registerPollableSource(src source.PollableSource) error {
-	mgr.pollers = append(mgr.pollers, func(wg *sync.WaitGroup) {
+// registerPollingSource registers one or more registry to be polled for events.
+// If no events are available the source pauses for pollInterval.
+func (mgr *publishingManager) registerPollingSource(src polling.Source) error {
+	mgr.pollStarters = append(mgr.pollStarters, func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		for mgr.running {
 			var err error
-			var event model.Event
-			for event, err = src.Poll(); mgr.running && err == nil; event, err = src.Poll() {
-				mgr.bus.Publish(eventTopic, src, event)
+			var events []model.Event
+			for events, err = src.Poll(); mgr.running && err == nil; events, err = src.Poll() {
+				for _, event := range events {
+					mgr.publishEvent(src, event)
+				}
 			}
-			if err != nil && err != model.ErrNoMoreEvents {
-				// TODO
+			if err != nil && !errors.Is(err, io.EOF) {
+				mgr.publishError(
+					"poll",
+					err,
+					"could not poll source %s",
+					src,
+				)
 			}
-			time.Sleep(mgr.pollInterval)
+			time.Sleep(src.PollInterval())
 		}
 	})
 	return nil
 }
 
-//registerSink registers one or more sinks.
-func (mgr *busBasedManager) registerSink(sink sink.Sink) error {
+// registerSink registers one or more sinks.
+func (mgr *publishingManager) registerSink(sink sink.Sink) error {
 	return mgr.bus.SubscribeAsync(eventTopic, sink.Accept, false)
 }
 
-//registerEventHandler registers one or more functions to be written to. Functions are not part of the wait group.
-func (mgr *busBasedManager) registerEventHandler(f eventHandler) error {
-	return mgr.bus.SubscribeAsync(eventTopic, f, false)
-}
-
-//registerOption registers an Option.
-func (mgr *busBasedManager) registerOption(option Option) error {
+// registerOption registers an option.
+func (mgr *publishingManager) registerOption(option option) error {
 	option.Apply(&mgr.options)
 	return nil
 }

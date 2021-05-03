@@ -2,37 +2,24 @@ package cli
 
 import (
 	"errors"
-	"fmt"
+	errors2 "github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
-	"time"
 )
 
-const (
-	//maxLineCount is the inclusive upper bound of coreCli.LineCount
-	maxLineCount uint32 = 5_000
-	//minPollInterval is the shortest allowed interval for polling sources.
-	minPollInterval = 1 * time.Second
-	//maxPollInterval is the longest allowed interval for polling sources.
-	maxPollInterval = 10 * time.Minute
-)
+// cliValidator validates cli.
+type cliValidator struct{}
 
-//coreValidator validates coreCli.
-type coreValidator struct{}
-
-//Validate provides validation for coreCli.
-func (v coreValidator) Validate() error {
+// Validate provides validation for cli.
+func (v cliValidator) Validate() error {
 	var violations []error
-	if coreCli.LineCount > maxLineCount {
-		violations = append(violations, fmt.Errorf("line count may not be greater than %d", maxLineCount))
-	}
-	if len(Sources()) == 0 {
+	sources, err := configuredSources()
+	if err != nil {
+		violations = append(violations, errors2.Wrap(err, "sources could not be determined"))
+	} else if len(sources) == 0 {
 		violations = append(violations, errors.New("at least one source must be specified"))
 	}
-	if len(Sinks()) == 0 {
-		violations = append(violations, errors.New("at least one destination must be specified"))
-	}
-	if coreCli.PollInterval < minPollInterval || coreCli.PollInterval > maxPollInterval {
-		violations = append(violations, fmt.Errorf("interval must be >= %v and <= %v", minPollInterval, maxPollInterval))
+	if configuredSink() == nil {
+		violations = append(violations, errors.New("a destination must be specified"))
 	}
 	if len(violations) > 0 {
 		return multierror.New(violations)

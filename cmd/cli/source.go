@@ -2,48 +2,53 @@ package cli
 
 import (
 	"couture/internal/pkg/source"
-	"fmt"
-	"github.com/alecthomas/kong"
+	"couture/internal/pkg/source/aws/cloudformation"
+	"couture/internal/pkg/source/aws/cloudwatch"
+	"couture/internal/pkg/source/elasticsearch"
+	"couture/internal/pkg/source/fake"
+	"couture/pkg/model"
+	"errors"
+	errors2 "github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
-	"net/url"
 )
 
 var (
-	//sourceCLI contains source-specific cli args.
-	sourceCLI struct {
-		Sources []url.URL `arg:"true" group:"source" name:"sources"`
+	errNoHandlerForURL = errors.New("unhandled src URL")
+
+	// sources is a list of sources sources.
+	sources = []source.Metadata{
+		fake.Metadata(),
+		cloudwatch.Metadata(),
+		cloudformation.Metadata(),
+		elasticsearch.Metadata(),
 	}
 )
 
-//Sources returns all source.Source instances defined by the cli.
-func Sources() []interface{} {
-	var errors []error
-	var sources []interface{}
-	for _, srcUrl := range sourceCLI.Sources {
+// configuredSources returns sources source.Source instances defined by the cli.
+func configuredSources() ([]interface{}, error) {
+	var violations []error
+	var configuredSources []interface{}
+	for _, sourceArgs := range cli.Log.Sources {
+		sourceURL := model.SourceURL(sourceArgs)
 		var handled bool
-		for _, src := range source.Available() {
-			var err error
-			var creator source.Creator
-			creator, err = source.CreatorFor(src)
+		for _, metadata := range sources {
+			if !metadata.CanHandle(sourceURL) {
+				continue
+			}
+			handled = true
+			configuredSource, err := metadata.Creator(sourceURL)
 			if err != nil {
-				errors = append(errors, err)
+				violations = append(violations, err)
 			} else {
-				if src.CanHandle(srcUrl) {
-					handled = true
-					sources = append(sources, creator(srcUrl))
-					break
-				}
+				configuredSources = append(configuredSources, *configuredSource)
 			}
 		}
 		if !handled {
-			errors = append(errors, fmt.Errorf("unhandled sourcr URL: %v", srcUrl))
+			violations = append(violations, errors2.WithMessagef(errNoHandlerForURL, "%+v", sourceURL))
 		}
 	}
-	if len(errors) > 0 {
-		panic(multierror.New(errors))
+	if len(violations) > 0 {
+		return nil, multierror.New(violations)
 	}
-	return sources
+	return configuredSources, nil
 }
-
-//sourceMappers contains source-specific converters from string to a source.Source instance.
-var sourceMappers []kong.Option

@@ -1,52 +1,54 @@
 package cli
 
 import (
-	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/json"
+	"couture/internal/pkg/sink/pretty"
+	string2 "couture/internal/pkg/sink/simple"
 	"github.com/alecthomas/kong"
 )
 
-//init initializes all sink mappers
+// init initializes sources sink mappers
 func init() {
-	sinkMappers = append(sinkMappers, mapper(sink.GoString{}, sink.NewGoString)...)
-	sinkMappers = append(sinkMappers, mapper(sink.Json{}, sink.NewJson)...)
-	sinkMappers = append(sinkMappers, mapper(sink.Ansi{}, sink.NewAnsi)...)
+	sinkMappers = append(sinkMappers, mapper(string2.Sink{}, string2.New)...)
+	sinkMappers = append(sinkMappers, mapper(json.Sink{}, json.New)...)
+	sinkMappers = append(sinkMappers, mapper(pretty.Sink{}, pretty.New)...)
+}
+
+// configuredSink returns sources sink.Sink instances defined by the cli.
+func configuredSink() *interface{} {
+	var i interface{}
+	switch {
+	case cli.Log.Simple != nil:
+		i = cli.Log.Simple
+	case cli.Log.JSON != nil:
+		i = cli.Log.JSON
+	case cli.Log.Pretty != nil:
+		i = cli.Log.Pretty
+	default:
+		return nil
+	}
+	return &i
 }
 
 var (
-	//sinkCLI contains sink-specific cli args.
-	sinkCLI struct {
-		GoString *sink.GoString `group:"sink" help:"Dump string representation of event." name:"string" aliases:"go-string,str" xor:"console"`
-		Json     *sink.Json     `group:"sink" help:"Dump JSON representation of event." name:"json" xor:"console"`
-		Ansi     *sink.Ansi     `group:"sink" help:"ANSI output." name:"ansi" xor:"console"`
-	}
-
-	//sinkMappers contains sink-specific converters from string to a sink.Sink instance.
+	// sinkMappers contains sink-specific converters from string to a sink.Sink instance.
 	sinkMappers []kong.Option
 
-	//cliSinkOptions acts an adapter of sinkCLI to sink.Options.
-	cliSinkOptions = sinkOptions{}
+	// cliSinkOptions acts an adapter of sinkCLI to sink.Options.
+	cliSinkOptions = sinkOptionsDecorator{}
 )
 
 type (
-	//sinkOptions is a trivial wrapper around coreCLI exposing its values as a sink.Options.
-	sinkOptions struct{}
+	// sinkOptionsDecorator is a trivial wrapper around cli exposing its values as a sink.Options.
+	sinkOptionsDecorator struct{}
 )
 
-//Sinks returns all sink.Sink instances defined by the cli.
-func Sinks() []interface{} {
-	var sinks []interface{}
-	if sinkCLI.GoString != nil {
-		sinks = append(sinks, *sinkCLI.GoString)
-	}
-	if sinkCLI.Json != nil {
-		sinks = append(sinks, *sinkCLI.Json)
-	}
-	if sinkCLI.Ansi != nil {
-		sinks = append(sinks, *sinkCLI.Ansi)
-	}
-	return sinks
+// Wrap ...
+func (s sinkOptionsDecorator) Wrap() uint {
+	return cli.Log.Wrap
 }
 
-func (s sinkOptions) Wrap() uint {
-	return coreCli.Wrap
+// Emphasis ...
+func (s sinkOptionsDecorator) Emphasis() bool {
+	return cli.Log.Emphasis
 }
