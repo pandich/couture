@@ -46,8 +46,8 @@ type (
 	Level string
 )
 
-// isAtLeast determines if the specified level is at least as high as this level.
-func (level Level) isAtLeast(l Level) bool {
+// IsAtLeast determines if the specified level is at least as high as this level.
+func (level Level) IsAtLeast(l Level) bool {
 	return l.priority() <= level.priority()
 }
 

@@ -20,6 +20,9 @@ func (t *Timestamp) UnmarshalJSON(bytes []byte) error {
 }
 
 // Stamp ...
-func (t Timestamp) Stamp() string {
-	return time.Time(t).Format(time.Stamp)
+func (t Timestamp) Stamp() Stamp {
+	return Stamp(time.Time(t).Format(time.Stamp))
 }
+
+// Stamp ...
+type Stamp string

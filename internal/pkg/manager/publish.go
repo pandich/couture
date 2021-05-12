@@ -34,7 +34,10 @@ func (mgr *publishingManager) publishDiagnostic(level model.Level, methodName mo
 }
 
 func (mgr *publishingManager) publishEvent(src source.Source, event model.Event) {
-	if event.Matches(mgr.options.level, mgr.options.includeFilters, mgr.options.excludeFilters) {
+	if !event.Level.IsAtLeast(mgr.options.level) {
+		return
+	}
+	if event.Matches(mgr.options.includeFilters, mgr.options.excludeFilters) {
 		mgr.bus.Publish(eventTopic, src, event)
 	}
 }

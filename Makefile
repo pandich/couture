@@ -67,7 +67,7 @@ neat: gocmt
 	@echo formatting
 	@gofmt -l -s -w $(SOURCE_DIRS)
 
-lint: golangci-lint
+lint: golangci-lint neat
 	@echo linting
 	@golangci-lint run
 

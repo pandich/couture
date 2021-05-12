@@ -7,6 +7,7 @@ import (
 // StackTrace ...
 type (
 	// StackTrace a stack trace.
+	// TODO has to become a message so it can be filtered on
 	StackTrace string
 	// Exception an exception.
 	Exception struct {

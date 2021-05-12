@@ -26,26 +26,28 @@ func New(options sink.Options, _ string) interface{} {
 	}
 }
 
+type caller string
+
 // Accept ...
 func (snk *Sink) Accept(src source.Source, event model.Event) {
 	var fields = []interface{}{
 		src,
 		event.ApplicationNameOrBlank(),
-		event.Timestamp,
+		event.Timestamp.Stamp(),
 		event.Level,
-		event.ThreadNameOrBlank(),
-		event.ClassName.Abbreviate(classNameColumnWidth),
-		methodNameDelimiter,
-		event.MethodName,
-		lineNumberDelimiter,
+		caller(snk.styles.render(
+			event.ClassName.Abbreviate(callerWidth),
+			methodNameDelimiter,
+			event.MethodName,
+			lineNumberDelimiter,
+		)),
 		event.LineNumber,
-		event.Message,
+		event.ThreadNameOrBlank(),
+		newLine,
+		model.Message(snk.styles.render(event.HighlightedMessage()...)),
 	}
-
-	stackTrace := event.StackTrace()
-	if stackTrace != nil {
+	if stackTrace := event.StackTrace(); stackTrace != nil {
 		fields = append(fields, "\n", *stackTrace)
 	}
-
 	fmt.Println(snk.styles.render(fields...))
 }

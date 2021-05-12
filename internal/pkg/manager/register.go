@@ -70,7 +70,7 @@ func (mgr *publishingManager) registerPollingSource(src polling.Source) error {
 							"poll",
 							model.LevelWarn,
 							err,
-							"could not parse source %s record: %+s",
+							"could not parse source %s record: %+v",
 							src.URL(),
 							event,
 						)

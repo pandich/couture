@@ -7,7 +7,9 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/termenv"
+	"github.com/olekukonko/ts"
 	"reflect"
+	"time"
 )
 
 const sourceColumnWidth = 40
@@ -17,54 +19,73 @@ type punctuation string
 const (
 	methodNameDelimiter punctuation = ":"
 	lineNumberDelimiter punctuation = "#"
+	newLine             punctuation = "\n"
 )
 
 const (
-	classNameColumnWidth  = 40
-	methodNameColumnWidth = 30
+	applicationNameWidth = 20
+	threadNameWidth      = 20
+	callerWidth          = 48
 )
+
+func terminalWidth() int {
+	const defaultTerminalWidth = 72
+	if size, err := ts.GetSize(); err == nil {
+		return size.Col()
+	}
+	return defaultTerminalWidth
+}
 
 //nolint:gomnd
 var (
-	columnStyle = func(color lipgloss.Color) lipgloss.Style {
-		h, s, l := termenv.ConvertToRGB(colorProfile.Color(fmt.Sprint(color))).Hsl()
-		borderColor := colorful.Hsl(h, s, l*0.7)
-		return lipgloss.NewStyle().
-			MaxHeight(1).
-			BorderLeft(true).
-			BorderStyle(lipgloss.NormalBorder()).
-			BorderForeground(lipgloss.Color(borderColor.Hex())).
-			PaddingLeft(1).
-			Foreground(color)
+	messageWidth = terminalWidth()
+	baseStyle    = func(color lipgloss.TerminalColor) lipgloss.Style {
+		return lipgloss.NewStyle().Foreground(color)
+	}
+	columnStyle = func(color lipgloss.TerminalColor) lipgloss.Style {
+		return baseStyle(color).MaxHeight(1).PaddingLeft(1)
+	}
+	levelColumnStyle = func(color lipgloss.TerminalColor) lipgloss.Style {
+		return baseStyle(levelForegroundColor).
+			MarginLeft(1).
+			PaddingLeft(1).PaddingRight(1).
+			Background(color)
 	}
 
-	levelColumnStyle = func(color lipgloss.Color) lipgloss.Style {
-		return lipgloss.NewStyle().
-			MarginLeft(1).
-			PaddingLeft(1).
-			PaddingRight(1).
-			Background(color).
-			Foreground(levelForegroundColor)
+	messageStyle = func(color lipgloss.TerminalColor) lipgloss.Style {
+		h, s, l := termenv.ConvertToRGB(colorProfile.Color(fmt.Sprint(color))).Hsl()
+		borderColor := lipgloss.Color(colorful.Hsl(h, s*0.7, l*0.3).Hex())
+		return columnStyle(color).
+			BorderLeft(true).
+			BorderStyle(lipgloss.NormalBorder()).
+			BorderForeground(borderColor).
+			UnsetMaxHeight().
+			Bold(true).
+			Width(messageWidth).
+			MaxWidth(messageWidth)
 	}
 
 	globalStyles = map[interface{}]lipgloss.Style{
-		methodNameDelimiter: lipgloss.NewStyle().Foreground(methodNameColor).MaxWidth(1).Bold(false),
-		lineNumberDelimiter: lipgloss.NewStyle().Foreground(lineNumberColor).MaxWidth(1).Bold(false),
-
 		model.LevelError: levelColumnStyle(errorColor),
 		model.LevelWarn:  levelColumnStyle(warnColor),
 		model.LevelInfo:  levelColumnStyle(infoColor),
 		model.LevelDebug: levelColumnStyle(debugColor),
 		model.LevelTrace: levelColumnStyle(traceColor),
 
-		reflect.TypeOf(model.Timestamp{}):         columnStyle(timestampColor).Width(16),
-		reflect.TypeOf(model.ApplicationName("")): columnStyle(applicationNameColor).Width(13).MaxWidth(13),
-		reflect.TypeOf(model.ThreadName("")):      columnStyle(threadNameColor).Width(20).MaxWidth(20),
-		reflect.TypeOf(model.ClassName("")):       columnStyle(classNameColor).Bold(true).Align(lipgloss.Right).Width(classNameColumnWidth + 2),
-		reflect.TypeOf(model.MethodName("")):      lipgloss.NewStyle().Foreground(methodNameColor).Bold(true).Width(methodNameColumnWidth),
-		reflect.TypeOf(model.LineNumber(0)):       lipgloss.NewStyle().Foreground(lineNumberColor).Bold(true).Width(3).MaxWidth(4),
-		reflect.TypeOf(model.Message("")):         columnStyle(messageColor).UnsetMaxHeight().Bold(true).Width(132),
-		reflect.TypeOf(model.StackTrace("")):      columnStyle(errorColor).UnsetMaxHeight(),
+		methodNameDelimiter: baseStyle(methodNameColor).MaxWidth(1).Bold(false),
+		lineNumberDelimiter: baseStyle(lineNumberColor).MaxWidth(1).Bold(false),
+
+		reflect.TypeOf(caller("")):                lipgloss.NewStyle().Bold(true).Align(lipgloss.Right).Width(callerWidth),
+		reflect.TypeOf(model.Stamp("")):           columnStyle(timestampColor).Width(len(time.Stamp)),
+		reflect.TypeOf(model.ApplicationName("")): columnStyle(applicationNameColor).Width(applicationNameWidth),
+		reflect.TypeOf(model.ThreadName("")):      columnStyle(threadNameColor).Width(threadNameWidth),
+		reflect.TypeOf(model.ClassName("")):       baseStyle(classNameColor).Bold(true),
+		reflect.TypeOf(model.MethodName("")):      baseStyle(methodNameColor).Bold(true),
+		reflect.TypeOf(model.LineNumber(0)):       baseStyle(lineNumberColor).Bold(true).Width(4),
+		reflect.TypeOf(model.Message("")):         messageStyle(messageColor).Width(messageWidth),
+		reflect.TypeOf(model.Unhighlighted("")):   baseStyle(messageColor).MarginLeft(1),
+		reflect.TypeOf(model.Highlighted("")):     baseStyle(messageColor).MarginLeft(1).Reverse(true).PaddingLeft(1).PaddingRight(1),
+		reflect.TypeOf(model.StackTrace("")):      messageStyle(errorColor),
 	}
 )
 
@@ -78,10 +99,10 @@ func (styler *styler) sourceStyle(src source.Source) lipgloss.Style {
 
 	sourceColor := <-styler.sourceColorCycle
 	style := lipgloss.NewStyle().
-		MaxWidth(sourceColumnWidth + 1 /* padding */ + 1 /* bordr */).
-		Width(sourceColumnWidth + +1 /* padding */ + 1 /* border */).
 		PaddingLeft(1).
 		MaxHeight(1).
+		Width(sourceColumnWidth).
+		MaxWidth(sourceColumnWidth + 1 /* padding */).
 		Foreground(sourceColor).
 		BorderStyle(lipgloss.NormalBorder()).
 		BorderLeft(true).

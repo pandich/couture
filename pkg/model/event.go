@@ -27,6 +27,8 @@ type Event struct {
 	ClassName ClassName `json:"class"`
 	// Exception the exception. This field is optional.
 	Exception *Exception `json:"exception,omitempty"`
+	// highlightMarks all the matches found in this event
+	highlightMarks highlightMarks
 }
 
 // ApplicationNameOrBlank ...
@@ -45,39 +47,26 @@ func (event Event) ThreadNameOrBlank() ThreadName {
 	return ""
 }
 
-// Matches determines if an event matches the filters criteria.
-func (event Event) Matches(level Level, include []*regexp.Regexp, exclude []*regexp.Regexp) bool {
-	// return false if the log level is too low
-	if !event.Level.isAtLeast(level) {
-		return false
-	}
-
-	// process the includes returning true on the first match
-	for _, filter := range include {
-		if filter.MatchString(string(event.Message)) {
-			return true
-		}
-	}
-	// if we made it this far and have include filters, none of them matched, so we return false
-	if len(include) > 0 {
-		return false
-	}
-
-	// process the excludes returning false on the first match
-	for _, filter := range exclude {
-		if filter.MatchString(string(event.Message)) {
-			return false
-		}
-	}
-
-	// return true
-	return true
-}
-
 // StackTrace ...
 func (event Event) StackTrace() *StackTrace {
 	if event.Exception != nil && event.Exception.StackTrace != "" {
 		return &event.Exception.StackTrace
 	}
 	return nil
+}
+
+// Matches ...
+func (event *Event) Matches(includes []*regexp.Regexp, excludes []*regexp.Regexp) bool {
+	// setting state inside of here is pretty ugly
+	event.highlightMarks = []highlightMark{}
+	if highlightMarks, matches := event.Message.matches(includes, excludes); matches {
+		event.highlightMarks = highlightMarks
+		return true
+	}
+	return false
+}
+
+// HighlightedMessage ...
+func (event Event) HighlightedMessage() []interface{} {
+	return event.Message.highlighted(event.highlightMarks.merged())
 }

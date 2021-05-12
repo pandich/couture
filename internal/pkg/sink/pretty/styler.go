@@ -16,7 +16,7 @@ import (
 type styler struct {
 	sourceRegistryLock sync.Mutex
 	sourceRegistry     map[source.Source]lipgloss.Style
-	sourceColorCycle   chan lipgloss.Color
+	sourceColorCycle   chan lipgloss.TerminalColor
 }
 
 // newStyler ...
@@ -25,7 +25,7 @@ func newStyler() *styler {
 	return &styler{
 		sourceRegistryLock: sync.Mutex{},
 		sourceRegistry:     map[source.Source]lipgloss.Style{},
-		sourceColorCycle:   newColorCycle(sourceColorCycleLength, gamut.HappyGenerator{}),
+		sourceColorCycle:   newColorCycle(sourceColorCycleLength, gamut.PastelGenerator{}),
 	}
 }
 
@@ -40,8 +40,8 @@ func (styler *styler) render(ia ...interface{}) string {
 			sa = append(sa, styler.sourceStyle(v).Render(v.URL().ShortForm()))
 		case model.Level:
 			sa = append(sa, globalStyles[v].Render(string(v[0])))
-		case model.Timestamp:
-			sa = append(sa, globalStyles[reflect.TypeOf(v)].Render(v.Stamp()))
+		case model.Stamp:
+			sa = append(sa, globalStyles[reflect.TypeOf(v)].Render(string(v)))
 		case punctuation:
 			sa = append(sa, globalStyles[v].Render(string(v)))
 		default:
