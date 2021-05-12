@@ -18,15 +18,15 @@ var applicationName = model.ApplicationName(gofakeit.AppName())
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{
-		Type:        reflect.TypeOf(pollingSource{}),
+		Type:        reflect.TypeOf(fakeSource{}),
 		CanHandle:   func(url model.SourceURL) bool { return url.Scheme == "fake" },
 		Creator:     create,
 		ExampleURLs: []string{"fake://(?seed=<seed_int>)"},
 	}
 }
 
-// pollingSource provides fake test data.
-type pollingSource struct {
+// fakeSource provides fake test data.
+type fakeSource struct {
 	polling.Source
 }
 
@@ -41,7 +41,7 @@ func create(sourceURL model.SourceURL) (*interface{}, error) {
 }
 
 // newSource ...
-func newSource(sourceURL model.SourceURL) (*pollingSource, error) {
+func newSource(sourceURL model.SourceURL) (*polling.Source, error) {
 	seed, err := sourceURL.QueryInt64("seed")
 	if err != nil {
 		return nil, errors2.Wrapf(err, "could not parse seed")
@@ -49,12 +49,13 @@ func newSource(sourceURL model.SourceURL) (*pollingSource, error) {
 	if seed != nil {
 		gofakeit.Seed(*seed)
 	}
-	return &pollingSource{polling.New(sourceURL, time.Second)}, nil
+	var src polling.Source = fakeSource{polling.New(sourceURL, time.Second)}
+	return &src, nil
 }
 
 // Poll ...
 //nolint:gosec,gomnd
-func (source pollingSource) Poll() ([]model.Event, error) {
+func (source fakeSource) Poll() ([]model.Event, error) {
 	if rand.Intn(100) >= 90 {
 		return []model.Event{}, io.EOF
 	}

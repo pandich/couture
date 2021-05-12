@@ -78,7 +78,10 @@ func (styler *styler) sourceStyle(src source.Source) lipgloss.Style {
 
 	sourceColor := <-styler.sourceColorCycle
 	style := lipgloss.NewStyle().
-		Width(sourceColumnWidth).
+		MaxWidth(sourceColumnWidth + 1 /* padding */ + 1 /* bordr */).
+		Width(sourceColumnWidth + +1 /* padding */ + 1 /* border */).
+		PaddingLeft(1).
+		MaxHeight(1).
 		Foreground(sourceColor).
 		BorderStyle(lipgloss.NormalBorder()).
 		BorderLeft(true).

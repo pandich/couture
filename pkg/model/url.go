@@ -125,5 +125,8 @@ func (u SourceURL) ShortForm() string {
 		}
 	}
 	path := strings.Split(strings.TrimLeft(u.Path, "/"), "/")[0]
-	return fmt.Sprintf(":/%s/%s", host, path)
+	if path == "" {
+		return fmt.Sprintf("%s://%s?%s", u.Scheme, host, u.RawQuery)
+	}
+	return fmt.Sprintf("%s://%s/%s", u.Scheme, host, path)
 }
