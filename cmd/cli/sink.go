@@ -18,12 +18,12 @@ func init() {
 func configuredSink() *interface{} {
 	var i interface{}
 	switch {
-	case cli.Log.Simple != nil:
-		i = cli.Log.Simple
-	case cli.Log.JSON != nil:
-		i = cli.Log.JSON
-	case cli.Log.Pretty != nil:
-		i = cli.Log.Pretty
+	case cli.Simple != nil:
+		i = cli.Simple
+	case cli.JSON != nil:
+		i = cli.JSON
+	case cli.Pretty != nil:
+		i = cli.Pretty
 	default:
 		return nil
 	}
@@ -45,10 +45,10 @@ type (
 
 // Wrap ...
 func (s sinkOptionsDecorator) Wrap() uint {
-	return cli.Log.Wrap
+	return cli.Wrap
 }
 
 // Emphasis ...
 func (s sinkOptionsDecorator) Emphasis() bool {
-	return cli.Log.Emphasis
+	return cli.Emphasis
 }

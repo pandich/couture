@@ -14,15 +14,15 @@ import (
 
 var (
 	// errBadOption is raised
-	errBadOption = errors.New("unknown manager option")
+	errBadOption = errors.New("unknown manager option type: ")
 )
 
 // RegisterOptions registers a configuration option, source, or sink.
 func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error {
 	for _, registrant := range registrants {
 		switch v := registrant.(type) {
-		case polling.Source:
-			if err := mgr.registerPollingSource(v); err != nil {
+		case *polling.Source:
+			if err := mgr.registerPollingSource(*v); err != nil {
 				return err
 			}
 		case pushing.Source:
@@ -38,7 +38,7 @@ func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error 
 				return err
 			}
 		default:
-			return errors2.Wrapf(errBadOption, "%v %T", v, v)
+			return errors2.Wrapf(errBadOption, "%T (%+v)", v, v)
 		}
 	}
 	return nil
@@ -64,12 +64,26 @@ func (mgr *publishingManager) registerPollingSource(src polling.Source) error {
 				}
 			}
 			if err != nil && !errors.Is(err, io.EOF) {
-				mgr.publishError(
-					"poll",
-					err,
-					"could not poll source %s",
-					src,
-				)
+				if len(events) > 0 {
+					for _, event := range events {
+						mgr.publishError(
+							"poll",
+							model.LevelWarn,
+							err,
+							"could not parse source %s record: %+s",
+							src.URL(),
+							event,
+						)
+					}
+				} else {
+					mgr.publishError(
+						"poll",
+						model.LevelError,
+						err,
+						"could not poll source %s",
+						src.URL(),
+					)
+				}
 			}
 			time.Sleep(src.PollInterval())
 		}

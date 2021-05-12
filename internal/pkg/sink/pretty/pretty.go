@@ -5,7 +5,6 @@ import (
 	"couture/internal/pkg/source"
 	"couture/pkg/model"
 	"fmt"
-	"strings"
 )
 
 // Sink provides render output.
@@ -35,7 +34,11 @@ func (snk *Sink) Accept(src source.Source, event model.Event) {
 		event.Timestamp,
 		event.Level,
 		event.ThreadNameOrBlank(),
-		event.AsCaller(),
+		event.ClassName.Abbreviate(classNameColumnWidth),
+		methodNameDelimiter,
+		event.MethodName,
+		lineNumberDelimiter,
+		event.LineNumber,
 		event.Message,
 	}
 
@@ -45,25 +48,4 @@ func (snk *Sink) Accept(src source.Source, event model.Event) {
 	}
 
 	fmt.Println(snk.styles.render(fields...))
-}
-
-func abbreviateClassName(className model.ClassName, aspirationalWidth int) string {
-	var s = string(className)
-	pieces := strings.Split(s, ".")
-	var l = len(s) - (len(pieces) - 1)
-	var changed = true
-	for l > aspirationalWidth && changed {
-		changed = false
-		for i := 0; i < len(pieces)-1; i++ {
-			if len(pieces[i]) > 1 {
-				l -= len(pieces[i]) - 1
-				pieces[i] = string(pieces[i][0])
-				changed = true
-			}
-			if l <= aspirationalWidth {
-				break
-			}
-		}
-	}
-	return strings.Join(pieces, ".")
 }

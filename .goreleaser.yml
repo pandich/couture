@@ -1,4 +1,3 @@
-# TODO https://goreleaser.com/customization/homebrew/
 builds:
   - main: cmd/main.go
     env:
@@ -7,6 +6,7 @@ builds:
       - linux
       - windows
       - darwin
+
 archives:
   - replacements:
       darwin: Darwin
@@ -14,13 +14,21 @@ archives:
       windows: Windows
       386: i386
       amd64: x86_64
+
 checksum:
   name_template: 'checksums.txt'
+
 snapshot:
   name_template: "{{ .Tag }}-next"
+
 changelog:
   sort: asc
   filters:
     exclude:
       - '^docs:'
       - '^test:'
+
+release:
+  github:
+    owner: gagglepandich
+    name: couture

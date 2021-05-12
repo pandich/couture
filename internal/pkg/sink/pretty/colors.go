@@ -12,16 +12,18 @@ import (
 
 var (
 	colorProfile         = termenv.EnvColorProfile()
-	errorColor           = color("#ff1012")
-	warnColor            = color("#ffa417")
-	infoColor            = color("#418a3d")
+	errorColor           = color("#EB1313")
+	warnColor            = color("#DCEB3B")
+	infoColor            = color("#33A654")
 	debugColor           = color("#b37312")
 	traceColor           = color("#877150")
 	levelForegroundColor = color("#ffffff")
 	timestampColor       = color("#117df0")
 	applicationNameColor = color("#9357ff")
 	threadNameColor      = color("#56A8F8")
-	callerColor          = color("#1787ff")
+	classNameColor       = color("#EBD700")
+	methodNameColor      = color("#17C0EB")
+	lineNumberColor      = color("#9E9857")
 	messageColor         = color("#f2f1da")
 )
 

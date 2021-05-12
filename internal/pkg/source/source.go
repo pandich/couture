@@ -2,7 +2,6 @@ package source
 
 // TODO file:// -> honor hostname and do ssh
 // TODO unified way to do lookback date: take it out of the URLs and put it into CLI args (i.e. --since)
-// TODO per source heartbeat option
 
 import (
 	"couture/pkg/model"

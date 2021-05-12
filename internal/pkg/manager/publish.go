@@ -18,11 +18,12 @@ var internalSource = source.New(model.SourceURL{})
 
 func (mgr *publishingManager) publishError(
 	methodName model.MethodName,
+	level model.Level,
 	err error,
 	message string,
 	args ...interface{},
 ) {
-	event := newDiagnosticEvent(model.LevelError, methodName, message, args...)
+	event := newDiagnosticEvent(level, methodName, message, args...)
 	event.Exception = model.NewException(err)
 	mgr.publishEvent(internalSource, event)
 }

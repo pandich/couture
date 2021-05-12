@@ -1,51 +1,83 @@
-APPLICATION = couture
-SOURCE_DIRS = cmd pkg internal
-GOPATH		?= $(shell $(GO) env GOPATH)
-GOHOSTOS	?= $(shell $(GO) env GOHOSTOS)
-GOHOSTARCH	?= $(shell $(GO) env GOHOSTARCH)
-INSTALL_DIR	?= $(HOME)/bin
+.PHONY: clean neat build lint install
 
-BINARY		= dist/$(APPLICATION)_$(GOHOSTOS)_$(GOHOSTARCH)/$(APPLICATION)
+#
+# Core
+#
 
-GO 			= go
-GO_GET 		= $(GO) get -u
-FIND_PEGS 	= find $(SOURCE_DIRS) -name '*.peg' -type f
+APPLICATION 			=  couture
+SOURCE_DIRS 			=  cmd pkg internal
+INSTALL_DIR				?= $(HOME)/bin
+NATIVE_BINARY			= dist/$(APPLICATION)_$(GOHOSTOS)_$(GOHOSTARCH)/$(APPLICATION)
 
-.PHONY: clean neat generate build lint install
+
+#
+# Go Environment
+#
+
+GOPATH					?= $(shell $(GO) env GOPATH)
+GOHOSTOS				?= $(shell $(GO) env GOHOSTOS)
+GOHOSTARCH				?= $(shell $(GO) env GOHOSTARCH)
+GO 						= go
+GO_GET 					= $(GO) get -u
+GORELEASER_ARGS 		?= --snapshot --rm-dist
+
 
 all: clean build
-
-install: build
-	@mkdir -p $(INSTALL_DIR) && cp $(BINARY) $(INSTALL_DIR)/
 
 clean:
 	@echo cleaning
 	@rm -rf dist/
-	@$(FIND_PEGS) -exec rm -f {}.go \;
 
-build: generate neat
+#
+# Build
+#
+
+build: neat
+	@echo goreleaser building
+	@goreleaser build $(GORELEASER_ARGS) --single-target
+build-all: goreleaser neat
 	@echo building
-	@command -v goreleaser > /dev/null || $(GO_GET) github.com/goreleaser/goreleaser
-	@goreleaser build --snapshot --rm-dist
+	@goreleaser build $(GORELEASER_ARGS)
 
-generate:
-	@echo generating
-	@command -v pigeon > /dev/null || $(GO_GET) github.com/mna/pigeon
-	@$(FIND_PEGS) -exec pigeon -o {}.go {} \;
+#
+# Release
+#
 
-neat:
+install: build
+	# TODO do this the proper go way, and not a direct copy
+	@mkdir -p $(INSTALL_DIR) && cp $(NATIVE_BINARY) $(INSTALL_DIR)/
+
+release: goreleaser
+	@echo releasing
+	# TODO configure this properly
+	@goreleaser release $(GORELEASER_ARGS)
+
+
+#
+# Quality
+#
+
+neat: gocmt
 	@echo tidying
 	@go mod tidy
 
 	@echo commenting
-	@command -v gocmt > /dev/null || $(GO_GET) github.com/cuonglm/gocmt
 	@find $(SOURCE_DIRS) -type d -exec gocmt -p -i -d {} \; 2> /dev/null
 
 	@echo formatting
 	@gofmt -l -s -w $(SOURCE_DIRS)
 
-lint:
+lint: golangci-lint
 	@echo linting
-	@command -v golangci-lint > /dev/null || $(GO_GET) github.com/golangci/golangci-lint/cmd/golangci-lint@v1.39.0
 	@golangci-lint run
 
+#
+# Commands
+#
+
+golangci-lint:
+	@command -v golangci-lint > /dev/null || $(GO_GET) github.com/golangci/golangci-lint/cmd/golangci-lint@v1.39.0
+goreleaser:
+	@command -v goreleaser > /dev/null || $(GO_GET) github.com/goreleaser/goreleaser
+gocmt:
+	@command -v gocmt > /dev/null || $(GO_GET) github.com/cuonglm/gocmt

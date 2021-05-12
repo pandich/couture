@@ -28,7 +28,7 @@ var (
 func configuredSources() ([]interface{}, error) {
 	var violations []error
 	var configuredSources []interface{}
-	for _, sourceArgs := range cli.Log.Sources {
+	for _, sourceArgs := range cli.Sources {
 		sourceURL := model.SourceURL(sourceArgs)
 		var handled bool
 		for _, metadata := range sources {

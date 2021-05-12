@@ -19,7 +19,7 @@ func (mgr *publishingManager) Start() error {
 		if err := pusher.Start(mgr.wg, func() bool { return mgr.running }, func(event model.Event) {
 			mgr.publishEvent(pusher, event)
 		}); err != nil {
-			mgr.publishError("Start", err, "start failed for source: %s", pusher.URL())
+			mgr.publishError("Start", model.LevelError, err, "start failed for source: %s", pusher.URL())
 			mgr.running = false
 			return err
 		}

@@ -14,11 +14,11 @@ require (
 	github.com/charmbracelet/lipgloss v0.2.1
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
+	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/muesli/gamut v0.2.0
 	github.com/muesli/termenv v0.8.1
 	github.com/pkg/errors v0.9.1
-	github.com/willabides/kongplete v0.2.0
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9 // indirect
 	golang.org/x/sys v0.0.0-20210507161434-a76c4d0a0096 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect

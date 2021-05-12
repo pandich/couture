@@ -81,19 +81,3 @@ func (event Event) StackTrace() *StackTrace {
 	}
 	return nil
 }
-
-// AsCaller ...
-func (event Event) AsCaller() Caller {
-	return Caller{
-		ClassName:  event.ClassName,
-		MethodName: event.MethodName,
-		LineNumber: event.LineNumber,
-	}
-}
-
-// Caller ...
-type Caller struct {
-	ClassName  ClassName
-	MethodName MethodName
-	LineNumber LineNumber
-}

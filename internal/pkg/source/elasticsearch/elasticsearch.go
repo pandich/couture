@@ -5,23 +5,21 @@ import (
 	"couture/internal/pkg/source/polling"
 	"couture/pkg/model"
 	"encoding/json"
-	"fmt"
+	"errors"
 	errors2 "github.com/pkg/errors"
 	"gopkg.in/olivere/elastic.v3"
-	"net/url"
+	"io"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 )
 
-// TODO only partially works
 const eventsPerFetch = 100
 
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{
-		Type: reflect.TypeOf(elasticsearchSource{}),
+		Type: reflect.TypeOf(elasticSearch{}),
 		CanHandle: func(url model.SourceURL) bool {
 			_, ok := map[string]bool{
 				scheme + "+http":            true,
@@ -50,10 +48,10 @@ type eventHolder struct {
 	Event string `json:"log"`
 }
 
-// elasticsearchSource provides elasticsearch test data.
-type elasticsearchSource struct {
+// elasticSearch provides elasticsearch test data.
+type elasticSearch struct {
 	polling.Source
-	query     string
+	query     elastic.Query
 	scrollID  string
 	indexName string
 	esClient  *elastic.Client
@@ -70,41 +68,53 @@ func create(sourceURL model.SourceURL) (*interface{}, error) {
 }
 
 // newSource ...
-func newSource(sourceURL model.SourceURL) (*elasticsearchSource, error) {
-	sourceURL.Scheme = strings.Replace(sourceURL.Scheme, scheme+"+", "", 1)
-	sourceURL.Scheme = strings.Replace(sourceURL.Scheme, schemeAliasShort+"+", "", 1)
+func newSource(sourceURL model.SourceURL) (*polling.Source, error) {
+	normalizeURL(&sourceURL)
+
+	esClient, err := newElasticsearchClient(sourceURL)
+	if err != nil {
+		return nil, err
+	}
+
+	indexName := strings.Trim(sourceURL.Path, "/")
+	query := elastic.NewQueryStringQuery(sourceURL.RawQuery)
+
+	var src polling.Source = elasticSearch{
+		Source:    polling.New(sourceURL, time.Second),
+		esClient:  esClient,
+		query:     query,
+		indexName: indexName,
+	}
+	return &src, nil
+}
+
+func newElasticsearchClient(sourceURL model.SourceURL) (*elastic.Client, error) {
 	esClient, err := elastic.NewClient(elastic.SetURL(sourceURL.Scheme + "://" + sourceURL.Host))
 	if err != nil {
 		return nil, err
 	}
-	u := url.URL(sourceURL)
-	var queryPieces []string
-	for k, v := range u.Query() {
-		queryPieces = append(queryPieces, fmt.Sprintf(`%s=(%s)`, k, strings.Join(v, "|")))
-	}
-	query := fmt.Sprintf(
-		`{"query":{"query_string":{"query":%s}}}`,
-		strconv.Quote(strings.Join(queryPieces, " ")),
-	)
-	return &elasticsearchSource{
-		Source:    polling.New(sourceURL, time.Second),
-		esClient:  esClient,
-		query:     query,
-		indexName: strings.Trim(sourceURL.Path, "/"),
-	}, nil
+	return esClient, nil
+}
+
+func normalizeURL(sourceURL *model.SourceURL) {
+	sourceURL.Scheme = strings.Replace(sourceURL.Scheme, scheme+"+", "", 1)
+	sourceURL.Scheme = strings.Replace(sourceURL.Scheme, schemeAliasShort+"+", "", 1)
 }
 
 // Poll ...
-func (source *elasticsearchSource) Poll() ([]model.Event, error) {
+func (source elasticSearch) Poll() ([]model.Event, error) {
 	result, err := source.esClient.Scroll(source.indexName).
 		KeepAlive(keepAliveOneMinute).
 		ScrollId(source.scrollID).
 		Size(eventsPerFetch).
-		Query(elastic.NewQueryStringQuery(source.URL().RawQuery)).
+		Query(source.query).
 		SortBy(elastic.NewFieldSort(model.TimestampField)).
 		Pretty(true).
 		Do()
 	if err != nil {
+		if errors.Is(err, io.EOF) {
+			return []model.Event{}, nil
+		}
 		return nil, errors2.Wrapf(err, "name=%s", source.indexName)
 	}
 
@@ -118,7 +128,19 @@ func (source *elasticsearchSource) Poll() ([]model.Event, error) {
 		evt := model.Event{}
 		err = json.Unmarshal([]byte(holder.Event), &evt)
 		if err != nil {
-			return nil, err
+			return []model.Event{
+				{
+					Timestamp:       model.Timestamp(time.Now()),
+					Level:           model.LevelInfo,
+					Message:         model.Message(holder.Event),
+					ApplicationName: nil,
+					MethodName:      "-",
+					LineNumber:      model.NoLineNumber,
+					ThreadName:      nil,
+					ClassName:       "-",
+					Exception:       nil,
+				},
+			}, err
 		}
 		events = append(events, evt)
 	}
