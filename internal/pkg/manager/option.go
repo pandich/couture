@@ -3,6 +3,7 @@ package manager
 import (
 	"couture/pkg/model"
 	"regexp"
+	"time"
 )
 
 const (
@@ -13,21 +14,28 @@ const (
 	verbosityLevelTrace
 )
 
+// SinceOption ...
+func SinceOption(t time.Time) interface{} {
+	return baseOption{applier: func(mgr *managerOptions) {
+		mgr.since = &t
+	}}
+}
+
 // VerboseDisplayOption ...
 func VerboseDisplayOption(verbosity uint) interface{} {
 	return baseOption{applier: func(mgr *managerOptions) {
 		switch verbosity {
 		case verbosityLevelTrace:
-			mgr.level = model.LevelTrace
+			mgr.level = model.TraceLevel
 		case verbosityLevelDebug:
-			mgr.level = model.LevelDebug
+			mgr.level = model.DebugLevel
 		case verbosityLevelInfo:
-			mgr.level = model.LevelInfo
+			mgr.level = model.InfoLevel
 		case verbosityLevelWarn:
-			mgr.level = model.LevelWarn
+			mgr.level = model.WarnLevel
 		case verbosityLevelError:
 		default:
-			mgr.level = model.LevelError
+			mgr.level = model.ErrorLevel
 		}
 	}}
 }
@@ -47,10 +55,21 @@ func LogLevelOption(level model.Level) interface{} {
 	}}
 }
 
+// WrapOption ...
+func WrapOption(width int) interface{} {
+	return baseOption{applier: func(options *managerOptions) {
+		if width > 0 {
+			options.wrap = &width
+		}
+	}}
+}
+
 type (
 	// managerOptions
 	managerOptions struct {
 		level          model.Level
+		wrap           *int
+		since          *time.Time
 		includeFilters []*regexp.Regexp
 		excludeFilters []*regexp.Regexp
 	}

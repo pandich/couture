@@ -13,7 +13,5 @@ type (
 		source.Source
 		// Start collecting events.
 		Start(wg *sync.WaitGroup, running func() bool, callback func(event model.Event)) error
-		// Stop collecting events.
-		Stop()
 	}
 )

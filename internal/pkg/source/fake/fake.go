@@ -61,10 +61,10 @@ func (source fakeSource) Poll() ([]model.Event, error) {
 	}
 	var exception *model.Exception
 	var level = []model.Level{
-		model.LevelTrace,
-		model.LevelDebug,
-		model.LevelInfo,
-		model.LevelWarn,
+		model.TraceLevel,
+		model.DebugLevel,
+		model.InfoLevel,
+		model.WarnLevel,
 	}[rand.Intn(4)]
 	const count = 10
 	if rand.Intn(100) > 90 {
@@ -75,7 +75,7 @@ func (source fakeSource) Poll() ([]model.Event, error) {
 			gofakeit.Sentence(count),
 		}, "\n")
 		exception = &model.Exception{StackTrace: model.StackTrace(stackTrace)}
-		level = model.LevelError
+		level = model.ErrorLevel
 	}
 
 	threadName := model.ThreadName(gofakeit.Username())

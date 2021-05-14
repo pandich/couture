@@ -36,7 +36,7 @@ clean:
 
 build: neat
 	@echo building
-	@$(GO) build $(CMD)
+	@$(GO) build -o dist/couture $(CMD)
 
 build-all: goreleaser neat
 	@echo building for all platforms

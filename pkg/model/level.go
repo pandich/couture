@@ -4,20 +4,19 @@ import (
 	"strings"
 )
 
-// LevelTrace ...
 const (
-	// LevelTrace log level for tracing
-	LevelTrace Level = "TRACE"
-	// LevelDebug log level for debugging
-	LevelDebug Level = "DEBUG"
-	// LevelInfo log level for information
-	LevelInfo Level = "INFO"
-	// LevelWarn log level for warnings
-	LevelWarn Level = "WARN"
-	// LevelError log level for errors
-	LevelError Level = "ERROR"
-	// levelDisabled disabled log level.
-	levelDisabled Level = ""
+	// TraceLevel log level for tracing
+	TraceLevel Level = "TRACE"
+	// DebugLevel log level for debugging
+	DebugLevel Level = "DEBUG"
+	// InfoLevel log level for information
+	InfoLevel Level = "INFO"
+	// WarnLevel log level for warnings
+	WarnLevel Level = "WARN"
+	// ErrorLevel log level for errors
+	ErrorLevel Level = "ERROR"
+	// disabledLevel disabled log level.
+	disabledLevel Level = ""
 )
 
 const (
@@ -31,12 +30,18 @@ const (
 
 // levelPriorities relative level priorities
 var levelPriorities = map[Level]levelPriority{
-	LevelTrace:    levelTracePriority,
-	LevelDebug:    levelDebugPriority,
-	LevelInfo:     levelInfoPriority,
-	LevelWarn:     levelWarnPriority,
-	LevelError:    levelErrorPriority,
-	levelDisabled: levelDisabledPriority,
+	TraceLevel:    levelTracePriority,
+	DebugLevel:    levelDebugPriority,
+	InfoLevel:     levelInfoPriority,
+	WarnLevel:     levelWarnPriority,
+	ErrorLevel:    levelErrorPriority,
+	disabledLevel: levelDisabledPriority,
+}
+
+// IsValidLevel ...
+func IsValidLevel(s string) bool {
+	_, ok := levelPriorities[Level(strings.ToUpper(s))]
+	return ok
 }
 
 type (
@@ -54,9 +59,4 @@ func (level Level) IsAtLeast(l Level) bool {
 // priority is the relative priority of this level.
 func (level Level) priority() levelPriority {
 	return levelPriorities[level]
-}
-
-// Normalize corrects case and anything else to normalize the log level.
-func (level Level) Normalize() Level {
-	return Level(strings.ToUpper(string(level)))
 }

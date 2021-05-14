@@ -31,8 +31,10 @@ func Metadata() source.Metadata {
 		},
 		Creator: create,
 		ExampleURLs: []string{
-			"elasticsearch://...",
-			"es://...",
+			"elasticsearch+http://...",
+			"elasticsearch+https://...",
+			"es+http://...",
+			"es+https://...",
 		},
 	}
 }
@@ -131,7 +133,7 @@ func (source elasticSearch) Poll() ([]model.Event, error) {
 			return []model.Event{
 				{
 					Timestamp:       model.Timestamp(time.Now()),
-					Level:           model.LevelInfo,
+					Level:           model.InfoLevel,
 					Message:         model.Message(holder.Event),
 					ApplicationName: nil,
 					MethodName:      "-",

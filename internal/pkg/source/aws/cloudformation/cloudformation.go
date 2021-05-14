@@ -46,26 +46,26 @@ const (
 
 // logLevelByResourceStatus maps each possible resource status to a log level.
 var logLevelByResourceStatus = map[types.ResourceStatus]model.Level{
-	types.ResourceStatusCreateInProgress: model.LevelInfo,
-	types.ResourceStatusCreateFailed:     model.LevelError,
-	types.ResourceStatusCreateComplete:   model.LevelInfo,
+	types.ResourceStatusCreateInProgress: model.InfoLevel,
+	types.ResourceStatusCreateFailed:     model.ErrorLevel,
+	types.ResourceStatusCreateComplete:   model.InfoLevel,
 
-	types.ResourceStatusDeleteInProgress: model.LevelInfo,
-	types.ResourceStatusDeleteFailed:     model.LevelError,
-	types.ResourceStatusDeleteComplete:   model.LevelInfo,
-	types.ResourceStatusDeleteSkipped:    model.LevelWarn,
+	types.ResourceStatusDeleteInProgress: model.InfoLevel,
+	types.ResourceStatusDeleteFailed:     model.ErrorLevel,
+	types.ResourceStatusDeleteComplete:   model.InfoLevel,
+	types.ResourceStatusDeleteSkipped:    model.WarnLevel,
 
-	types.ResourceStatusUpdateInProgress: model.LevelInfo,
-	types.ResourceStatusUpdateFailed:     model.LevelError,
-	types.ResourceStatusUpdateComplete:   model.LevelInfo,
+	types.ResourceStatusUpdateInProgress: model.InfoLevel,
+	types.ResourceStatusUpdateFailed:     model.ErrorLevel,
+	types.ResourceStatusUpdateComplete:   model.InfoLevel,
 
-	types.ResourceStatusImportFailed:     model.LevelError,
-	types.ResourceStatusImportComplete:   model.LevelInfo,
-	types.ResourceStatusImportInProgress: model.LevelInfo,
+	types.ResourceStatusImportFailed:     model.ErrorLevel,
+	types.ResourceStatusImportComplete:   model.InfoLevel,
+	types.ResourceStatusImportInProgress: model.InfoLevel,
 
-	types.ResourceStatusImportRollbackInProgress: model.LevelWarn,
-	types.ResourceStatusImportRollbackFailed:     model.LevelError,
-	types.ResourceStatusImportRollbackComplete:   model.LevelWarn,
+	types.ResourceStatusImportRollbackInProgress: model.WarnLevel,
+	types.ResourceStatusImportRollbackFailed:     model.ErrorLevel,
+	types.ResourceStatusImportRollbackComplete:   model.WarnLevel,
 }
 
 // URL schemes supported
@@ -223,7 +223,7 @@ func (source cloudFormationSource) getStackEvents() ([]model.Event, error) {
 			level := logLevelByResourceStatus[stackEvent.ResourceStatus]
 
 			var exception *model.Exception
-			if level == model.LevelError {
+			if level == model.ErrorLevel {
 				exception = &model.Exception{
 					StackTrace: model.StackTrace(*stackEvent.ResourceStatusReason),
 				}

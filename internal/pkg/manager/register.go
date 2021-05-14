@@ -25,12 +25,8 @@ func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error 
 			if err := mgr.registerPollingSource(*v); err != nil {
 				return err
 			}
-		case pushing.Source:
-			if err := mgr.registerPushingSource(v); err != nil {
-				return err
-			}
-		case sink.Sink:
-			if err := mgr.registerSink(v); err != nil {
+		case *pushing.Source:
+			if err := mgr.registerPushingSource(*v); err != nil {
 				return err
 			}
 		case *sink.Sink:
@@ -72,7 +68,7 @@ func (mgr *publishingManager) registerPollingSource(src polling.Source) error {
 					for _, event := range events {
 						mgr.publishError(
 							"poll",
-							model.LevelWarn,
+							model.WarnLevel,
 							err,
 							"could not parse source %s record: %+v",
 							src.URL(),
@@ -82,7 +78,7 @@ func (mgr *publishingManager) registerPollingSource(src polling.Source) error {
 				} else {
 					mgr.publishError(
 						"poll",
-						model.LevelError,
+						model.ErrorLevel,
 						err,
 						"could not poll source %s",
 						src.URL(),

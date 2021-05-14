@@ -109,11 +109,11 @@ var (
 	}
 
 	globalStyles = map[interface{}]lipgloss.Style{
-		model.LevelError: levelColumnStyle(errorColor),
-		model.LevelWarn:  levelColumnStyle(warnColor),
-		model.LevelInfo:  levelColumnStyle(infoColor),
-		model.LevelDebug: levelColumnStyle(debugColor),
-		model.LevelTrace: levelColumnStyle(traceColor),
+		model.ErrorLevel: levelColumnStyle(errorColor),
+		model.WarnLevel:  levelColumnStyle(warnColor),
+		model.InfoLevel:  levelColumnStyle(infoColor),
+		model.DebugLevel: levelColumnStyle(debugColor),
+		model.TraceLevel: levelColumnStyle(traceColor),
 
 		reflect.TypeOf(model.Stamp("")):           columnStyle(timestampColor).Width(len(time.Stamp)),
 		reflect.TypeOf(model.ApplicationName("")): columnStyle(applicationNameColor).Width(applicationNameWidth),
