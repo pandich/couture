@@ -15,7 +15,6 @@ require (
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0
-	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/muesli/gamut v0.2.0
 	github.com/muesli/termenv v0.8.1
 	github.com/olekukonko/ts v0.0.0-20171002115256-78ecb04241c0

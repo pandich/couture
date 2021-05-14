@@ -26,7 +26,7 @@ Installs to `$HOME/bin/couture`:
 
 ### Entry Points
 
-* [Command](cmd/main.go) - CLI command.
+* [Command](cmd/couture.go) - CLI command.
 * [Manager](internal/pkg/manager/manager.go) - Couture source/sink manager.
 
 ---
@@ -37,7 +37,6 @@ Installs to `$HOME/bin/couture`:
 ---
 
 * [Sink Definitions](internal/pkg/sink/sink.go) - Where sinks are defined.
-* [Sink CLI Definition](cmd/cli/sink.go) - Where CLI arguments and parsing is defined for a sink.
 
 ## Limitations
 

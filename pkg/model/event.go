@@ -29,6 +29,8 @@ type Event struct {
 	Exception *Exception `json:"exception,omitempty"`
 	// highlightMarks all the matches found in this event
 	highlightMarks highlightMarks
+	// highlightMarks all the matches found in this event
+	stackTraceHighlightMarks highlightMarks
 }
 
 // ApplicationNameOrBlank ...
@@ -57,16 +59,44 @@ func (event Event) StackTrace() *StackTrace {
 
 // Matches ...
 func (event *Event) Matches(includes []*regexp.Regexp, excludes []*regexp.Regexp) bool {
+	if len(includes) == 0 && len(excludes) == 0 {
+		return true
+	}
+
 	// setting state inside of here is pretty ugly
 	event.highlightMarks = []highlightMark{}
 	if highlightMarks, matches := event.Message.matches(includes, excludes); matches {
 		event.highlightMarks = highlightMarks
-		return true
 	}
-	return false
+
+	event.stackTraceHighlightMarks = []highlightMark{}
+	trace := event.StackTrace()
+	if trace != nil {
+		if highlightMarks, matches := Message(*trace).matches(includes, excludes); matches {
+			event.stackTraceHighlightMarks = highlightMarks
+		}
+	}
+	return len(event.highlightMarks) > 0 || len(event.stackTraceHighlightMarks) > 0
 }
 
 // HighlightedMessage ...
 func (event Event) HighlightedMessage() []interface{} {
-	return event.Message.highlighted(event.highlightMarks.merged())
+	return event.Message.highlighted(
+		event.highlightMarks.merged(),
+		func(msg Message) interface{} { var i interface{} = HighlightedMessage(msg); return i },
+		func(msg Message) interface{} { var i interface{} = UnhighlightedMessage(msg); return i },
+	)
+}
+
+// HighlightedStackTrace ...
+func (event Event) HighlightedStackTrace() []interface{} {
+	trace := event.StackTrace()
+	if trace == nil {
+		return []interface{}{}
+	}
+	return event.Message.highlighted(
+		event.highlightMarks.merged(),
+		func(msg Message) interface{} { var i interface{} = HighlightedStackTrace(msg); return i },
+		func(msg Message) interface{} { var i interface{} = UnhighlightedStackTrace(msg); return i },
+	)
 }

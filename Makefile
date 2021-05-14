@@ -21,6 +21,8 @@ GO 						= go
 GO_GET 					= $(GO) get -u
 GORELEASER_ARGS 		?= --snapshot --rm-dist
 
+CMD						= cmd/couture.go
+
 
 all: clean build
 
@@ -33,10 +35,11 @@ clean:
 #
 
 build: neat
-	@echo goreleaser building
-	@goreleaser build $(GORELEASER_ARGS) --single-target
-build-all: goreleaser neat
 	@echo building
+	@$(GO) build $(CMD)
+
+build-all: goreleaser neat
+	@echo building for all platforms
 	@goreleaser build $(GORELEASER_ARGS)
 
 #
@@ -44,14 +47,12 @@ build-all: goreleaser neat
 #
 
 install: build
-	# TODO do this the proper go way, and not a direct copy
-	@mkdir -p $(INSTALL_DIR) && cp $(NATIVE_BINARY) $(INSTALL_DIR)/
+	@echo installing
+	@$(GO) install $(CMD)
 
-release: goreleaser
-	@echo releasing
-	# TODO configure this properly
-	@goreleaser release $(GORELEASER_ARGS)
-
+uninstall:
+	@echo uninstalling
+	@$(GO) clean -i $(CMD)
 
 #
 # Quality

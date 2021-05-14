@@ -1,12 +1,38 @@
 package model
 
 import (
+	"fmt"
 	"regexp"
 	"sort"
 )
 
-// Message a message.
-type Message string
+// Message ...
+type (
+	// Message a message.
+	Message string
+
+	// HighlightedMessage a highlighted section of a Message.
+	HighlightedMessage string
+	// UnhighlightedMessage ...
+	UnhighlightedMessage string
+
+	// Exception an exception.
+	Exception struct {
+		// StackTrace the full text of the stack trace.
+		StackTrace StackTrace `json:"stack_trace"`
+	}
+	// StackTrace a stack trace.
+	StackTrace Message
+	// HighlightedStackTrace a highlighted section of a StackTrace.
+	HighlightedStackTrace string
+	// UnhighlightedStackTrace ...
+	UnhighlightedStackTrace string
+	// highlightMark ...
+
+	highlightMark struct{ start, end int }
+	// highlightMarks a collection of highlightMark elements.
+	highlightMarks []highlightMark
+)
 
 // matches determines if an event matches the filters criteria.
 func (msg Message) matches(include []*regexp.Regexp, exclude []*regexp.Regexp) (highlightMarks, bool) {
@@ -15,7 +41,7 @@ func (msg Message) matches(include []*regexp.Regexp, exclude []*regexp.Regexp) (
 	// process the includes returning true on the first match
 	for _, filter := range include {
 		for _, pos := range filter.FindAllStringIndex(string(msg), 100) {
-			marks = append(marks, highlightMark{Start: pos[0], End: pos[1]})
+			marks = append(marks, highlightMark{start: pos[0], end: pos[1]})
 		}
 	}
 	// if we made it this far and have include filters, none of them matched, so we return false
@@ -38,43 +64,33 @@ func (msg Message) String() string {
 	return string(msg)
 }
 
-// Highlighted ...
-func (msg Message) highlighted(allMarks highlightMarks) []interface{} {
+// HighlightedMessage ...
+func (msg Message) highlighted(
+	allMarks highlightMarks,
+	highlighted func(Message) interface{},
+	unhighlighted func(message Message) interface{},
+) []interface{} {
+	if len(allMarks) == 0 {
+		return []interface{}{unhighlighted(msg)}
+	}
+
 	var fields []interface{}
 	var pos = 0
 	marks := allMarks.merged()
 	for _, mark := range marks {
-		if mark.Start > pos {
-			fields = append(fields, Unhighlighted(msg[pos:mark.Start-1]))
+		if mark.start > pos {
+			fields = append(fields, unhighlighted(msg[pos:mark.start-1]))
 		}
-		pos = mark.End + 1
-		fields = append(fields, msg.highlight(mark))
+		pos = mark.end + 1
+		fields = append(fields, highlighted(msg[mark.start:mark.end]))
 	}
-	if marks[len(marks)-1].End < len(msg)-1 {
-		fields = append(fields, Unhighlighted(msg[marks[len(marks)-1].End+1:]))
+	if len(marks) > 0 {
+		if marks[len(marks)-1].end < len(msg)-1 {
+			fields = append(fields, unhighlighted(msg[marks[len(marks)-1].end+1:]))
+		}
 	}
 	return fields
 }
-
-// highlight ...
-func (msg Message) highlight(mark highlightMark) Highlighted {
-	return Highlighted(msg[mark.Start:mark.End])
-}
-
-// Highlighted a highlighted section of a Message.
-type Highlighted string
-
-// Unhighlighted ...
-type Unhighlighted string
-
-// highlightMark ...
-type highlightMark struct {
-	Start int
-	End   int
-}
-
-// highlightMarks a collection of highlightMark elements.
-type highlightMarks []highlightMark
 
 // merged merges all overlapping regions into contiguous ones.
 // It is based upon https://stackoverflow.com/questions/55201821/merging-overlapping-intervals-using-double-for-loop
@@ -86,10 +102,10 @@ func (marks highlightMarks) merged() []highlightMark {
 
 	sort.Slice(m,
 		func(i, j int) bool {
-			if m[i].Start < m[j].Start {
+			if m[i].start < m[j].start {
 				return true
 			}
-			if m[i].Start == m[j].Start && m[i].End < m[j].End {
+			if m[i].start == m[j].start && m[i].end < m[j].end {
 				return true
 			}
 			return false
@@ -98,9 +114,9 @@ func (marks highlightMarks) merged() []highlightMark {
 
 	j := 0
 	for i := 1; i < len(m); i++ {
-		if m[j].End >= m[i].Start {
-			if m[j].End < m[i].End {
-				m[j].End = m[i].End
+		if m[j].end >= m[i].start {
+			if m[j].end < m[i].end {
+				m[j].end = m[i].end
 			}
 		} else {
 			j++
@@ -108,4 +124,12 @@ func (marks highlightMarks) merged() []highlightMark {
 		}
 	}
 	return append([]highlightMark(nil), m[:j+1]...)
+}
+
+// NewException ...
+func NewException(err error) *Exception {
+	if err == nil {
+		return nil
+	}
+	return &Exception{StackTrace: StackTrace(fmt.Sprintf("%+v", err))}
 }

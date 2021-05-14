@@ -9,7 +9,7 @@ import (
 // Start the Manager. This starts all source.PushingSource instances, and begins polling all polling.Source instances.
 // Waits until it has been stopped.
 func (mgr *publishingManager) Start() error {
-	mgr.publishDiagnostic(model.LevelDebug, "Start", "starting")
+	mgr.publishDiagnostic(model.LevelDebug, "start", "starting")
 	for _, poller := range mgr.pollStarters {
 		mgr.wg.Add(1)
 		go poller(mgr.wg)
@@ -19,7 +19,7 @@ func (mgr *publishingManager) Start() error {
 		if err := pusher.Start(mgr.wg, func() bool { return mgr.running }, func(event model.Event) {
 			mgr.publishEvent(pusher, event)
 		}); err != nil {
-			mgr.publishError("Start", model.LevelError, err, "start failed for source: %s", pusher.URL())
+			mgr.publishError("start", model.LevelError, err, "start failed for source: %s", pusher.URL())
 			mgr.running = false
 			return err
 		}

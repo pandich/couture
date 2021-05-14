@@ -5,8 +5,13 @@ import (
 	"time"
 )
 
-// Timestamp When the even occurred.
-type Timestamp time.Time
+// Timestamp ...
+type (
+	// Timestamp When the even occurred.
+	Timestamp time.Time
+	// Stamp ...
+	Stamp string
+)
 
 // UnmarshalJSON ...
 func (t *Timestamp) UnmarshalJSON(bytes []byte) error {
@@ -23,6 +28,3 @@ func (t *Timestamp) UnmarshalJSON(bytes []byte) error {
 func (t Timestamp) Stamp() Stamp {
 	return Stamp(time.Time(t).Format(time.Stamp))
 }
-
-// Stamp ...
-type Stamp string

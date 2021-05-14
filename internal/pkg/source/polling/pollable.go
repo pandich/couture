@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+// rTODO eliminate pollable and make all sources pushing
+
 type (
 	// polling represents something which may be polled on a cadence.
 	polling interface {

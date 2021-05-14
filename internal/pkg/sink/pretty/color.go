@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+func pastels() chan lipgloss.TerminalColor {
+	const colorCount = 50
+	return newColorCycle(colorCount, gamut.PastelGenerator{})
+}
+
 var (
 	colorProfile         = termenv.EnvColorProfile()
 	errorColor           = color("#EB1313")

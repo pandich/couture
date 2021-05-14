@@ -5,7 +5,6 @@ import (
 	"strings"
 )
 
-// NoLineNumber ...
 const (
 	// NoLineNumber indicates no line number is present.
 	NoLineNumber LineNumber = 0
@@ -15,6 +14,8 @@ const (
 type (
 	// ApplicationName the name of an application.
 	ApplicationName string
+	// ThreadName a thread name.
+	ThreadName string
 	// ClassName a class name.
 	ClassName string
 	// MethodName a method name.
@@ -67,4 +68,9 @@ func (c ClassName) Abbreviate(maxWidth int) ClassName {
 		pieces[0] = pieces[0][len(pieces[0])-maxWidth:]
 	}
 	return ClassName(strings.Join(pieces, "."))
+}
+
+// String ...
+func (threadName ThreadName) String() string {
+	return string(threadName)
 }

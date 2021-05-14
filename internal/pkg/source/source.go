@@ -1,6 +1,6 @@
 package source
 
-// TODO file:// -> honor hostname and do ssh
+// TODO ssh+file:// and file:// – see https://github.com/nxadm/tail
 // TODO unified way to do lookback date: take it out of the URLs and put it into CLI args (i.e. --since)
 
 import (

@@ -33,6 +33,10 @@ func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error 
 			if err := mgr.registerSink(v); err != nil {
 				return err
 			}
+		case *sink.Sink:
+			if err := mgr.registerSink(*v); err != nil {
+				return err
+			}
 		case option:
 			if err := mgr.registerOption(v); err != nil {
 				return err

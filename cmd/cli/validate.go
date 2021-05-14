@@ -18,9 +18,6 @@ func (v cliValidator) Validate() error {
 	} else if len(sources) == 0 {
 		violations = append(violations, errors.New("at least one source must be specified"))
 	}
-	if configuredSink() == nil {
-		violations = append(violations, errors.New("a destination must be specified"))
-	}
 	if len(violations) > 0 {
 		return multierror.New(violations)
 	}

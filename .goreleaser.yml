@@ -1,5 +1,5 @@
 builds:
-  - main: cmd/main.go
+  - main: cmd/couture.go
     env:
       - CGO_ENABLED=0
     goos:
@@ -12,7 +12,6 @@ archives:
       darwin: Darwin
       linux: Linux
       windows: Windows
-      386: i386
       amd64: x86_64
 
 checksum:
@@ -28,7 +27,4 @@ changelog:
       - '^docs:'
       - '^test:'
 
-release:
-  github:
-    owner: gagglepandich
-    name: couture
+# TODO release to homebrew?

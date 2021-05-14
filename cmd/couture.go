@@ -3,6 +3,7 @@ package main
 import (
 	"couture/cmd/cli"
 	"couture/internal/pkg/manager"
+	"couture/internal/pkg/sink/pretty"
 	"fmt"
 	"os"
 )
@@ -17,6 +18,7 @@ func main() {
 	if err != nil {
 		die(err)
 	}
+	options = append(options, pretty.New())
 
 	mgr, err := manager.New(options...)
 	if err != nil {
