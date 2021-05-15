@@ -5,14 +5,19 @@ import (
 	"couture/pkg/model"
 	"couture/pkg/model/level"
 	"fmt"
+	"go.uber.org/ratelimit"
 	"net/url"
 	"time"
 )
 
 const (
 	// eventTopic is the topic for all registry and sinks to communicate over.
-	eventTopic = "topic:event"
+	eventTopic            = "topic:event"
+	approximateMaxSources = 5
 )
+
+// TODO how do we rate limit across all sources and keep up? Do we only rate limit once we've caught up?
+var rateLimiter = ratelimit.New(int(source.PerSourceMaxEventsPerSecond) * approximateMaxSources)
 
 // internalSource is the source used for all diagnostic messages.
 var internalSource = source.New(model.SourceURL{})
@@ -39,6 +44,7 @@ func (mgr *publishingManager) publishEvent(src source.Source, event model.Event)
 		return
 	}
 	if event.Matches(mgr.options.includeFilters, mgr.options.excludeFilters) {
+		rateLimiter.Take()
 		mgr.bus.Publish(eventTopic, src, event)
 	}
 }

@@ -5,6 +5,10 @@ import (
 	"reflect"
 )
 
+// PerSourceMaxEventsPerSecond max events/second any one source can
+// TODO move this to config or CLI
+const PerSourceMaxEventsPerSecond = 1_000
+
 // Source ...
 type (
 	// Source of events. Responsible for ingest and conversion to the standard format.

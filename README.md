@@ -49,7 +49,7 @@ _Migrate these into GitHub issues_
 
 * Auto-complete for sources
 * Testing
-* Rate limiting
+* Better rate limiting
 * Migrate poll to push and remove poll
 * Recovery
 * Customizable output
