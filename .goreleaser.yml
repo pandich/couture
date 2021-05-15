@@ -27,6 +27,11 @@ changelog:
       - '^docs:'
       - '^test:'
 
+release:
+  github:
+    owner: gaggle-net
+    name: couture
+
 brews:
   -
     name: couture
