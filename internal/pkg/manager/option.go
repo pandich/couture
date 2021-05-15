@@ -1,17 +1,9 @@
 package manager
 
 import (
-	"couture/pkg/model"
+	"couture/pkg/model/level"
 	"regexp"
 	"time"
-)
-
-const (
-	verbosityLevelError = iota
-	verbosityLevelWarn
-	verbosityLevelInfo
-	verbosityLevelDebug
-	verbosityLevelTrace
 )
 
 // SinceOption ...
@@ -22,21 +14,9 @@ func SinceOption(t time.Time) interface{} {
 }
 
 // VerboseDisplayOption ...
-func VerboseDisplayOption(verbosity uint) interface{} {
+func VerboseDisplayOption(level level.Level) interface{} {
 	return baseOption{applier: func(mgr *managerOptions) {
-		switch verbosity {
-		case verbosityLevelTrace:
-			mgr.level = model.TraceLevel
-		case verbosityLevelDebug:
-			mgr.level = model.DebugLevel
-		case verbosityLevelInfo:
-			mgr.level = model.InfoLevel
-		case verbosityLevelWarn:
-			mgr.level = model.WarnLevel
-		case verbosityLevelError:
-		default:
-			mgr.level = model.ErrorLevel
-		}
+		mgr.level = level
 	}}
 }
 
@@ -49,7 +29,7 @@ func FilterOption(includeFilters []*regexp.Regexp, excludeFilters []*regexp.Rege
 }
 
 // LogLevelOption ...
-func LogLevelOption(level model.Level) interface{} {
+func LogLevelOption(level level.Level) interface{} {
 	return baseOption{applier: func(options *managerOptions) {
 		options.level = level
 	}}
@@ -67,7 +47,7 @@ func WrapOption(width int) interface{} {
 type (
 	// managerOptions
 	managerOptions struct {
-		level          model.Level
+		level          level.Level
 		wrap           *int
 		since          *time.Time
 		includeFilters []*regexp.Regexp

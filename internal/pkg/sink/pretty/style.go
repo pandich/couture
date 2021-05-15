@@ -3,6 +3,7 @@ package pretty
 import (
 	"couture/internal/pkg/source"
 	"couture/pkg/model"
+	"couture/pkg/model/level"
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/lucasb-eyer/go-colorful"
@@ -40,7 +41,7 @@ func (styler *styler) render(ia ...interface{}) string {
 			sa = append(sa, v)
 		case source.Source:
 			sa = append(sa, styler.sourceStyle(v).Render(v.URL().ShortForm()))
-		case model.Level:
+		case level.Level:
 			sa = append(sa, globalStyles[v].Render(string(v[0])))
 		case model.Stamp:
 			sa = append(sa, globalStyles[reflect.TypeOf(v)].Render(string(v)))
@@ -109,11 +110,11 @@ var (
 	}
 
 	globalStyles = map[interface{}]lipgloss.Style{
-		model.ErrorLevel: levelColumnStyle(errorColor),
-		model.WarnLevel:  levelColumnStyle(warnColor),
-		model.InfoLevel:  levelColumnStyle(infoColor),
-		model.DebugLevel: levelColumnStyle(debugColor),
-		model.TraceLevel: levelColumnStyle(traceColor),
+		level.Error: levelColumnStyle(errorColor),
+		level.Warn:  levelColumnStyle(warnColor),
+		level.Info:  levelColumnStyle(infoColor),
+		level.Debug: levelColumnStyle(debugColor),
+		level.Trace: levelColumnStyle(traceColor),
 
 		reflect.TypeOf(model.Stamp("")):           columnStyle(timestampColor).Width(len(time.Stamp)),
 		reflect.TypeOf(model.ApplicationName("")): columnStyle(applicationNameColor).Width(applicationNameWidth),

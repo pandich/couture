@@ -3,6 +3,7 @@ package manager
 import (
 	"couture/internal/pkg/source"
 	"couture/pkg/model"
+	"couture/pkg/model/level"
 	"fmt"
 	"net/url"
 	"time"
@@ -18,7 +19,7 @@ var internalSource = source.New(model.SourceURL{})
 
 func (mgr *publishingManager) publishError(
 	methodName model.MethodName,
-	level model.Level,
+	level level.Level,
 	err error,
 	message string,
 	args ...interface{},
@@ -28,7 +29,7 @@ func (mgr *publishingManager) publishError(
 	mgr.publishEvent(internalSource, event)
 }
 
-func (mgr *publishingManager) publishDiagnostic(level model.Level, methodName model.MethodName, message string) {
+func (mgr *publishingManager) publishDiagnostic(level level.Level, methodName model.MethodName, message string) {
 	event := newDiagnosticEvent(level, methodName, message)
 	mgr.publishEvent(internalSource, event)
 }
@@ -43,7 +44,7 @@ func (mgr *publishingManager) publishEvent(src source.Source, event model.Event)
 }
 
 func newDiagnosticEvent(
-	level model.Level,
+	level level.Level,
 	methodName model.MethodName,
 	message string,
 	messageArgs ...interface{},

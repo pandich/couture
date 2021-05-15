@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"couture/internal/pkg/manager"
-	"couture/internal/pkg/sink/pretty"
 	"github.com/pkg/errors"
 	"github.com/riywo/loginshell"
 	"github.com/spf13/cobra"
@@ -15,12 +13,7 @@ func handleDocCommand(cmd *cobra.Command) error {
 	format := os.Args[2]
 	switch format {
 	case "man":
-		return doc.GenMan(cmd, &doc.GenManHeader{
-			Title:   "Couture",
-			Section: "5",
-			Source:  "",
-			Manual:  "",
-		}, os.Stdout)
+		return doc.GenMan(cmd, &doc.GenManHeader{Title: commandName, Section: "1"}, os.Stdout)
 	case "md", "markdown":
 		return doc.GenMarkdown(cmd, os.Stdout)
 	default:
@@ -58,49 +51,15 @@ func handleLogCommand(cmd *cobra.Command) error {
 	return cmd.Execute()
 }
 
-func runner(cmd *cobra.Command, args []string) error {
-	persistent := cmd.PersistentFlags()
-	verbosityOption, err := verbosityOption(persistent)
-	if err != nil {
-		return err
-	}
-	wrapOption, err := wrapOption(persistent)
-	if err != nil {
-		return err
-	}
-	filterOption, err := filterOption(persistent)
-	if err != nil {
-		return err
-	}
-	levelOption, err := levelOption(persistent)
-	if err != nil {
-		return err
-	}
-	sinceOption, err := sinceOption(persistent)
-	if err != nil {
-		return err
-	}
+// Execute ...
+func Execute() error {
+	setupFlags(coutureCmd.PersistentFlags())
 
-	var options = []interface{}{
-		verbosityOption,
-		filterOption,
-		levelOption,
-		wrapOption,
-		pretty.New(),
+	if (len(os.Args) == 2 || len(os.Args) == 3) && os.Args[1] == ("complete") {
+		return handleCompleteCommand(coutureCmd)
 	}
-	if sinceOption != nil {
-		options = append(options, sinceOption)
+	if len(os.Args) == 3 && os.Args[1] == ("doc") {
+		return handleDocCommand(coutureCmd)
 	}
-	sourcesOptions, err := sourceOptions(args)
-	if err != nil {
-		return err
-	}
-	options = append(options, sourcesOptions...)
-
-	mgr, err := manager.New(options...)
-	if err != nil {
-		return err
-	}
-
-	return (*mgr).Start()
+	return handleLogCommand(coutureCmd)
 }

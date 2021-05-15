@@ -5,6 +5,7 @@ import (
 	"couture/internal/pkg/source/polling"
 	"couture/internal/pkg/source/pushing"
 	"couture/pkg/model"
+	"couture/pkg/model/level"
 	"errors"
 	errors2 "github.com/pkg/errors"
 	"io"
@@ -68,7 +69,7 @@ func (mgr *publishingManager) registerPollingSource(src polling.Source) error {
 					for _, event := range events {
 						mgr.publishError(
 							"poll",
-							model.WarnLevel,
+							level.Warn,
 							err,
 							"could not parse source %s record: %+v",
 							src.URL(),
@@ -78,7 +79,7 @@ func (mgr *publishingManager) registerPollingSource(src polling.Source) error {
 				} else {
 					mgr.publishError(
 						"poll",
-						model.ErrorLevel,
+						level.Error,
 						err,
 						"could not poll source %s",
 						src.URL(),

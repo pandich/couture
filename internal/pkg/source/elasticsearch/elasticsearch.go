@@ -4,6 +4,7 @@ import (
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/polling"
 	"couture/pkg/model"
+	"couture/pkg/model/level"
 	"encoding/json"
 	"errors"
 	errors2 "github.com/pkg/errors"
@@ -133,7 +134,7 @@ func (source elasticSearch) Poll() ([]model.Event, error) {
 			return []model.Event{
 				{
 					Timestamp:       model.Timestamp(time.Now()),
-					Level:           model.InfoLevel,
+					Level:           level.Info,
 					Message:         model.Message(holder.Event),
 					ApplicationName: nil,
 					MethodName:      "-",

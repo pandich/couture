@@ -3,6 +3,7 @@ package cli
 import (
 	"couture/internal/pkg/manager"
 	"couture/pkg/model"
+	"couture/pkg/model/level"
 	"github.com/araddon/dateparse"
 	errors2 "github.com/pkg/errors"
 	"github.com/spf13/pflag"
@@ -13,21 +14,6 @@ import (
 )
 
 func filterOption(persistent *pflag.FlagSet) (interface{}, error) {
-	filters := func(persistent *pflag.FlagSet, key string) ([]*regexp.Regexp, error) {
-		filterStrings, err := persistent.GetStringSlice(key)
-		if err != nil {
-			return nil, err
-		}
-		var filters []*regexp.Regexp
-		for _, filterString := range filterStrings {
-			filter, err := regexp.Compile(filterString)
-			if err != nil {
-				return nil, err
-			}
-			filters = append(filters, filter)
-		}
-		return filters, nil
-	}
 	includes, err := filters(persistent, includeFilterFlag)
 	if err != nil {
 		return nil, err
@@ -37,6 +23,35 @@ func filterOption(persistent *pflag.FlagSet) (interface{}, error) {
 		return nil, err
 	}
 	return manager.FilterOption(includes, excludes), nil
+}
+
+func filters(persistent *pflag.FlagSet, flagName string) ([]*regexp.Regexp, error) {
+	if !isFlagSet(persistent, flagName) {
+		return []*regexp.Regexp{}, nil
+	}
+	filterStrings, err := persistent.GetStringSlice(flagName)
+	if err != nil {
+		return nil, err
+	}
+	var filters []*regexp.Regexp
+	for _, filterString := range filterStrings {
+		filter, err := regexp.Compile(filterString)
+		if err != nil {
+			return nil, err
+		}
+		filters = append(filters, filter)
+	}
+	return filters, nil
+}
+
+func isFlagSet(persistent *pflag.FlagSet, key string) bool {
+	var found = false
+	persistent.VisitAll(func(f *pflag.Flag) {
+		if f.Name == key {
+			found = true
+		}
+	})
+	return found
 }
 
 func sinceOption(persistent *pflag.FlagSet) (interface{}, error) {
@@ -64,25 +79,16 @@ func sinceOption(persistent *pflag.FlagSet) (interface{}, error) {
 }
 
 func verbosityOption(persistent *pflag.FlagSet) (interface{}, error) {
-	verbose, err := persistent.GetBool(verboseFlag)
+	verboseFlag, err := persistent.GetCount(verboseFlag)
 	if err != nil {
 		return nil, err
 	}
-	quiet, err := persistent.GetBool(quietFlag)
-	if err != nil {
-		return nil, err
+	var verbosity = level.Warn.Priority() + verboseFlag
+	if verbosity > level.Trace.Priority() {
+		verbosity = level.Trace.Priority()
 	}
-	if verbose && quiet {
-		return nil, errors2.Errorf("verbose and quiet are mutually exclusive")
-	}
-	var verbosity = 1
-	if verbose {
-		verbosity++
-	}
-	if quiet {
-		verbosity--
-	}
-	return manager.VerboseDisplayOption(uint(verbosity)), nil
+	lvl := level.ByPriority(verbosity)
+	return manager.VerboseDisplayOption(lvl), nil
 }
 
 func wrapOption(persistent *pflag.FlagSet) (interface{}, error) {
@@ -97,15 +103,14 @@ func wrapOption(persistent *pflag.FlagSet) (interface{}, error) {
 }
 
 func levelOption(persistent *pflag.FlagSet) (interface{}, error) {
-	level, err := persistent.GetString(levelFlag)
+	levelName, err := persistent.GetString(levelFlag)
 	if err != nil {
 		return nil, err
 	}
-
-	if !model.IsValidLevel(level) {
-		return nil, errors2.Errorf("invalid level: %s", level)
+	if lvl, ok := level.New(levelName); ok {
+		return manager.LogLevelOption(lvl), nil
 	}
-	return manager.LogLevelOption(model.Level(level)), nil
+	return nil, errors2.Errorf("invalid levelName: %s", levelName)
 }
 
 func sourceOptions(sourceStrings []string) ([]interface{}, error) {
