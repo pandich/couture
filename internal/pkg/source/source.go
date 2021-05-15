@@ -1,8 +1,5 @@
 package source
 
-// TODO ssh+tail:// and tail:// – see https://github.com/nxadm/tail
-// TODO unified way to do lookback date: take it out of the URLs and put it into CLI args (i.e. --since)
-
 import (
 	"couture/pkg/model"
 	"reflect"

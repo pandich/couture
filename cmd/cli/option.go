@@ -55,7 +55,6 @@ func isFlagSet(persistent *pflag.FlagSet, key string) bool {
 }
 
 func sinceOption(persistent *pflag.FlagSet) (interface{}, error) {
-	var err error
 	var d time.Duration
 	sinceString, err := persistent.GetString(sinceFlag)
 	if err != nil {

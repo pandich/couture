@@ -1,5 +1,7 @@
 package cloudwatch
 
+// TODO CloudWatch source
+
 import (
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/aws"
@@ -107,7 +109,7 @@ func (source Source) Poll() ([]model.Event, error) {
 	var events []model.Event
 
 	// filter with source.lookbackTime
-	source.nextToken = nil // TODO implement polling of CloudWatch events.
+	source.nextToken = nil
 
 	return events, nil
 }

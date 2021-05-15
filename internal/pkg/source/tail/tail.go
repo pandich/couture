@@ -70,7 +70,8 @@ func (src fileSource) Start(wg *sync.WaitGroup, running func() bool, callback fu
 				var event model.Event
 				err := json.Unmarshal([]byte(line.Text), &event)
 				if err != nil {
-					// TODO do something?
+					// TODO how to deal with un-parsable strings -- this applies to billing info etc.
+					//		this will impact CloudWatch, too. Not all of its events are structured.
 					fmt.Println(err)
 				}
 				if err == nil {

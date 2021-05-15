@@ -1,5 +1,7 @@
 package ssh
 
+// TODO ssh source implementation
+
 import (
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/pushing"
@@ -43,7 +45,6 @@ func (src sshSource) Start(wg *sync.WaitGroup, running func() bool, _ func(event
 	f := func() {
 		defer wg.Done()
 		for running() {
-			// TODO
 		}
 	}
 	wg.Add(1)

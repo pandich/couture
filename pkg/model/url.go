@@ -30,10 +30,8 @@ func (u SourceURL) Since(key string) (*time.Time, error) {
 		if len(v) == 0 {
 			return nil, errors2.WithMessagef(errBadSince, "may not be blank")
 		}
-		var err error
-		var d time.Duration
 		arg := v[0]
-		d, err = time.ParseDuration(arg)
+		d, err := time.ParseDuration(arg)
 		if err == nil {
 			t := time.Now().Add(-d)
 			since = &t
@@ -81,9 +79,7 @@ func (u *SourceURL) QueryFlag(key string) bool {
 		if s == "" {
 			return true
 		}
-		var err error
-		var flag bool
-		if flag, err = strconv.ParseBool(s); err == nil {
+		if flag, err := strconv.ParseBool(s); err == nil {
 			return flag
 		}
 	}
