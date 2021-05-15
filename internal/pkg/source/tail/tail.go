@@ -12,6 +12,9 @@ import (
 	"sync"
 )
 
+// TODO file lookback lines
+// TODO file retry on not found like tail -F
+
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{

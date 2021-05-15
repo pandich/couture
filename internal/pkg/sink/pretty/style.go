@@ -127,6 +127,8 @@ var (
 		lineNumberDelimiter:                  baseStyle(lineNumberColor).MaxWidth(1).Bold(false),
 		reflect.TypeOf(model.LineNumber(0)):  baseStyle(lineNumberColor).Bold(true).Width(4),
 
+		// TODO this approach currently messes up the line breaks in the message and exception
+		//		rework to ensure
 		reflect.TypeOf(model.Message("")):              messageStyle(messageColor).Width(messageWidth),
 		reflect.TypeOf(model.UnhighlightedMessage("")): baseStyle(messageColor).MarginLeft(1),
 		reflect.TypeOf(model.HighlightedMessage("")): baseStyle(messageColor).MarginLeft(1).

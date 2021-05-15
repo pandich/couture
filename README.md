@@ -43,6 +43,34 @@ Installs to `$HOME/bin/couture`:
 * [Source Definitions](internal/pkg/source/source.go) - Where sources are defined.
 * [Sink Definitions](internal/pkg/sink/sink.go) - Where sinks are defined.
 
+## TODO
+
+_Migrate these into GitHub issues_
+
+* Auto-complete for sources
+* Testing
+* Rate limiting
+* Migrate poll to push and remove poll
+* Recovery
+* Customizable output
+    * Column selection and order
+    * Header
+    * Prefixes
+* Config file (see [Viper](https://github.com/spf13/viper#working-with-flags))
+    * Output options
+    * Aliases for sources
+* Make a real README
+* Make a real logo
+* Determine license
+* Customizable JSON schema? Are we conforming to some open logstash standard?
+* Ensure no Gaggle-specific code
+* Friendly pagination auto integration w/ less or something?
+* JSON pretty dump mode (see [Chroma](https://github.com/alecthomas/chroma))
+* Working releases / deployments
+* CodePipeline
+* Can we opensource?
+
 ## Future Ideas
 
-* Read/Write flat files via [Abstract File System](https:// github.com/viant/afs)?
+* Read/Write flat files via [Abstract File System](https:// github.com/viant/afs) 
+* Kinesis stream
