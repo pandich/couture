@@ -40,3 +40,4 @@ brews:
       name: couture
     folder: Formula
     description: "Allows for tailing multiple of event sources."
+    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
