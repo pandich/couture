@@ -27,4 +27,11 @@ changelog:
       - '^docs:'
       - '^test:'
 
-# TODO release to homebrew?
+brews:
+  -
+    name: couture
+    tap:
+      owner: gaggle-net
+      name: couture
+    folder: Formula
+    description: "Allows for tailing multiple of event sources."
