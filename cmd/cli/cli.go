@@ -28,7 +28,7 @@ const (
 	wrapFlag          = "wrap"
 )
 
-var coutureCmd = &cobra.Command{
+var couture = &cobra.Command{
 	Version: version,
 	Use:     commandName + " [flags] source_url ...",
 	Short:   "Tails one or more event sourceMetadata.\n",

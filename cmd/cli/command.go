@@ -53,13 +53,13 @@ func handleLogCommand(cmd *cobra.Command) error {
 
 // Execute ...
 func Execute() error {
-	setupFlags(coutureCmd.PersistentFlags())
+	setupFlags(couture.PersistentFlags())
 
 	if (len(os.Args) == 2 || len(os.Args) == 3) && os.Args[1] == ("complete") {
-		return handleCompleteCommand(coutureCmd)
+		return handleCompleteCommand(couture)
 	}
 	if len(os.Args) == 3 && os.Args[1] == ("doc") {
-		return handleDocCommand(coutureCmd)
+		return handleDocCommand(couture)
 	}
-	return handleLogCommand(coutureCmd)
+	return handleLogCommand(couture)
 }
