@@ -91,14 +91,24 @@ func verbosityOption(persistent *pflag.FlagSet) (interface{}, error) {
 }
 
 func wrapOption(persistent *pflag.FlagSet) (interface{}, error) {
-	wrap, err := persistent.GetInt(wrapFlag)
+	wrap, err := persistent.GetUint(wrapFlag)
 	if err != nil {
 		return nil, err
 	}
-	if wrap < 0 {
-		return nil, errors2.Errorf("bad wrap width: %d", wrap)
-	}
 	return manager.WrapOption(wrap), nil
+}
+
+func rateLimitOption(persistent *pflag.FlagSet) (interface{}, error) {
+	const minRateLimit = 100
+	const maxRateLimit = 10_000
+	rateLimit, err := persistent.GetUint(rateLimitFlag)
+	if err != nil {
+		return nil, err
+	}
+	if rateLimit < minRateLimit || rateLimit > maxRateLimit {
+		return nil, errors2.Errorf("bad rate limit: %d - must be in (%d, %d)", rateLimit, minRateLimit, maxRateLimit)
+	}
+	return manager.RateLimitOption(rateLimit), nil
 }
 
 func levelOption(persistent *pflag.FlagSet) (interface{}, error) {

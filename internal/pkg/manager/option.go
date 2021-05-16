@@ -2,21 +2,30 @@ package manager
 
 import (
 	"couture/pkg/model/level"
+	"go.uber.org/ratelimit"
 	"regexp"
 	"time"
 )
 
+// RateLimitOption ...
+func RateLimitOption(rateLimit uint) interface{} {
+	return baseOption{applier: func(options *managerOptions) {
+		limiter := ratelimit.New(int(rateLimit))
+		options.rateLimiter = &limiter
+	}}
+}
+
 // SinceOption ...
 func SinceOption(t time.Time) interface{} {
-	return baseOption{applier: func(mgr *managerOptions) {
-		mgr.since = &t
+	return baseOption{applier: func(options *managerOptions) {
+		options.since = &t
 	}}
 }
 
 // VerboseDisplayOption ...
 func VerboseDisplayOption(level level.Level) interface{} {
-	return baseOption{applier: func(mgr *managerOptions) {
-		mgr.level = level
+	return baseOption{applier: func(options *managerOptions) {
+		options.level = level
 	}}
 }
 
@@ -36,7 +45,7 @@ func LogLevelOption(level level.Level) interface{} {
 }
 
 // WrapOption ...
-func WrapOption(width int) interface{} {
+func WrapOption(width uint) interface{} {
 	return baseOption{applier: func(options *managerOptions) {
 		if width > 0 {
 			options.wrap = &width
@@ -47,8 +56,9 @@ func WrapOption(width int) interface{} {
 type (
 	// managerOptions
 	managerOptions struct {
+		rateLimiter    *ratelimit.Limiter
 		level          level.Level
-		wrap           *int
+		wrap           *uint
 		since          *time.Time
 		includeFilters []*regexp.Regexp
 		excludeFilters []*regexp.Regexp
@@ -56,7 +66,7 @@ type (
 
 	// option is an entity capable of mutating the state of a managerOptions struct.
 	option interface {
-		Apply(manager *managerOptions)
+		Apply(options *managerOptions)
 	}
 
 	baseOption struct {

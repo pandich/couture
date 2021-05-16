@@ -28,8 +28,6 @@ type (
 		// pushingSources is the set of registry which push to the event queue. Their lifecycle follows the Manager's lifecycle.
 		// (i.e. Start and Stop)
 		pushingSources []pushing.Source
-
-		// TODO move rate limiter here
 	}
 )
 

@@ -28,12 +28,17 @@ func runner(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	rateLimitOption, err := rateLimitOption(persistent)
+	if err != nil {
+		return err
+	}
 
 	var options = []interface{}{
 		verbosityOption,
 		filterOption,
 		levelOption,
 		wrapOption,
+		rateLimitOption,
 		pretty.New(),
 	}
 	if sinceOption != nil {

@@ -2,14 +2,12 @@ package manager
 
 import (
 	"couture/internal/pkg/sink"
-	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/polling"
 	"couture/internal/pkg/source/pushing"
 	"couture/pkg/model"
 	"couture/pkg/model/level"
 	"errors"
 	errors2 "github.com/pkg/errors"
-	"go.uber.org/ratelimit"
 	"io"
 	"sync"
 	"time"
@@ -56,7 +54,6 @@ func (mgr *publishingManager) registerPushingSource(src pushing.Source) error {
 // registerPollingSource registers one or more registry to be polled for events.
 // If no events are available the source pauses for pollInterval.
 func (mgr *publishingManager) registerPollingSource(src polling.Source) error {
-	rateLimiter := ratelimit.New(source.PerSourceMaxEventsPerSecond)
 	mgr.pollStarters = append(mgr.pollStarters, func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		for mgr.running {
@@ -70,7 +67,6 @@ func (mgr *publishingManager) registerPollingSource(src polling.Source) error {
 			if err != nil && !errors.Is(err, io.EOF) {
 				if len(events) > 0 {
 					for _, event := range events {
-						rateLimiter.Take()
 						mgr.publishError(
 							"poll",
 							level.Warn,
@@ -81,7 +77,6 @@ func (mgr *publishingManager) registerPollingSource(src polling.Source) error {
 						)
 					}
 				} else {
-					rateLimiter.Take()
 					mgr.publishError(
 						"poll",
 						level.Error,

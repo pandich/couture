@@ -23,6 +23,7 @@ const (
 	excludeFilterFlag = "exclude"
 	includeFilterFlag = "include"
 	levelFlag         = "level"
+	rateLimitFlag     = "rate-limit"
 	sinceFlag         = "since"
 	verboseFlag       = "verbose"
 	wrapFlag          = "wrap"
@@ -42,10 +43,12 @@ var couture = &cobra.Command{
 }
 
 func setupFlags(persistent *pflag.FlagSet) {
+	const defaultRateLimit = 1_000
 	const noWrap = 0
 
 	persistent.CountP(verboseFlag, "v", "Display additional diagnostic data.")
-	persistent.IntP(wrapFlag, "w", noWrap, "Display no diagnostic data.")
+	persistent.UintP(rateLimitFlag, "r", defaultRateLimit, "Max events per second to process.")
+	persistent.UintP(wrapFlag, "w", noWrap, "Display no diagnostic data.")
 	persistent.StringP(levelFlag, "l", "info", "Minimum log level to display (trace, debug, info warn, error.")
 	persistent.StringP(sinceFlag, "s", "5m", "How far back in time to search for events.")
 	persistent.StringSliceP(
