@@ -27,6 +27,20 @@ changelog:
       - '^docs:'
       - '^test:'
 
+release:
+  github:
+    owner: gaggle-net
+    name: couture
+
+brews:
+  - name: couture
+    tap:
+      owner: gaggle-net
+      name: couture
+    folder: Formula
+    description: "Allows for tailing multiple event sources."
+    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
+
 # TODO goreleaser: release to homebrew
 # TODO goreleaser: private github release
 # TODO goreleaser: sign the artifact
