@@ -33,11 +33,10 @@ release:
     name: couture
 
 brews:
-  -
-    name: couture
+  - name: couture
     tap:
       owner: gaggle-net
       name: couture
     folder: Formula
-    description: "Allows for tailing multiple of event sources."
+    description: "Allows for tailing multiple event sources."
     download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
