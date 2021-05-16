@@ -2,16 +2,14 @@ package manager
 
 import (
 	"couture/pkg/model/level"
-	"go.uber.org/ratelimit"
 	"regexp"
 	"time"
 )
 
-// RateLimitOption ...
-func RateLimitOption(rateLimit uint) interface{} {
+// PagerOption ...
+func PagerOption(pager string) interface{} {
 	return baseOption{applier: func(options *managerOptions) {
-		limiter := ratelimit.New(int(rateLimit))
-		options.rateLimiter = &limiter
+		options.pager = &pager
 	}}
 }
 
@@ -56,12 +54,12 @@ func WrapOption(width uint) interface{} {
 type (
 	// managerOptions
 	managerOptions struct {
-		rateLimiter    *ratelimit.Limiter
 		level          level.Level
 		wrap           *uint
 		since          *time.Time
 		includeFilters []*regexp.Regexp
 		excludeFilters []*regexp.Regexp
+		pager          *string
 	}
 
 	// option is an entity capable of mutating the state of a managerOptions struct.

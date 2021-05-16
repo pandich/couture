@@ -5,6 +5,7 @@ import (
 	"github.com/riywo/loginshell"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
+	"github.com/spf13/viper"
 	"os"
 	"path"
 )
@@ -49,12 +50,19 @@ func handleCompleteCommand(cmd *cobra.Command) error {
 }
 
 func handleLogCommand(cmd *cobra.Command) error {
+	viper.AutomaticEnv()
+	// FIXME the binding does not work
+	if err := viper.BindPFlag(pagerFlag, cmd.PersistentFlags().Lookup(pagerFlag)); err != nil {
+		return err
+	}
 	return cmd.Execute()
 }
 
 // RunCommand ...
 func RunCommand() error {
-	setupFlags(couture.PersistentFlags())
+	if err := setupFlags(couture.PersistentFlags()); err != nil {
+		return err
+	}
 	if (len(os.Args) == 2 || len(os.Args) == 3) && os.Args[1] == "complete" {
 		return handleCompleteCommand(couture)
 	}

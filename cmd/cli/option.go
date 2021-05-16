@@ -13,26 +13,29 @@ import (
 	"gopkg.in/multierror.v1"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 )
 
-func filterOption(persistent *pflag.FlagSet) (interface{}, error) {
-	includes, err := filters(persistent, includeFilterFlag)
+const noWrap = 0
+
+func filterOption(flags *pflag.FlagSet) (interface{}, error) {
+	includes, err := filters(flags, includeFilterFlag)
 	if err != nil {
 		return nil, err
 	}
-	excludes, err := filters(persistent, excludeFilterFlag)
+	excludes, err := filters(flags, excludeFilterFlag)
 	if err != nil {
 		return nil, err
 	}
 	return manager.FilterOption(includes, excludes), nil
 }
 
-func filters(persistent *pflag.FlagSet, flagName string) ([]*regexp.Regexp, error) {
-	if !isFlagSet(persistent, flagName) {
+func filters(flags *pflag.FlagSet, flagName string) ([]*regexp.Regexp, error) {
+	if !isFlagSet(flags, flagName) {
 		return []*regexp.Regexp{}, nil
 	}
-	filterStrings, err := persistent.GetStringSlice(flagName)
+	filterStrings, err := flags.GetStringSlice(flagName)
 	if err != nil {
 		return nil, err
 	}
@@ -47,9 +50,9 @@ func filters(persistent *pflag.FlagSet, flagName string) ([]*regexp.Regexp, erro
 	return filters, nil
 }
 
-func isFlagSet(persistent *pflag.FlagSet, key string) bool {
+func isFlagSet(flags *pflag.FlagSet, key string) bool {
 	var found = false
-	persistent.VisitAll(func(f *pflag.Flag) {
+	flags.VisitAll(func(f *pflag.Flag) {
 		if f.Name == key {
 			found = true
 		}
@@ -57,9 +60,9 @@ func isFlagSet(persistent *pflag.FlagSet, key string) bool {
 	return found
 }
 
-func sinceOption(persistent *pflag.FlagSet) (interface{}, error) {
+func sinceOption(flags *pflag.FlagSet) (interface{}, error) {
 	var d time.Duration
-	sinceString, err := persistent.GetString(sinceFlag)
+	sinceString, err := flags.GetString(sinceFlag)
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +83,8 @@ func sinceOption(persistent *pflag.FlagSet) (interface{}, error) {
 	return nil, errors2.Errorf("invalid timestamp or duration: %s\n", sinceString)
 }
 
-func verbosityOption(persistent *pflag.FlagSet) (interface{}, error) {
-	verboseFlag, err := persistent.GetCount(verboseFlag)
+func verbosityOption(flags *pflag.FlagSet) (interface{}, error) {
+	verboseFlag, err := flags.GetCount(verboseFlag)
 	if err != nil {
 		return nil, err
 	}
@@ -93,29 +96,29 @@ func verbosityOption(persistent *pflag.FlagSet) (interface{}, error) {
 	return manager.VerboseDisplayOption(lvl), nil
 }
 
-func wrapOption(persistent *pflag.FlagSet) (interface{}, error) {
-	wrap, err := persistent.GetUint(wrapFlag)
+func wrapOption(flags *pflag.FlagSet) (interface{}, error) {
+	wrap, err := flags.GetUint(wrapFlag)
 	if err != nil {
 		return nil, err
 	}
 	return manager.WrapOption(wrap), nil
 }
 
-func rateLimitOption(persistent *pflag.FlagSet) (interface{}, error) {
-	const minRateLimit = 100
-	const maxRateLimit = 10_000
-	rateLimit, err := persistent.GetUint(rateLimitFlag)
+func pagerOption(flags *pflag.FlagSet) (*interface{}, error) {
+	pager, err := flags.GetString(pagerFlag)
 	if err != nil {
 		return nil, err
 	}
-	if rateLimit < minRateLimit || rateLimit > maxRateLimit {
-		return nil, errors2.Errorf("bad rate limit: %d - must be in (%d, %d)\n", rateLimit, minRateLimit, maxRateLimit)
+	pager = strings.Trim(pager, " \t")
+	if pager == "" {
+		return nil, nil
 	}
-	return manager.RateLimitOption(rateLimit), nil
+	option := manager.PagerOption(pager)
+	return &option, nil
 }
 
-func levelOption(persistent *pflag.FlagSet) (interface{}, error) {
-	levelName, err := persistent.GetString(levelFlag)
+func levelOption(flags *pflag.FlagSet) (interface{}, error) {
+	levelName, err := flags.GetString(levelFlag)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +191,7 @@ func getOptions(flags *pflag.FlagSet) ([]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	rateLimitOption, err := rateLimitOption(flags)
+	pagerOption, err := pagerOption(flags)
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +205,10 @@ func getOptions(flags *pflag.FlagSet) ([]interface{}, error) {
 		filterOption,
 		levelOption,
 		wrapOption,
-		rateLimitOption,
+	}
+
+	if pagerOption != nil {
+		options = append(options, *pagerOption)
 	}
 
 	if sinceOption != nil {

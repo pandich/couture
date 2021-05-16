@@ -37,9 +37,6 @@ func (mgr *publishingManager) publishEvent(src source.Source, event model.Event)
 		return
 	}
 	if event.Matches(mgr.options.includeFilters, mgr.options.excludeFilters) {
-		if mgr.options.rateLimiter != nil {
-			(*mgr.options.rateLimiter).Take()
-		}
 		mgr.bus.Publish(eventTopic, src, event)
 	}
 }

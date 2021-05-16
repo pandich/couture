@@ -20,7 +20,7 @@ const (
 	includeFilterFlag = "include"
 	levelFlag         = "level"
 	outputFormatFlag  = "format"
-	rateLimitFlag     = "rate-limit"
+	pagerFlag         = "pager"
 	sinceFlag         = "since"
 	verboseFlag       = "verbose"
 	wrapFlag          = "wrap"
@@ -38,12 +38,10 @@ var couture = &cobra.Command{
 	RunE:    runner,
 }
 
-func setupFlags(flags *pflag.FlagSet) {
-	const noWrap = 0
-	const defaultRateLimit = 1_000
+func setupFlags(flags *pflag.FlagSet) error {
 	flags.StringP(outputFormatFlag, "o", "pretty", "The output format. [pretty | json]")
 	flags.CountP(verboseFlag, "v", "Display additional diagnostic data.")
-	flags.UintP(rateLimitFlag, "r", defaultRateLimit, "Max events per second to process.")
+	flags.StringP(pagerFlag, "p", "", "Paginator to use.")
 	flags.UintP(wrapFlag, "w", noWrap, "Display no diagnostic data.")
 	flags.StringP(levelFlag, "l", "info", "Minimum log level to display (trace, debug, info warn, error.")
 	flags.StringP(sinceFlag, "s", "5m", "How far back in time to search for events.")
@@ -54,7 +52,6 @@ func setupFlags(flags *pflag.FlagSet) {
 		viper.SetConfigType("yaml")
 		viper.AddConfigPath("$HOME")
 		viper.AddConfigPath(".")
-		viper.AutomaticEnv()
 		err := viper.ReadInConfig()
 		target := &viper.ConfigFileNotFoundError{}
 		if err != nil && !errors.As(err, &target) {
@@ -62,6 +59,7 @@ func setupFlags(flags *pflag.FlagSet) {
 		}
 		return nil
 	}
+	return nil
 }
 
 // sourceMetadata is a list of sourceMetadata sourceMetadata.
