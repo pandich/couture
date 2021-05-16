@@ -6,6 +6,7 @@ import (
 	"couture/internal/pkg/source/aws"
 	"couture/internal/pkg/source/aws/cloudwatch"
 	"couture/pkg/model"
+	"couture/pkg/model/level"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
@@ -45,27 +46,27 @@ const (
 )
 
 // logLevelByResourceStatus maps each possible resource status to a log level.
-var logLevelByResourceStatus = map[types.ResourceStatus]model.Level{
-	types.ResourceStatusCreateInProgress: model.LevelInfo,
-	types.ResourceStatusCreateFailed:     model.LevelError,
-	types.ResourceStatusCreateComplete:   model.LevelInfo,
+var logLevelByResourceStatus = map[types.ResourceStatus]level.Level{
+	types.ResourceStatusCreateInProgress: level.Info,
+	types.ResourceStatusCreateFailed:     level.Error,
+	types.ResourceStatusCreateComplete:   level.Info,
 
-	types.ResourceStatusDeleteInProgress: model.LevelInfo,
-	types.ResourceStatusDeleteFailed:     model.LevelError,
-	types.ResourceStatusDeleteComplete:   model.LevelInfo,
-	types.ResourceStatusDeleteSkipped:    model.LevelWarn,
+	types.ResourceStatusDeleteInProgress: level.Info,
+	types.ResourceStatusDeleteFailed:     level.Error,
+	types.ResourceStatusDeleteComplete:   level.Info,
+	types.ResourceStatusDeleteSkipped:    level.Warn,
 
-	types.ResourceStatusUpdateInProgress: model.LevelInfo,
-	types.ResourceStatusUpdateFailed:     model.LevelError,
-	types.ResourceStatusUpdateComplete:   model.LevelInfo,
+	types.ResourceStatusUpdateInProgress: level.Info,
+	types.ResourceStatusUpdateFailed:     level.Error,
+	types.ResourceStatusUpdateComplete:   level.Info,
 
-	types.ResourceStatusImportFailed:     model.LevelError,
-	types.ResourceStatusImportComplete:   model.LevelInfo,
-	types.ResourceStatusImportInProgress: model.LevelInfo,
+	types.ResourceStatusImportFailed:     level.Error,
+	types.ResourceStatusImportComplete:   level.Info,
+	types.ResourceStatusImportInProgress: level.Info,
 
-	types.ResourceStatusImportRollbackInProgress: model.LevelWarn,
-	types.ResourceStatusImportRollbackFailed:     model.LevelError,
-	types.ResourceStatusImportRollbackComplete:   model.LevelWarn,
+	types.ResourceStatusImportRollbackInProgress: level.Warn,
+	types.ResourceStatusImportRollbackFailed:     level.Error,
+	types.ResourceStatusImportRollbackComplete:   level.Warn,
 }
 
 // URL schemes supported
@@ -220,10 +221,10 @@ func (source cloudFormationSource) getStackEvents() ([]model.Event, error) {
 	var events []model.Event
 	for _, stackEvent := range stackEvents.StackEvents {
 		if source.lookbackTime == nil || source.lookbackTime.Before(*stackEvent.Timestamp) {
-			level := logLevelByResourceStatus[stackEvent.ResourceStatus]
+			lvl := logLevelByResourceStatus[stackEvent.ResourceStatus]
 
 			var exception *model.Exception
-			if level == model.LevelError {
+			if lvl == level.Error {
 				exception = &model.Exception{
 					StackTrace: model.StackTrace(*stackEvent.ResourceStatusReason),
 				}
@@ -236,7 +237,7 @@ func (source cloudFormationSource) getStackEvents() ([]model.Event, error) {
 				ClassName:  model.ClassName(*stackEvent.StackName),
 				MethodName: model.MethodName(*stackEvent.EventId),
 				LineNumber: model.NoLineNumber,
-				Level:      level,
+				Level:      lvl,
 				Message:    model.Message(stackEvent.ResourceStatus),
 				Exception:  exception,
 			})

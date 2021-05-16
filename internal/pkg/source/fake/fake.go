@@ -4,6 +4,7 @@ import (
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/polling"
 	"couture/pkg/model"
+	"couture/pkg/model/level"
 	"github.com/brianvoe/gofakeit/v6"
 	errors2 "github.com/pkg/errors"
 	"io"
@@ -44,7 +45,7 @@ func create(sourceURL model.SourceURL) (*interface{}, error) {
 func newSource(sourceURL model.SourceURL) (*polling.Source, error) {
 	seed, err := sourceURL.QueryInt64("seed")
 	if err != nil {
-		return nil, errors2.Wrapf(err, "could not parse seed")
+		return nil, errors2.Wrapf(err, "could not parse seed\n")
 	}
 	if seed != nil {
 		gofakeit.Seed(*seed)
@@ -60,11 +61,11 @@ func (source fakeSource) Poll() ([]model.Event, error) {
 		return []model.Event{}, io.EOF
 	}
 	var exception *model.Exception
-	var level = []model.Level{
-		model.LevelTrace,
-		model.LevelDebug,
-		model.LevelInfo,
-		model.LevelWarn,
+	var lvl = []level.Level{
+		level.Trace,
+		level.Debug,
+		level.Info,
+		level.Warn,
 	}[rand.Intn(4)]
 	const count = 10
 	if rand.Intn(100) > 90 {
@@ -75,14 +76,14 @@ func (source fakeSource) Poll() ([]model.Event, error) {
 			gofakeit.Sentence(count),
 		}, "\n")
 		exception = &model.Exception{StackTrace: model.StackTrace(stackTrace)}
-		level = model.LevelError
+		lvl = level.Error
 	}
 
 	threadName := model.ThreadName(gofakeit.Username())
 	return []model.Event{{
 		ApplicationName: &applicationName,
 		Timestamp:       model.Timestamp(time.Now().Truncate(time.Hour)),
-		Level:           level,
+		Level:           lvl,
 		Message:         model.Message(gofakeit.HipsterParagraph(1, 4, count, "\n")),
 		MethodName:      model.MethodName(gofakeit.Animal()),
 		LineNumber:      model.LineNumber(uint64(rand.Intn(200))),

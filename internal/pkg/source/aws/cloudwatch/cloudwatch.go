@@ -1,5 +1,7 @@
 package cloudwatch
 
+// TODO CloudWatch source
+
 import (
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/aws"
@@ -76,7 +78,7 @@ func New(sourceURL model.SourceURL) (*Source, error) {
 	normalizeURL(sourceURL)
 	awsSource, err := aws.New(&sourceURL)
 	if err != nil {
-		return nil, errors2.Wrapf(err, "bad CloudWatch URL: %+v", sourceURL)
+		return nil, errors2.Wrapf(err, "bad CloudWatch URL: %+v\n", sourceURL)
 	}
 	lookbackTime, err := sourceURL.Since(lookbackTimeFlag)
 	if err != nil {
@@ -107,7 +109,7 @@ func (source Source) Poll() ([]model.Event, error) {
 	var events []model.Event
 
 	// filter with source.lookbackTime
-	source.nextToken = nil // TODO implement polling of CloudWatch events.
+	source.nextToken = nil
 
 	return events, nil
 }

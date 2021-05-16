@@ -3,6 +3,7 @@ package pretty
 import (
 	"couture/internal/pkg/source"
 	"couture/pkg/model"
+	"couture/pkg/model/level"
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/lucasb-eyer/go-colorful"
@@ -40,7 +41,7 @@ func (styler *styler) render(ia ...interface{}) string {
 			sa = append(sa, v)
 		case source.Source:
 			sa = append(sa, styler.sourceStyle(v).Render(v.URL().ShortForm()))
-		case model.Level:
+		case level.Level:
 			sa = append(sa, globalStyles[v].Render(string(v[0])))
 		case model.Stamp:
 			sa = append(sa, globalStyles[reflect.TypeOf(v)].Render(string(v)))
@@ -50,7 +51,7 @@ func (styler *styler) render(ia ...interface{}) string {
 			if style, ok := globalStyles[reflect.TypeOf(i)]; ok {
 				sa = append(sa, style.Render(fmt.Sprint(i)))
 			} else {
-				panic(errors2.Errorf("unknown type: %+v %T", i, i))
+				panic(errors2.Errorf("unknown type: %+v %T\n", i, i))
 			}
 		}
 	}
@@ -109,11 +110,11 @@ var (
 	}
 
 	globalStyles = map[interface{}]lipgloss.Style{
-		model.LevelError: levelColumnStyle(errorColor),
-		model.LevelWarn:  levelColumnStyle(warnColor),
-		model.LevelInfo:  levelColumnStyle(infoColor),
-		model.LevelDebug: levelColumnStyle(debugColor),
-		model.LevelTrace: levelColumnStyle(traceColor),
+		level.Error: levelColumnStyle(errorColor),
+		level.Warn:  levelColumnStyle(warnColor),
+		level.Info:  levelColumnStyle(infoColor),
+		level.Debug: levelColumnStyle(debugColor),
+		level.Trace: levelColumnStyle(traceColor),
 
 		reflect.TypeOf(model.Stamp("")):           columnStyle(timestampColor).Width(len(time.Stamp)),
 		reflect.TypeOf(model.ApplicationName("")): columnStyle(applicationNameColor).Width(applicationNameWidth),
@@ -126,6 +127,8 @@ var (
 		lineNumberDelimiter:                  baseStyle(lineNumberColor).MaxWidth(1).Bold(false),
 		reflect.TypeOf(model.LineNumber(0)):  baseStyle(lineNumberColor).Bold(true).Width(4),
 
+		// TODO this approach currently messes up the line breaks in the message and exception
+		//		rework to ensure
 		reflect.TypeOf(model.Message("")):              messageStyle(messageColor).Width(messageWidth),
 		reflect.TypeOf(model.UnhighlightedMessage("")): baseStyle(messageColor).MarginLeft(1),
 		reflect.TypeOf(model.HighlightedMessage("")): baseStyle(messageColor).MarginLeft(1).
