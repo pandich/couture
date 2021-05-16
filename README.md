@@ -55,9 +55,6 @@ _Migrate these into GitHub issues_
     * Column selection and order
     * Header
     * Prefixes
-* Config file (see [Viper](https://github.com/spf13/viper#working-with-flags))
-    * Output options
-    * Aliases for sources
 * Make a real README
 * Make a real logo
 * Determine license
@@ -71,5 +68,5 @@ _Migrate these into GitHub issues_
 
 ## Future Ideas
 
-* Read/Write flat files via [Abstract File System](https:// github.com/viant/afs) 
+* Read/Write flat files via [Abstract File System](https:// github.com/viant/afs)
 * Kinesis stream
