@@ -1,8 +1,6 @@
-# Couture
+![Couture](docs/couture.png)
 
-![Couture](https://static.thenounproject.com/png/566246-200.png)
-
-Combine multiple log streams from disparate sources.
+Couture combines multiple log streams from disparate sources into friendly output.
 
     couture --level=debug \
             --include='\d+ trousers?' --include='[A-Z]{3}-slacks' \
@@ -13,6 +11,10 @@ Combine multiple log streams from disparate sources.
             'cloudformation://clothing-service-stack?region=us-west-2&profile=production' \
             'cloudwatch:///aws/lambda/monitor-lambda' \
             'lambda://suits-lambda'
+
+
+# TODO example output
+
 
 ## Overview
 
