@@ -5,7 +5,6 @@ import (
 	"github.com/riywo/loginshell"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
-	"github.com/spf13/viper"
 	"os"
 	"path"
 )
@@ -14,7 +13,7 @@ func handleDocCommand(cmd *cobra.Command) error {
 	format := os.Args[2]
 	switch format {
 	case "man":
-		return doc.GenMan(cmd, &doc.GenManHeader{Title: commandName, Section: "1"}, os.Stdout)
+		return doc.GenMan(cmd, &doc.GenManHeader{Title: "couture", Section: "1"}, os.Stdout)
 	case "md", "markdown":
 		return doc.GenMarkdown(cmd, os.Stdout)
 	default:
@@ -23,6 +22,7 @@ func handleDocCommand(cmd *cobra.Command) error {
 }
 
 func handleCompleteCommand(cmd *cobra.Command) error {
+	// FIXME file is generated, but completions don't work
 	const shellNameArgIndex = 2
 	var shellName string
 	if len(os.Args) > shellNameArgIndex {
@@ -52,23 +52,9 @@ func handleLogCommand(cmd *cobra.Command) error {
 	return cmd.Execute()
 }
 
-// Execute ...
-func Execute() error {
-	couture.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		setupFlags(couture.PersistentFlags())
-		viper.SetConfigName(".couture")
-		viper.SetConfigType("yaml")
-		viper.AddConfigPath("$HOME")
-		viper.AddConfigPath(".")
-		viper.AutomaticEnv()
-		err := viper.ReadInConfig()
-		target := &viper.ConfigFileNotFoundError{}
-		if err != nil && !errors.As(err, &target) {
-			return errors.Errorf("fatal error config file: %s\n", err)
-		}
-		return nil
-	}
-
+// RunCommand ...
+func RunCommand() error {
+	setupFlags(couture.PersistentFlags())
 	if (len(os.Args) == 2 || len(os.Args) == 3) && os.Args[1] == "complete" {
 		return handleCompleteCommand(couture)
 	}

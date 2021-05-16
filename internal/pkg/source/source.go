@@ -46,7 +46,6 @@ func (grep MetadataGroup) ExampleURLs() []string {
 	var exampleURLs []string
 	for _, src := range grep {
 		exampleURLs = append(exampleURLs, src.ExampleURLs...)
-		exampleURLs = append(exampleURLs, "\n")
 	}
 	return exampleURLs
 }
