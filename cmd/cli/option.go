@@ -2,6 +2,8 @@ package cli
 
 import (
 	"couture/internal/pkg/manager"
+	"couture/internal/pkg/sink/json"
+	"couture/internal/pkg/sink/pretty"
 	"couture/pkg/model"
 	"couture/pkg/model/level"
 	"github.com/araddon/dateparse"
@@ -163,4 +165,56 @@ func sourceOptions(sourceStrings []string) ([]interface{}, error) {
 		return nil, multierror.New(violations)
 	}
 	return configuredSources, nil
+}
+
+func getOptions(flags *pflag.FlagSet) ([]interface{}, error) {
+	verbosityOption, err := verbosityOption(flags)
+	if err != nil {
+		return nil, err
+	}
+	wrapOption, err := wrapOption(flags)
+	if err != nil {
+		return nil, err
+	}
+	filterOption, err := filterOption(flags)
+	if err != nil {
+		return nil, err
+	}
+	levelOption, err := levelOption(flags)
+	if err != nil {
+		return nil, err
+	}
+	sinceOption, err := sinceOption(flags)
+	if err != nil {
+		return nil, err
+	}
+	rateLimitOption, err := rateLimitOption(flags)
+	if err != nil {
+		return nil, err
+	}
+	outputFormat, err := flags.GetString(outputFormatFlag)
+	if err != nil {
+		return nil, err
+	}
+
+	var options = []interface{}{
+		verbosityOption,
+		filterOption,
+		levelOption,
+		wrapOption,
+		rateLimitOption,
+	}
+
+	if sinceOption != nil {
+		options = append(options, sinceOption)
+	}
+	switch outputFormat {
+	case "json":
+		options = append(options, json.New())
+	case "pretty":
+		options = append(options, pretty.New())
+	default:
+		return nil, errors2.Errorf("unknown output format: %s", outputFormat)
+	}
+	return options, nil
 }

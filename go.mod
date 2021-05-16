@@ -3,6 +3,7 @@ module couture
 go 1.16
 
 require (
+	github.com/alecthomas/chroma v0.9.1
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/aws/aws-sdk-go-v2 v1.3.2

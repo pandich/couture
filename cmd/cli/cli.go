@@ -19,6 +19,7 @@ const (
 	excludeFilterFlag = "exclude"
 	includeFilterFlag = "include"
 	levelFlag         = "level"
+	outputFormatFlag  = "format"
 	rateLimitFlag     = "rate-limit"
 	sinceFlag         = "since"
 	verboseFlag       = "verbose"
@@ -37,16 +38,17 @@ var couture = &cobra.Command{
 	RunE:    runner,
 }
 
-func setupFlags(persistent *pflag.FlagSet) {
+func setupFlags(flags *pflag.FlagSet) {
 	const noWrap = 0
 	const defaultRateLimit = 1_000
-	persistent.CountP(verboseFlag, "v", "Display additional diagnostic data.")
-	persistent.UintP(rateLimitFlag, "r", defaultRateLimit, "Max events per second to process.")
-	persistent.UintP(wrapFlag, "w", noWrap, "Display no diagnostic data.")
-	persistent.StringP(levelFlag, "l", "info", "Minimum log level to display (trace, debug, info warn, error.")
-	persistent.StringP(sinceFlag, "s", "5m", "How far back in time to search for events.")
-	persistent.StringSliceP(includeFilterFlag, "i", []string{}, "Include filter regular expressions. Performed before excludes.")
-	persistent.StringSliceP(excludeFilterFlag, "e", []string{}, "Exclude filter regular expressions. Performed after includes.")
+	flags.StringP(outputFormatFlag, "o", "pretty", "The output format. [pretty | json]")
+	flags.CountP(verboseFlag, "v", "Display additional diagnostic data.")
+	flags.UintP(rateLimitFlag, "r", defaultRateLimit, "Max events per second to process.")
+	flags.UintP(wrapFlag, "w", noWrap, "Display no diagnostic data.")
+	flags.StringP(levelFlag, "l", "info", "Minimum log level to display (trace, debug, info warn, error.")
+	flags.StringP(sinceFlag, "s", "5m", "How far back in time to search for events.")
+	flags.StringSliceP(includeFilterFlag, "i", []string{}, "Include filter regular expressions. Performed before excludes.")
+	flags.StringSliceP(excludeFilterFlag, "e", []string{}, "Exclude filter regular expressions. Performed after includes.")
 	couture.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		viper.SetConfigName(".couture")
 		viper.SetConfigType("yaml")
