@@ -4,6 +4,7 @@ import (
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/polling"
 	"couture/pkg/model"
+	"couture/pkg/model/level"
 	"encoding/json"
 	"errors"
 	errors2 "github.com/pkg/errors"
@@ -31,8 +32,10 @@ func Metadata() source.Metadata {
 		},
 		Creator: create,
 		ExampleURLs: []string{
-			"elasticsearch://...",
-			"es://...",
+			"elasticsearch+http://...",
+			"elasticsearch+https://...",
+			"es+http://...",
+			"es+https://...",
 		},
 	}
 }
@@ -115,7 +118,7 @@ func (source elasticSearch) Poll() ([]model.Event, error) {
 		if errors.Is(err, io.EOF) {
 			return []model.Event{}, nil
 		}
-		return nil, errors2.Wrapf(err, "name=%s", source.indexName)
+		return nil, errors2.Wrapf(err, "name=%s\n", source.indexName)
 	}
 
 	var events []model.Event
@@ -131,7 +134,7 @@ func (source elasticSearch) Poll() ([]model.Event, error) {
 			return []model.Event{
 				{
 					Timestamp:       model.Timestamp(time.Now()),
-					Level:           model.LevelInfo,
+					Level:           level.Info,
 					Message:         model.Message(holder.Event),
 					ApplicationName: nil,
 					MethodName:      "-",

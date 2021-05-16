@@ -1,8 +1,5 @@
 package source
 
-// TODO ssh+file:// and file:// – see https://github.com/nxadm/tail
-// TODO unified way to do lookback date: take it out of the URLs and put it into CLI args (i.e. --since)
-
 import (
 	"couture/pkg/model"
 	"reflect"
@@ -21,24 +18,34 @@ type (
 		sourceURL model.SourceURL
 	}
 
-	creator       func(sourceURL model.SourceURL) (*interface{}, error)
-	canHandleTest func(url model.SourceURL) bool
-	Metadata      struct {
+	Metadata struct {
 		Type        reflect.Type
-		CanHandle   canHandleTest
-		Creator     creator
+		CanHandle   func(url model.SourceURL) bool
+		Creator     func(sourceURL model.SourceURL) (*interface{}, error)
 		ExampleURLs []string
 	}
 )
-
-// URL ...
-func (source Base) URL() model.SourceURL {
-	return source.sourceURL
-}
 
 // New base source.
 func New(sourceURL model.SourceURL) Base {
 	return Base{
 		sourceURL: sourceURL,
 	}
+}
+
+// URL ...
+func (source Base) URL() model.SourceURL {
+	return source.sourceURL
+}
+
+// MetadataGroup ...
+type MetadataGroup []Metadata
+
+// ExampleURLs ...
+func (grep MetadataGroup) ExampleURLs() []string {
+	var exampleURLs []string
+	for _, src := range grep {
+		exampleURLs = append(exampleURLs, src.ExampleURLs...)
+	}
+	return exampleURLs
 }

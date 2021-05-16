@@ -1,6 +1,7 @@
 package model
 
 import (
+	"couture/pkg/model/level"
 	"regexp"
 )
 
@@ -11,8 +12,8 @@ const TimestampField = "@timestamp"
 type Event struct {
 	// Timestamp the timestamp. This field is required, and should default to time.Now() if not present.
 	Timestamp Timestamp `json:"@timestamp"`
-	// Level the level. This field is required, and should default to LevelInfo if not present.
-	Level Level `json:"level"`
+	// Level the level. This field is required, and should default to Info if not present.
+	Level level.Level `json:"level"`
 	// Message the message. This field is required.
 	Message Message `json:"message"`
 	// ApplicationName is the name of the application that generated this event. This field is optional.

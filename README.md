@@ -1,55 +1,35 @@
-# Couture
+![Couture](docs/couture.png)
 
-![Couture](https://static.thenounproject.com/png/566246-200.png)
+Couture combines multiple log streams from disparate sources into friendly output.
+
+    couture --level=debug \
+            --include='\d+ trousers?' --include='[A-Z]{3}-slacks' \
+            --excdlue='(green|brown) culotte' \
+            --since=1h \
+            'es+http://logging.example.zz:9200/log/?application=pants-service' \
+            'file:///var/log/shirts-service/logstash.log' \
+            'cloudformation://clothing-service-stack?region=us-west-2&profile=production' \
+            'cloudwatch:///aws/lambda/monitor-lambda' \
+            'lambda://suits-lambda'
+
+
+# TODO example output
+
 
 ## Overview
 
 Allows for tailing multiple of event sources.
 
-### Execution
+For usage run `couture --help`
 
-    bin/couture
+For shell completions run `eval $(couture complete)`
 
-## Development
+To build and install Couture into `$GOPATH` run `make install`. (See [Makefile](Makefile))
 
-### Build
+##### Important Files
 
-Builds to `bin/couture`:
-
-    make
-
-### Install
-
-Installs to `$HOME/bin/couture`:
-
-    make install
-
-### Entry Points
-
-* [Command](cmd/couture.go) - CLI command.
-* [Manager](internal/pkg/manager/manager.go) - Couture source/sink manager.
-
----
-
-* [Source Definitions](internal/pkg/source/source.go) - Where sources are defined.
-* [Source CLI Definition](cmd/cli/source.go) - Where CLI arguments and parsing is defined for a source.
-
----
-
-* [Sink Definitions](internal/pkg/sink/sink.go) - Where sinks are defined.
-
-## Limitations
-
-### Sources
-
-Sources currently lack fine-grained configuration:
-
-* Only a single AWS region/profile combination may be used.
-* Only a single poll interval may be used.
-* Only a single look-back duration or line count may be used.
-
-## Future Ideas
-
-* AWS CodePipeline events?
-* ElasticSearch
-* Read/Write flat files via [Abstract File System](https:// github.com/viant/afs)?
+* [Makefile](Makefile)
+* [CLI Command](cmd/couture.go) - CLI command.
+* [Event Source](internal/pkg/source/source.go) - Where sources are defined.
+* [Even Sink](internal/pkg/sink/sink.go) - Where sinks are defined.
+* [Source(s) -> Sink Manager](internal/pkg/manager/manager.go) - Couture source/sink manager.

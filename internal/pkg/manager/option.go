@@ -1,34 +1,29 @@
 package manager
 
 import (
-	"couture/pkg/model"
+	"couture/pkg/model/level"
 	"regexp"
+	"time"
 )
 
-const (
-	verbosityLevelError = iota
-	verbosityLevelWarn
-	verbosityLevelInfo
-	verbosityLevelDebug
-	verbosityLevelTrace
-)
+// PagerOption ...
+func PagerOption(pager string) interface{} {
+	return baseOption{applier: func(options *managerOptions) {
+		options.pager = &pager
+	}}
+}
+
+// SinceOption ...
+func SinceOption(t time.Time) interface{} {
+	return baseOption{applier: func(options *managerOptions) {
+		options.since = &t
+	}}
+}
 
 // VerboseDisplayOption ...
-func VerboseDisplayOption(verbosity uint) interface{} {
-	return baseOption{applier: func(mgr *managerOptions) {
-		switch verbosity {
-		case verbosityLevelTrace:
-			mgr.level = model.LevelTrace
-		case verbosityLevelDebug:
-			mgr.level = model.LevelDebug
-		case verbosityLevelInfo:
-			mgr.level = model.LevelInfo
-		case verbosityLevelWarn:
-			mgr.level = model.LevelWarn
-		case verbosityLevelError:
-		default:
-			mgr.level = model.LevelError
-		}
+func VerboseDisplayOption(level level.Level) interface{} {
+	return baseOption{applier: func(options *managerOptions) {
+		options.level = level
 	}}
 }
 
@@ -41,23 +36,35 @@ func FilterOption(includeFilters []*regexp.Regexp, excludeFilters []*regexp.Rege
 }
 
 // LogLevelOption ...
-func LogLevelOption(level model.Level) interface{} {
+func LogLevelOption(level level.Level) interface{} {
 	return baseOption{applier: func(options *managerOptions) {
 		options.level = level
+	}}
+}
+
+// WrapOption ...
+func WrapOption(width uint) interface{} {
+	return baseOption{applier: func(options *managerOptions) {
+		if width > 0 {
+			options.wrap = &width
+		}
 	}}
 }
 
 type (
 	// managerOptions
 	managerOptions struct {
-		level          model.Level
+		level          level.Level
+		wrap           *uint
+		since          *time.Time
 		includeFilters []*regexp.Regexp
 		excludeFilters []*regexp.Regexp
+		pager          *string
 	}
 
 	// option is an entity capable of mutating the state of a managerOptions struct.
 	option interface {
-		Apply(manager *managerOptions)
+		Apply(options *managerOptions)
 	}
 
 	baseOption struct {
