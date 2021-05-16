@@ -118,7 +118,7 @@ func (source elasticSearch) Poll() ([]model.Event, error) {
 		if errors.Is(err, io.EOF) {
 			return []model.Event{}, nil
 		}
-		return nil, errors2.Wrapf(err, "name=%s", source.indexName)
+		return nil, errors2.Wrapf(err, "name=%s\n", source.indexName)
 	}
 
 	var events []model.Event

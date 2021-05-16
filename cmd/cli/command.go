@@ -5,6 +5,7 @@ import (
 	"github.com/riywo/loginshell"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
+	"github.com/spf13/viper"
 	"os"
 	"path"
 )
@@ -17,7 +18,7 @@ func handleDocCommand(cmd *cobra.Command) error {
 	case "md", "markdown":
 		return doc.GenMarkdown(cmd, os.Stdout)
 	default:
-		return errors.Errorf("invalid documentation format: %s", format)
+		return errors.Errorf("invalid documentation format: %s\n", format)
 	}
 }
 
@@ -43,7 +44,7 @@ func handleCompleteCommand(cmd *cobra.Command) error {
 	case "powershell", "powershell.exe":
 		return cmd.GenPowerShellCompletionWithDesc(os.Stdout)
 	default:
-		return errors.Errorf("invalid shell: %s", shellName)
+		return errors.Errorf("invalid shell: %s\n", shellName)
 	}
 }
 
@@ -53,12 +54,25 @@ func handleLogCommand(cmd *cobra.Command) error {
 
 // Execute ...
 func Execute() error {
-	setupFlags(couture.PersistentFlags())
+	couture.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		setupFlags(couture.PersistentFlags())
+		viper.SetConfigName(".couture")
+		viper.SetConfigType("yaml")
+		viper.AddConfigPath("$HOME")
+		viper.AddConfigPath(".")
+		viper.AutomaticEnv()
+		err := viper.ReadInConfig()
+		target := &viper.ConfigFileNotFoundError{}
+		if err != nil && !errors.As(err, &target) {
+			return errors.Errorf("fatal error config file: %s\n", err)
+		}
+		return nil
+	}
 
-	if (len(os.Args) == 2 || len(os.Args) == 3) && os.Args[1] == ("complete") {
+	if (len(os.Args) == 2 || len(os.Args) == 3) && os.Args[1] == "complete" {
 		return handleCompleteCommand(couture)
 	}
-	if len(os.Args) == 3 && os.Args[1] == ("doc") {
+	if len(os.Args) == 3 && os.Args[1] == "doc" {
 		return handleDocCommand(couture)
 	}
 	return handleLogCommand(couture)

@@ -7,6 +7,7 @@ import (
 	"github.com/araddon/dateparse"
 	errors2 "github.com/pkg/errors"
 	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"gopkg.in/multierror.v1"
 	"net/url"
 	"regexp"
@@ -74,7 +75,7 @@ func sinceOption(persistent *pflag.FlagSet) (interface{}, error) {
 	if err == nil {
 		return manager.SinceOption(t), nil
 	}
-	return nil, errors2.Errorf("invalid timestamp or duration: %s", sinceString)
+	return nil, errors2.Errorf("invalid timestamp or duration: %s\n", sinceString)
 }
 
 func verbosityOption(persistent *pflag.FlagSet) (interface{}, error) {
@@ -106,7 +107,7 @@ func rateLimitOption(persistent *pflag.FlagSet) (interface{}, error) {
 		return nil, err
 	}
 	if rateLimit < minRateLimit || rateLimit > maxRateLimit {
-		return nil, errors2.Errorf("bad rate limit: %d - must be in (%d, %d)", rateLimit, minRateLimit, maxRateLimit)
+		return nil, errors2.Errorf("bad rate limit: %d - must be in (%d, %d)\n", rateLimit, minRateLimit, maxRateLimit)
 	}
 	return manager.RateLimitOption(rateLimit), nil
 }
@@ -119,17 +120,24 @@ func levelOption(persistent *pflag.FlagSet) (interface{}, error) {
 	if lvl, ok := level.New(levelName); ok {
 		return manager.LogLevelOption(lvl), nil
 	}
-	return nil, errors2.Errorf("invalid levelName: %s", levelName)
+	return nil, errors2.Errorf("invalid levelName: %s\n", levelName)
 }
 
 func sourceOptions(sourceStrings []string) ([]interface{}, error) {
+	const aliasesKey = "aliases"
+	aliases := viper.GetStringMapString(aliasesKey)
+
 	if len(sourceStrings) == 0 {
-		return nil, errors2.Errorf("no source URLs provided")
+		return nil, errors2.Errorf("no source URLs provided\n")
 	}
 	var violations []error
 	var configuredSources []interface{}
-	for _, sourceArgs := range sourceStrings {
-		u, err := url.Parse(sourceArgs)
+	var sourceString string
+	for _, sourceString = range sourceStrings {
+		if alias, ok := aliases[sourceString]; ok {
+			sourceString = alias
+		}
+		u, err := url.Parse(sourceString)
 		if err != nil {
 			return nil, err
 		}
@@ -148,7 +156,7 @@ func sourceOptions(sourceStrings []string) ([]interface{}, error) {
 			}
 		}
 		if !handled {
-			violations = append(violations, errors2.Errorf("invalid source URL: %+v", sourceURL))
+			violations = append(violations, errors2.Errorf("invalid source URL: %+v\n", sourceURL))
 		}
 	}
 	if len(violations) > 0 {

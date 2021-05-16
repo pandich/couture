@@ -39,7 +39,7 @@ func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error 
 				return err
 			}
 		default:
-			return errors2.Wrapf(errBadOption, "%T (%+v)", v, v)
+			return errors2.Wrapf(errBadOption, "%T (%+v)\n", v, v)
 		}
 	}
 	return nil

@@ -15,8 +15,6 @@ import (
 	"strings"
 )
 
-const version = "0.1.0"
-
 var commandName = path.Base(os.Args[0])
 
 const (
@@ -30,9 +28,8 @@ const (
 )
 
 var couture = &cobra.Command{
-	Version: version,
-	Use:     commandName + " [flags] source_url ...",
-	Short:   "Tails one or more event sourceMetadata.\n",
+	Use:   commandName + " [flags] source_url ...",
+	Short: "Tails one or more event sourceMetadata.\n",
 	Long: "Description:\n\nTails one or more event sources.\n" +
 		"When providing a CloudFormation stack, resources are recursively analyzed until all loggable entities are found. " +
 		"This includes the stack events of the stack itself, as well as any log groups " +

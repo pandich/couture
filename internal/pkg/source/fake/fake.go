@@ -45,7 +45,7 @@ func create(sourceURL model.SourceURL) (*interface{}, error) {
 func newSource(sourceURL model.SourceURL) (*polling.Source, error) {
 	seed, err := sourceURL.QueryInt64("seed")
 	if err != nil {
-		return nil, errors2.Wrapf(err, "could not parse seed")
+		return nil, errors2.Wrapf(err, "could not parse seed\n")
 	}
 	if seed != nil {
 		gofakeit.Seed(*seed)

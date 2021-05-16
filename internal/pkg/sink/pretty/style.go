@@ -51,7 +51,7 @@ func (styler *styler) render(ia ...interface{}) string {
 			if style, ok := globalStyles[reflect.TypeOf(i)]; ok {
 				sa = append(sa, style.Render(fmt.Sprint(i)))
 			} else {
-				panic(errors2.Errorf("unknown type: %+v %T", i, i))
+				panic(errors2.Errorf("unknown type: %+v %T\n", i, i))
 			}
 		}
 	}
