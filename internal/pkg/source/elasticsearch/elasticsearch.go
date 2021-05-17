@@ -2,7 +2,6 @@ package elasticsearch
 
 import (
 	"couture/internal/pkg/source"
-	"couture/internal/pkg/source/polling"
 	"couture/pkg/model"
 	"couture/pkg/model/level"
 	"encoding/json"
@@ -53,7 +52,7 @@ type eventHolder struct {
 
 // elasticSearch provides elasticsearch test data.
 type elasticSearch struct {
-	polling.Source
+	source.Polling
 	query     elastic.Query
 	scrollID  string
 	indexName string
@@ -71,7 +70,7 @@ func create(sourceURL model.SourceURL) (*interface{}, error) {
 }
 
 // newSource ...
-func newSource(sourceURL model.SourceURL) (*polling.Source, error) {
+func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
 	normalizeURL(&sourceURL)
 
 	esClient, err := newElasticsearchClient(sourceURL)
@@ -82,8 +81,8 @@ func newSource(sourceURL model.SourceURL) (*polling.Source, error) {
 	indexName := strings.Trim(sourceURL.Path, "/")
 	query := elastic.NewQueryStringQuery(sourceURL.RawQuery)
 
-	var src polling.Source = elasticSearch{
-		Source:    polling.New(sourceURL, time.Second),
+	var src source.Pollable = elasticSearch{
+		Polling:   source.NewPollable(sourceURL, time.Second),
 		esClient:  esClient,
 		query:     query,
 		indexName: indexName,

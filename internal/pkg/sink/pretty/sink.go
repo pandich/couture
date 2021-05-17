@@ -32,7 +32,7 @@ func New(out io.Writer) *sink.Sink {
 type caller string
 
 // Accept ...
-func (snk *prettySink) Accept(src source.Source, event model.Event) {
+func (snk *prettySink) Accept(src source.Pushable, event model.Event) {
 	var fields = []interface{}{
 		src,
 		event.ApplicationNameOrBlank(),

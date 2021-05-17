@@ -2,8 +2,7 @@ package manager
 
 import (
 	"couture/internal/pkg/sink"
-	"couture/internal/pkg/source/polling"
-	"couture/internal/pkg/source/pushing"
+	"couture/internal/pkg/source"
 	"couture/pkg/model"
 	"couture/pkg/model/level"
 	"errors"
@@ -22,11 +21,11 @@ var (
 func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error {
 	for _, registrant := range registrants {
 		switch v := registrant.(type) {
-		case *polling.Source:
+		case *source.Pollable:
 			if err := mgr.registerPollingSource(*v); err != nil {
 				return err
 			}
-		case *pushing.Source:
+		case *source.Pushable:
 			if err := mgr.registerPushingSource(*v); err != nil {
 				return err
 			}
@@ -46,15 +45,15 @@ func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error 
 }
 
 // registerPushingSource registers a source that pushes events into the queue.
-func (mgr *publishingManager) registerPushingSource(src pushing.Source) error {
-	mgr.pushingSources = append(mgr.pushingSources, src)
+func (mgr *publishingManager) registerPushingSource(src source.Pushable) error {
+	mgr.sources = append(mgr.sources, src)
 	return nil
 }
 
 // registerPollingSource registers one or more registry to be polled for events.
 // If no events are available the source pauses for pollInterval.
-func (mgr *publishingManager) registerPollingSource(src polling.Source) error {
-	mgr.pollStarters = append(mgr.pollStarters, func(wg *sync.WaitGroup) {
+func (mgr *publishingManager) registerPollingSource(src source.Pollable) error {
+	mgr.sourceStarters = append(mgr.sourceStarters, func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		for mgr.running {
 			var err error

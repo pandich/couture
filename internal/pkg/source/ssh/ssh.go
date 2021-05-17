@@ -4,7 +4,6 @@ package ssh
 
 import (
 	"couture/internal/pkg/source"
-	"couture/internal/pkg/source/pushing"
 	"couture/pkg/model"
 	"reflect"
 	"sync"
@@ -22,7 +21,7 @@ func Metadata() source.Metadata {
 
 // sshSource ...
 type sshSource struct {
-	source.Base
+	source.Pushing
 }
 
 // create CloudFormation source casted to an *interface{}.
@@ -36,7 +35,7 @@ func create(sourceURL model.SourceURL) (*interface{}, error) {
 }
 
 // newSource ...
-func newSource(_ model.SourceURL) (*pushing.Source, error) {
+func newSource(_ model.SourceURL) (*source.Pushable, error) {
 	panic("implement me")
 }
 

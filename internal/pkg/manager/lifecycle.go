@@ -7,16 +7,16 @@ import (
 	"os/signal"
 )
 
-// Start the Manager. This starts all source.PushingSource instances, and begins polling all polling.Source instances.
+// Start the Manager. This starts all source.PushingSource instances, and begins polling all polling.Pushable instances.
 // Waits until it has been stopped.
 func (mgr *publishingManager) Start() error {
 	mgr.publishDiagnostic(level.Debug, "start", "starting")
-	for _, poller := range mgr.pollStarters {
+	for _, poller := range mgr.sourceStarters {
 		mgr.wg.Add(1)
 		go poller(mgr.wg)
 	}
 	mgr.running = true
-	for _, pusher := range mgr.pushingSources {
+	for _, pusher := range mgr.sources {
 		if err := pusher.Start(mgr.wg, func() bool { return mgr.running }, func(event model.Event) {
 			mgr.publishEvent(pusher, event)
 		}); err != nil {
@@ -39,7 +39,7 @@ func (mgr *publishingManager) Start() error {
 	return nil
 }
 
-// Stop the Manager. This stops all source.PushingSource instances, and stops polling all polling.Source instances.
+// Stop the Manager. This stops all source.PushingSource instances, and stops polling all polling.Pushable instances.
 func (mgr *publishingManager) Stop() {
 	mgr.publishDiagnostic(level.Info, "Stop", "stopping")
 	mgr.running = false

@@ -9,7 +9,7 @@ import (
 // Sink of events. Responsible for consuming an event.
 type Sink interface {
 	// Accept consumes an event, typically for display.
-	Accept(src source.Source, event model.Event)
+	Accept(src source.Pushable, event model.Event)
 }
 
 // Base ...

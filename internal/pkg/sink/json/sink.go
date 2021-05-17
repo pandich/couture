@@ -38,7 +38,7 @@ func New(out io.Writer) *sink.Sink {
 }
 
 // Accept ...
-func (snk jsonSink) Accept(src source.Source, event model.Event) {
+func (snk jsonSink) Accept(src source.Pushable, event model.Event) {
 	sourceEvent := sourceEvent{
 		Source: src.URL().String(),
 		Event:  event,

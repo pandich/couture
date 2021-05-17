@@ -2,7 +2,7 @@ package aws
 
 import (
 	"context"
-	"couture/internal/pkg/source/polling"
+	"couture/internal/pkg/source"
 	"couture/pkg/model"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -21,7 +21,7 @@ const (
 type (
 	// Source represents an AWS entity in a specific region and profile.
 	Source struct {
-		polling.Source
+		source.Polling
 		// entity an arbitrary name whose meaning is implementation specific.
 		entity string
 		// config is the config for AWS clients.
@@ -52,7 +52,7 @@ func New(sourceURL *model.SourceURL) (*Source, error) {
 		return nil, err
 	}
 	return &Source{
-		Source:  polling.New(*sourceURL, time.Second),
+		Polling: source.NewPollable(*sourceURL, time.Second),
 		entity:  sourceURL.Path,
 		config:  cfg,
 		region:  region,

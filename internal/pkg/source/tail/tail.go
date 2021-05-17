@@ -2,7 +2,6 @@ package tail
 
 import (
 	"couture/internal/pkg/source"
-	"couture/internal/pkg/source/pushing"
 	"couture/pkg/model"
 	"encoding/json"
 	"fmt"
@@ -27,7 +26,7 @@ func Metadata() source.Metadata {
 
 // fileSource ...
 type fileSource struct {
-	source.Base
+	source.Pushing
 	tailer *tail.Tail
 	file   *os.File
 }
@@ -43,7 +42,7 @@ func create(sourceURL model.SourceURL) (*interface{}, error) {
 }
 
 // newSource ...
-func newSource(sourceURL model.SourceURL) (*pushing.Source, error) {
+func newSource(sourceURL model.SourceURL) (*source.Pushable, error) {
 	sourceURL.Normalize()
 	file, err := os.Open(sourceURL.Path)
 	if err != nil {
@@ -55,10 +54,10 @@ func newSource(sourceURL model.SourceURL) (*pushing.Source, error) {
 		return nil, err
 	}
 
-	var src pushing.Source = fileSource{
-		Base:   source.New(sourceURL),
-		tailer: tailer,
-		file:   file,
+	var src source.Pushable = fileSource{
+		Pushing: source.New(sourceURL),
+		tailer:  tailer,
+		file:    file,
 	}
 	return &src, nil
 }

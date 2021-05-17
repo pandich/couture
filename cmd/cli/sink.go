@@ -37,11 +37,11 @@ func getWriter(flags *pflag.FlagSet) (io.Writer, error) {
 
 	defaultOut := os.Stdout
 
-	noPaginate, err := flags.GetBool(noPaginatorFlag)
+	paginate, err := flags.GetBool(paginateFlag)
 	if err != nil {
 		return nil, err
 	}
-	if noPaginate {
+	if !paginate {
 		return defaultOut, nil
 	}
 

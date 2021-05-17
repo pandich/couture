@@ -22,7 +22,7 @@ const (
 	levelFlag         = "level"
 	outputFormatFlag  = "format"
 	paginatorFlag     = "pager"
-	noPaginatorFlag   = "no-pager"
+	paginateFlag      = "paginate"
 	sinceFlag         = "since"
 	verboseFlag       = "verbose"
 	wrapFlag          = "wrap"

@@ -1,11 +1,38 @@
 package manager
 
 import (
-	"couture/internal/pkg/source/pushing"
+	"couture/internal/pkg/source"
 	"couture/pkg/model"
 	"github.com/asaskevich/EventBus"
+	"github.com/mattn/go-isatty"
+	"go.uber.org/ratelimit"
+	"os"
 	"sync"
 )
+
+const ttyMaxEventsPerSecond = 200
+
+var isTTY = isatty.IsTerminal(os.Stdout.Fd())
+
+// New creates an empty Manager.
+func New(opts ...interface{}) (*model.Manager, error) {
+	var rl ratelimit.Limiter
+	if isTTY {
+		rl = ratelimit.New(ttyMaxEventsPerSecond)
+	} else {
+		rl = ratelimit.NewUnlimited()
+	}
+
+	var mgr model.Manager = &publishingManager{
+		wg:          &sync.WaitGroup{},
+		bus:         EventBus.New(),
+		rateLimiter: rl,
+	}
+	if err := mgr.RegisterOptions(opts...); err != nil {
+		return nil, err
+	}
+	return &mgr, nil
+}
 
 // Manager ...
 type (
@@ -19,26 +46,17 @@ type (
 		// options contains general settings and toggles.
 		options managerOptions
 
-		// bus is the event bus used to route events between pollStarters and sinks
+		// bus is the event bus used to route events between sourceStarters and sinks
 		bus EventBus.Bus
 
-		// pollStarters is the set of source pollingSourceCreator functions to start as goroutines. Each source has exactly one poller.
-		pollStarters []func(wg *sync.WaitGroup)
+		// sourceStarters is the set of source pollingSourceCreator functions to start as goroutines. Each source has exactly one poller.
+		sourceStarters []func(wg *sync.WaitGroup)
 
-		// pushingSources is the set of registry which push to the event queue. Their lifecycle follows the Manager's lifecycle.
+		// sources is the set of registry which push to the event queue. Their lifecycle follows the Manager's lifecycle.
 		// (i.e. Start and Stop)
-		pushingSources []pushing.Source
+		sources []source.Pushable
+
+		// rateLimiter ensures a cap on total events/second to avoid flooding the terminal.
+		rateLimiter ratelimit.Limiter
 	}
 )
-
-// New creates an empty Manager.
-func New(opts ...interface{}) (*model.Manager, error) {
-	var mgr model.Manager = &publishingManager{
-		wg:  &sync.WaitGroup{},
-		bus: EventBus.New(),
-	}
-	if err := mgr.RegisterOptions(opts...); err != nil {
-		return nil, err
-	}
-	return &mgr, nil
-}

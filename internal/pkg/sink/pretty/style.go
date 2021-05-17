@@ -19,7 +19,7 @@ import (
 // styler ...
 type styler struct {
 	sourceRegistryLock sync.Mutex
-	sourceRegistry     map[source.Source]lipgloss.Style
+	sourceRegistry     map[source.Pushable]lipgloss.Style
 	sourceColorCycle   chan lipgloss.TerminalColor
 }
 
@@ -27,7 +27,7 @@ type styler struct {
 func newStyler() *styler {
 	return &styler{
 		sourceRegistryLock: sync.Mutex{},
-		sourceRegistry:     map[source.Source]lipgloss.Style{},
+		sourceRegistry:     map[source.Pushable]lipgloss.Style{},
 		sourceColorCycle:   pastels(),
 	}
 }
@@ -39,7 +39,7 @@ func (styler *styler) render(ia ...interface{}) string {
 		switch v := i.(type) {
 		case string:
 			sa = append(sa, v)
-		case source.Source:
+		case source.Pushable:
 			sa = append(sa, styler.sourceStyle(v).Render(v.URL().ShortForm()))
 		case level.Level:
 			sa = append(sa, globalStyles[v].Render(string(v[0])))
@@ -140,7 +140,7 @@ var (
 	}
 )
 
-func (styler *styler) sourceStyle(src source.Source) lipgloss.Style {
+func (styler *styler) sourceStyle(src source.Pushable) lipgloss.Style {
 	const sourceColumnWidth = 40
 
 	styler.sourceRegistryLock.Lock()

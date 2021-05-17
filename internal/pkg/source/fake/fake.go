@@ -2,7 +2,6 @@ package fake
 
 import (
 	"couture/internal/pkg/source"
-	"couture/internal/pkg/source/polling"
 	"couture/pkg/model"
 	"couture/pkg/model/level"
 	"github.com/brianvoe/gofakeit/v6"
@@ -28,7 +27,7 @@ func Metadata() source.Metadata {
 
 // fakeSource provides fake test data.
 type fakeSource struct {
-	polling.Source
+	source.Polling
 }
 
 // create CloudFormation source casted to an *interface{}.
@@ -42,7 +41,7 @@ func create(sourceURL model.SourceURL) (*interface{}, error) {
 }
 
 // newSource ...
-func newSource(sourceURL model.SourceURL) (*polling.Source, error) {
+func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
 	seed, err := sourceURL.QueryInt64("seed")
 	if err != nil {
 		return nil, errors2.Wrapf(err, "could not parse seed\n")
@@ -50,7 +49,7 @@ func newSource(sourceURL model.SourceURL) (*polling.Source, error) {
 	if seed != nil {
 		gofakeit.Seed(*seed)
 	}
-	var src polling.Source = fakeSource{polling.New(sourceURL, time.Second)}
+	var src source.Pollable = fakeSource{source.NewPollable(sourceURL, time.Second)}
 	return &src, nil
 }
 

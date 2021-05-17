@@ -19,7 +19,7 @@ Couture combines multiple log streams from disparate sources into friendly outpu
 
 ### Usage:
 
-For usage run `couture --help`.  For shell completions run `eval $(couture complete)`.
+For usage run `couture --help`. For shell completions run `eval $(couture complete)`.
 
 ### Configuration
 
@@ -40,13 +40,3 @@ Available settings:
 ### Important Technologies
 
 [comment]: <> (TODO call out any other libraries of note)
-
-### Important Files
-
-* [Makefile](Makefile)
-* [GoReleaser Config](.goreleaser.yml) (see [GoReleaser](https://goreleaser.com/))
-* [CLI Command](cmd/couture.go) - CLI command
-  (see [Cobra](https://github.com/spf13/cobra) arg parser, and [Viper](https://github.com/spf13/viper) config tool).
-* [Event Source](internal/pkg/source/source.go) - Event source definitions.
-* [Event Sink](internal/pkg/sink/sink.go) - Event sink definitions. Currently, only display-oriented.
-* [Sources -> Sinks Manager](internal/pkg/manager/manager.go) - Couture source/sink manager.
