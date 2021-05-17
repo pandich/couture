@@ -5,10 +5,12 @@ import (
 	"couture/internal/pkg/source"
 	"couture/pkg/model"
 	"fmt"
+	"io"
 )
 
 // prettySink provides render output.
 type prettySink struct {
+	*sink.Base
 	// sourceStyles provides a (semi-)unique Color per source.
 	styles      *styler
 	paginate    bool
@@ -16,8 +18,9 @@ type prettySink struct {
 }
 
 // New provides a configured prettySink sink.
-func New() *sink.Sink {
+func New(out io.Writer) *sink.Sink {
 	pretty := &prettySink{
+		Base:        sink.New(out),
 		styles:      newStyler(),
 		shortPrefix: true,
 		paginate:    true,
@@ -49,5 +52,5 @@ func (snk *prettySink) Accept(src source.Source, event model.Event) {
 	if stackTrace := event.StackTrace(); stackTrace != nil {
 		fields = append(fields, "\n", model.StackTrace(snk.styles.render(event.HighlightedStackTrace()...)))
 	}
-	fmt.Println(snk.styles.render(fields...))
+	_, _ = fmt.Fprintln(snk.Out(), snk.styles.render(fields...))
 }

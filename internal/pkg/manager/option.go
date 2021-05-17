@@ -6,13 +6,6 @@ import (
 	"time"
 )
 
-// PagerOption ...
-func PagerOption(pager string) interface{} {
-	return baseOption{applier: func(options *managerOptions) {
-		options.pager = &pager
-	}}
-}
-
 // SinceOption ...
 func SinceOption(t time.Time) interface{} {
 	return baseOption{applier: func(options *managerOptions) {
@@ -59,7 +52,6 @@ type (
 		since          *time.Time
 		includeFilters []*regexp.Regexp
 		excludeFilters []*regexp.Regexp
-		pager          *string
 	}
 
 	// option is an entity capable of mutating the state of a managerOptions struct.

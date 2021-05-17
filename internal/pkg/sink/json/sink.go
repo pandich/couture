@@ -9,7 +9,7 @@ import (
 	"github.com/alecthomas/chroma/formatters"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
-	"os"
+	"io"
 )
 
 // TODO need to fix marshalling of model objects
@@ -25,18 +25,20 @@ type (
 		Source string
 		Event  model.Event
 	}
-	jsonSink struct{}
+	jsonSink struct {
+		*sink.Base
+	}
 )
 
 // New ...
-func New() *sink.Sink {
-	jsonSink := jsonSink{}
+func New(out io.Writer) *sink.Sink {
+	jsonSink := jsonSink{Base: sink.New(out)}
 	var snk sink.Sink = jsonSink
 	return &snk
 }
 
 // Accept ...
-func (j jsonSink) Accept(src source.Source, event model.Event) {
+func (snk jsonSink) Accept(src source.Source, event model.Event) {
 	sourceEvent := sourceEvent{
 		Source: src.URL().String(),
 		Event:  event,
@@ -51,10 +53,14 @@ func (j jsonSink) Accept(src source.Source, event model.Event) {
 		// TODO handle this
 		return
 	}
-	err = formatter.Format(os.Stdout, style, iterator)
+	err = formatter.Format(snk.Out(), style, iterator)
 	if err != nil {
 		// TODO handle this
 		return
 	}
-	fmt.Println("")
+	_, err = fmt.Fprintln(snk.Out(), "")
+	if err != nil {
+		// TODO handle this
+		return
+	}
 }
