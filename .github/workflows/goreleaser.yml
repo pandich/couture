@@ -24,9 +24,6 @@ jobs:
         run: |
           make lint
       -
-        name: GetSVU
-        run: go get github.com/caarlos0/svu
-      -
         name: Git Tag
         run: |
           git tag "$(svu patch)"
