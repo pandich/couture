@@ -19,10 +19,10 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.16
-        run: go get github.com/caarlos0/svu
       -
         name: Git Tag
         run: |
+          GO111MODULE=off go get github.com/caarlos0/svu
           git tag "$(svu patch)"
           git push --tags
       -
