@@ -29,7 +29,7 @@ jobs:
       -
         name: Git Tag
         run: |
-          git tag "$(svu next)"
+          git tag "$(svu patch)"
           git push --tags
       -
         name: Run GoReleaser
