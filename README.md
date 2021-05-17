@@ -2,34 +2,51 @@
 
 Couture combines multiple log streams from disparate sources into friendly output.
 
-    couture --level=debug \
-            --include='\d+ trousers?' --include='[A-Z]{3}-slacks' \
-            --excdlue='(green|brown) culotte' \
-            --since=1h \
-            'es+http://logging.example.zz:9200/log/?application=pants-service' \
-            'file:///var/log/shirts-service/logstash.log' \
-            'cloudformation://clothing-service-stack?region=us-west-2&profile=production' \
-            'cloudwatch:///aws/lambda/monitor-lambda' \
-            'lambda://suits-lambda'
+[comment]: <> (TODO example output - uses asciinema)
 
+[comment]: <> (TODO working badges)
+[![Build Status](https://travis-ci.org/gaggle-net/couture.svg?branch=master)]()
+[![Go Report Card](https://goreportcard.com/badge/github.com/gaggle-net/couture)]()
+[![Coverage Status](https://coveralls.io/repos/github/gaggle-net/couture/badge.svg?branch=master)]()
 
-# TODO example output
+### Installation
 
+|Tool|Command|
+| ---: | --- |
+| `go`                          | `go get -u github.com/gaggle-net/couture` |
+| [Homebrew](https://brew.sh/)  | `brew ...` |
+| `make`                        | `make install` |
 
-## Overview
+### Usage:
 
-Allows for tailing multiple of event sources.
+For usage run `couture --help`.  For shell completions run `eval $(couture complete)`.
 
-For usage run `couture --help`
+### Configuration
 
-For shell completions run `eval $(couture complete)`
+Configure Couture by creating a `.couture.yaml` file in `$HOME`. Additionally, each directory can have a configuration
+file which is consulted prior to consulting the one in `$HOME`.
 
-To build and install Couture into `$GOPATH` run `make install`. (See [Makefile](Makefile))
+Available settings:
 
-##### Important Files
+| Field | Description | Example |
+| -----: | ----------- | ------- |
+| `aliases` | Maps short alias names to full source URLs | `aliases:{work: 'es+http://your-server:9200/some_index/_search'}` |
+| `paginator` | The paginator use. Can also be set via the `COUTURE_PAGER` environment variable. | `paginator: less` |
+
+### Complementary Tools
+
+* [The Log Navigator](http://lnav.org/) (`lnav`) log tailer and analyzer.
+
+### Important Technologies
+
+[comment]: <> (TODO call out any other libraries of note)
+
+### Important Files
 
 * [Makefile](Makefile)
-* [CLI Command](cmd/couture.go) - CLI command.
-* [Event Source](internal/pkg/source/source.go) - Where sources are defined.
-* [Even Sink](internal/pkg/sink/sink.go) - Where sinks are defined.
-* [Source(s) -> Sink Manager](internal/pkg/manager/manager.go) - Couture source/sink manager.
+* [GoReleaser Config](.goreleaser.yml) (see [GoReleaser](https://goreleaser.com/))
+* [CLI Command](cmd/couture.go) - CLI command
+  (see [Cobra](https://github.com/spf13/cobra) arg parser, and [Viper](https://github.com/spf13/viper) config tool).
+* [Event Source](internal/pkg/source/source.go) - Event source definitions.
+* [Event Sink](internal/pkg/sink/sink.go) - Event sink definitions. Currently, only display-oriented.
+* [Sources -> Sinks Manager](internal/pkg/manager/manager.go) - Couture source/sink manager.
