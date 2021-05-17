@@ -30,6 +30,15 @@ const (
 	generateDocumentationCommand   = "doc"
 )
 
+var defaultFilters []string
+
+const (
+	defaultSince     = "5m"
+	defaultSink      = "pretty"
+	defaultPaginator = ""
+	defaultLevel     = "info"
+)
+
 var rootCmd = &cobra.Command{
 	Use:   applicationName + " [flags] source_url ...",
 	Short: "Tails one or more event sources.\n",
@@ -89,15 +98,15 @@ var sourceMetadata = source.MetadataGroup{
 // Execute ...
 func Execute() error {
 	flags := rootCmd.PersistentFlags()
-	flags.StringP(outputFormatFlag, "o", "pretty", "The output format. [pretty | json]")
+	flags.StringP(outputFormatFlag, "o", defaultSink, "The output format. [pretty | json]")
 	flags.CountP(verboseFlag, "v", "Display additional diagnostic data.")
-	flags.StringP(paginatorFlag, "p", "", "Paginate output.")
+	flags.StringP(paginatorFlag, "p", defaultPaginator, "Paginate output.")
 	flags.BoolP(noPaginatorFlag, "P", false, "Do not paginate output.")
 	flags.UintP(wrapFlag, "w", manager.NoWrap, "Display no diagnostic data.")
-	flags.StringP(levelFlag, "l", "info", "Minimum log level to display (trace, debug, info warn, error.")
-	flags.StringP(sinceFlag, "s", "5m", "How far back in time to search for events.")
-	flags.StringSliceP(includeFilterFlag, "i", []string{}, "Include filter regular expressions. Performed before excludes.")
-	flags.StringSliceP(excludeFilterFlag, "e", []string{}, "Exclude filter regular expressions. Performed after includes.")
+	flags.StringP(levelFlag, "l", defaultLevel, "Minimum log level to display (trace, debug, info warn, error.")
+	flags.StringP(sinceFlag, "s", defaultSince, "How far back in time to search for events.")
+	flags.StringSliceP(includeFilterFlag, "i", defaultFilters, "Include filter regular expressions. Performed before excludes.")
+	flags.StringSliceP(excludeFilterFlag, "e", defaultFilters, "Exclude filter regular expressions. Performed after includes.")
 
 	if (len(os.Args) == 2 || len(os.Args) == 3) && os.Args[1] == generateShellCompletionCommand {
 		return handleCompleteCommand(rootCmd)
@@ -124,6 +133,27 @@ func handleDocCommand(cmd *cobra.Command) error {
 
 func handleCompleteCommand(cmd *cobra.Command) error {
 	// FIXME file is generated, but completions don't work
+	shellName, err := shellName()
+	if err != nil {
+		return err
+	}
+
+	writer := os.Stdout
+	switch shellName {
+	case "bash":
+		return cmd.GenBashCompletion(writer)
+	case "zsh":
+		return cmd.GenZshCompletion(writer)
+	case "fish":
+		return cmd.GenFishCompletion(writer, true)
+	case "powershell", "powershell.exe":
+		return cmd.GenPowerShellCompletionWithDesc(writer)
+	default:
+		return errors.Errorf("invalid shell: %s - must be (bash | fish | zsh | powershell(.exe))\n", shellName)
+	}
+}
+
+func shellName() (string, error) {
 	const shellNameArgIndex = 2
 	var shellName string
 	if len(os.Args) > shellNameArgIndex {
@@ -131,20 +161,9 @@ func handleCompleteCommand(cmd *cobra.Command) error {
 	} else {
 		shellBinary, err := loginshell.Shell()
 		if err != nil {
-			return err
+			return "", err
 		}
 		shellName = path.Base(shellBinary)
 	}
-	switch shellName {
-	case "bash":
-		return cmd.GenBashCompletion(os.Stdout)
-	case "zsh":
-		return cmd.GenZshCompletion(os.Stdout)
-	case "fish":
-		return cmd.GenFishCompletion(os.Stdout, true)
-	case "powershell", "powershell.exe":
-		return cmd.GenPowerShellCompletionWithDesc(os.Stdout)
-	default:
-		return errors.Errorf("invalid shell: %s - must be (bash | fish | zsh | powershell(.exe))\n", shellName)
-	}
+	return shellName, nil
 }

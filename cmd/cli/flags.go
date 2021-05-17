@@ -2,8 +2,6 @@ package cli
 
 import (
 	"couture/internal/pkg/manager"
-	"couture/internal/pkg/sink/json"
-	"couture/internal/pkg/sink/pretty"
 	"couture/pkg/model"
 	"couture/pkg/model/level"
 	"github.com/araddon/dateparse"
@@ -11,12 +9,8 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"gopkg.in/multierror.v1"
-	"io"
 	"net/url"
-	"os"
-	"os/exec"
 	"regexp"
-	"strings"
 	"time"
 )
 
@@ -59,25 +53,6 @@ func allOptions(flags *pflag.FlagSet, args []string) ([]interface{}, error) {
 	}
 	options = append(options, sources...)
 	return options, nil
-}
-
-func sinkOption(flags *pflag.FlagSet) (interface{}, error) {
-	out, err := getStdout(flags)
-	if err != nil {
-		return nil, err
-	}
-	outputFormat, err := flags.GetString(outputFormatFlag)
-	if err != nil {
-		return nil, err
-	}
-	switch outputFormat {
-	case "json":
-		return json.New(out), nil
-	case "pretty":
-		return pretty.New(out), nil
-	default:
-		return nil, errors2.Errorf("unknown output format: %s", outputFormat)
-	}
 }
 
 func filterOption(flags *pflag.FlagSet) (interface{}, error) {
@@ -201,49 +176,6 @@ func processArgs(sourceStrings []string) ([]interface{}, error) {
 		return nil, multierror.New(violations)
 	}
 	return configuredSources, nil
-}
-
-func getStdout(flags *pflag.FlagSet) (io.Writer, error) {
-	defaultOut := os.Stdout
-
-	noPaginate, err := flags.GetBool(noPaginatorFlag)
-	if err != nil {
-		return nil, err
-	}
-	if noPaginate {
-		return defaultOut, nil
-	}
-
-	var pager = viper.GetString(paginatorEnvKey)
-	if pager == "" {
-		pager = viper.GetString(paginatorConfigKey)
-	}
-	if pager == "" {
-		var err error
-		pager, err = flags.GetString(paginatorFlag)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if pager == "" {
-		return defaultOut, nil
-	}
-
-	pagerArgs := strings.Split(pager, " ")
-	//nolint:gosec
-	cmd := exec.Command(pagerArgs[0], pagerArgs[1:]...)
-
-	// I/O
-	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
-	out, err := cmd.StdinPipe()
-	if err != nil {
-		return nil, err
-	}
-
-	if err = cmd.Start(); err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func filters(flags *pflag.FlagSet, flagName string) ([]*regexp.Regexp, error) {
