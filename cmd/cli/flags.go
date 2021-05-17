@@ -20,6 +20,8 @@ import (
 	"time"
 )
 
+// TODO treat pretty and json as cobra commands. then they can have differing parameter types
+
 const (
 	excludeFilterFlag = "exclude"
 	includeFilterFlag = "include"
