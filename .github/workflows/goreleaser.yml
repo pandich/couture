@@ -20,9 +20,10 @@ jobs:
         with:
           go-version: 1.16
       -
-        name: Lint
+        name: Lint and Build
         run: |
           make lint
+          make build
       -
         name: Git Tag
         run: |
