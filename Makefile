@@ -1,84 +1,70 @@
-.PHONY: clean neat build lint install
+.PHONY: default
+default: all
 
 #
+# Variables
+
 # Core
-#
+APPLICATION	= couture
+SOURCE_DIRS	= cmd pkg internal
+COMMAND		= cmd/$(APPLICATION).go
 
-APPLICATION 			=  couture
-SOURCE_DIRS 			=  cmd pkg internal
-INSTALL_DIR				?= $(HOME)/bin
-NATIVE_BINARY			= dist/$(APPLICATION)_$(GOHOSTOS)_$(GOHOSTARCH)/$(APPLICATION)
-
-
-#
-# Go Environment
-#
-
-GOPATH					?= $(shell $(GO) env GOPATH)
-GOHOSTOS				?= $(shell $(GO) env GOHOSTOS)
-GOHOSTARCH				?= $(shell $(GO) env GOHOSTARCH)
-GO 						= go
-GO_GET 					= $(GO) get -u
-GORELEASER_ARGS 		?= --snapshot --rm-dist
-
-CMD						= cmd/couture.go
-
-
-all: clean build
-
-clean:
-	@echo cleaning
-	@rm -rf dist/
+# Go
+GO 				= go
+GOPATH			?= $(shell $(GO) env GOPATH)
+GOHOSTOS		?= $(shell $(GO) env GOHOSTOS)
+GOHOSTARCH		?= $(shell $(GO) env GOHOSTARCH)
+GO_GET 			= $(GO) get -u
 
 #
-# Build
-#
+# External Commands
 
-build: neat
-	@echo building
-	@$(GO) build -o dist/couture $(CMD)
-
-build-all: goreleaser neat
-	@echo building for all platforms
-	@goreleaser build $(GORELEASER_ARGS)
-
-#
-# Release
-#
-
-install: build
-	@echo installing
-	@$(GO) install $(CMD)
-
-uninstall:
-	@echo uninstalling
-	@$(GO) clean -i $(CMD)
-
-#
-# Quality
-#
-
-neat: gocmt
-	@echo tidying
-	@go mod tidy
-
-	@echo commenting
-	@find $(SOURCE_DIRS) -type d -exec gocmt -p -i -d {} \; 2> /dev/null
-
-	@echo formatting
-	@gofmt -l -s -w $(SOURCE_DIRS)
-
-lint: golangci-lint neat
-	@echo linting
-	@golangci-lint run
-
-#
-# Commands
-#
-
-golangci-lint:
-	@command -v golangci-lint > /dev/null || $(GO_GET) github.com/golangci/golangci-lint/cmd/golangci-lint@v1.39.0
+.PHONY: golangci-lint goreleaser gocmt scc
+golangci-lint:;
+	@command -v golangci-lint > /dev/null || $(GO_GET) github.com/golangci/golangci-lint/cmd/golangci-lint
 goreleaser:
 	@command -v goreleaser > /dev/null || $(GO_GET) github.com/goreleaser/goreleaser
 gocmt:
 	@command -v gocmt > /dev/null || $(GO_GET) github.com/cuonglm/gocmt
+scc:
+	@command -v scc > /dev/null || $(GO_GET) github.com/boyter/scc
+
+#
+# Targets
+
+# Build
+.PHONY: all clean build
+all: clean build
+clean:
+	@echo cleaning
+	@rm -rf dist/
+build: neat
+	@echo building
+	@$(GO) build -o dist/couture $(COMMAND)
+
+# Release
+.PHONY: install uninstall release
+install: build
+	@echo installing
+	@$(GO) install $(COMMAND)
+uninstall:
+	@echo uninstalling
+	@$(GO) clean -i $(COMMAND)
+release: goreleaser build
+	@echo releasing
+	@goreleaser build --snapshot --rm-dist
+
+# Code Quality
+.PHONY: neat lint metrics
+neat: gocmt
+	@echo tidying
+	@go mod tidy
+	@echo commenting
+	@find $(SOURCE_DIRS) -type d -exec gocmt -p -i -d {} \; 2> /dev/null
+	@echo formatting
+	@gofmt -l -s -w $(SOURCE_DIRS)
+lint: golangci-lint neat
+	@echo linting
+	@golangci-lint run
+metrics: scc
+	@scc --wide --by-file --no-gen --sort lines $(SOURCE_DIRS)
