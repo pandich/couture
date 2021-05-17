@@ -19,6 +19,8 @@ import (
 	"strings"
 )
 
+const applicationName = "couture"
+
 var (
 	errConfigNotFound = &viper.ConfigFileNotFoundError{}
 )
@@ -29,20 +31,24 @@ const (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "couture [flags] source_url ...",
+	Use:   applicationName + " [flags] source_url ...",
 	Short: "Tails one or more event sources.\n",
 	Long: "Description:\n\nTails one or more event sources.\n" +
 		"When providing a CloudFormation stack, resources are recursively analyzed until all loggable entities are found. " +
 		"This includes the stack events of the stack itself, as well as any log groups " +
 		"its entities contain.\n",
-	Example: strings.Join([]string{"\n  couture " + strings.Join(sourceMetadata.ExampleURLs(), "\n  couture ")}, ""),
-	Args:    cobra.MinimumNArgs(1),
+	Example: strings.Join([]string{
+		"\n  " + applicationName + " " + strings.Join(
+			sourceMetadata.ExampleURLs(),
+			"\n  "+applicationName+" "),
+	}, ""),
+	Args: cobra.MinimumNArgs(1),
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if err := viper.BindPFlag(paginatorEnvKey, cmd.PersistentFlags().Lookup(paginatorFlag)); err != nil {
 			return err
 		}
 
-		viper.SetConfigName(".couture")
+		viper.SetConfigName("." + applicationName)
 		viper.SetConfigType("yaml")
 		viper.AddConfigPath("$HOME")
 		viper.AddConfigPath(".")
@@ -82,13 +88,12 @@ var sourceMetadata = source.MetadataGroup{
 
 // Execute ...
 func Execute() error {
-	const noWrap = 0
 	flags := rootCmd.PersistentFlags()
 	flags.StringP(outputFormatFlag, "o", "pretty", "The output format. [pretty | json]")
 	flags.CountP(verboseFlag, "v", "Display additional diagnostic data.")
 	flags.StringP(paginatorFlag, "p", "", "Paginate output.")
 	flags.BoolP(noPaginatorFlag, "P", false, "Do not paginate output.")
-	flags.UintP(wrapFlag, "w", noWrap, "Display no diagnostic data.")
+	flags.UintP(wrapFlag, "w", manager.NoWrap, "Display no diagnostic data.")
 	flags.StringP(levelFlag, "l", "info", "Minimum log level to display (trace, debug, info warn, error.")
 	flags.StringP(sinceFlag, "s", "5m", "How far back in time to search for events.")
 	flags.StringSliceP(includeFilterFlag, "i", []string{}, "Include filter regular expressions. Performed before excludes.")
@@ -107,7 +112,7 @@ func handleDocCommand(cmd *cobra.Command) error {
 	docFormat := os.Args[2]
 	switch docFormat {
 	case "man":
-		return doc.GenMan(cmd, &doc.GenManHeader{Title: "couture", Section: "1"}, os.Stdout)
+		return doc.GenMan(cmd, &doc.GenManHeader{Title: applicationName, Section: "1"}, os.Stdout)
 	case "markdown":
 		return doc.GenMarkdown(cmd, os.Stdout)
 	case "yaml":

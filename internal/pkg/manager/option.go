@@ -6,6 +6,9 @@ import (
 	"time"
 )
 
+// NoWrap ...
+const NoWrap = 0
+
 // SinceOption ...
 func SinceOption(t time.Time) interface{} {
 	return baseOption{applier: func(options *managerOptions) {
