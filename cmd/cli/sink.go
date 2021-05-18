@@ -32,9 +32,6 @@ func sinkOption(flags *pflag.FlagSet) (interface{}, error) {
 }
 
 func getWriter(flags *pflag.FlagSet) (io.Writer, error) {
-	//goland:noinspection SpellCheckingInspection
-	const theLogNavigatorPaginator = "lnav"
-
 	defaultOut := os.Stdout
 
 	paginate, err := flags.GetBool(paginateFlag)
@@ -62,11 +59,6 @@ func getWriter(flags *pflag.FlagSet) (io.Writer, error) {
 
 	var pagerArgs = strings.Split(pager, " \t\n")
 	pager, pagerArgs = pagerArgs[0], pagerArgs[1:]
-	if len(pagerArgs) == 0 {
-		if pager == theLogNavigatorPaginator {
-			pagerArgs = append(pagerArgs, "-t")
-		}
-	}
 	pagerCmd := exec.Command(pager, pagerArgs...)
 
 	// I/O

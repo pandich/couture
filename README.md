@@ -11,8 +11,8 @@ Couture combines multiple log streams from disparate sources into friendly outpu
 
 ### Installation
 
-|Tool|Command|
-| ---: | --- |
+| Tool | Command | 
+| ---: | :------ |
 | `go`                          | `go get -u github.com/gaggle-net/couture` |
 | [Homebrew](https://brew.sh/)  | `brew ...` |
 | `make`                        | `make install` |
@@ -29,14 +29,11 @@ file which is consulted prior to consulting the one in `$HOME`.
 Available settings:
 
 | Field | Description | Example |
-| -----: | ----------- | ------- |
+| ----: | :---------- | :------ |
 | `aliases` | Maps short alias names to full source URLs | `aliases:{work: 'es+http://your-server:9200/some_index/_search'}` |
 | `paginator` | The paginator use. Can also be set via the `COUTURE_PAGER` environment variable. | `paginator: less` |
 
-### Complementary Tools
+---
 
-* [The Log Navigator](http://lnav.org/) (`lnav`) log tailer and analyzer.
-
-### Important Technologies
-
-[comment]: <> (TODO call out any other libraries of note)
+_Project Layout attempts to conform to the
+[Standard Go Project Layout](https://github.com/golang-standards/project-layout)_

@@ -12,9 +12,16 @@ import (
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{
-		Type:        reflect.TypeOf(sshSource{}),
-		CanHandle:   func(url model.SourceURL) bool { return url.Scheme == "ssh" },
-		Creator:     create,
+		Type:      reflect.TypeOf(sshSource{}),
+		CanHandle: func(url model.SourceURL) bool { return url.Scheme == "ssh" },
+		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {
+			src, err := newSource(sourceURL)
+			if err != nil {
+				return nil, err
+			}
+			var i interface{} = src
+			return &i, nil
+		},
 		ExampleURLs: []string{"ssh://host/<path>"},
 	}
 }
@@ -22,16 +29,6 @@ func Metadata() source.Metadata {
 // sshSource ...
 type sshSource struct {
 	source.Pushing
-}
-
-// create CloudFormation source casted to an *interface{}.
-func create(sourceURL model.SourceURL) (*interface{}, error) {
-	src, err := newSource(sourceURL)
-	if err != nil {
-		return nil, err
-	}
-	var i interface{} = src
-	return &i, nil
 }
 
 // newSource ...

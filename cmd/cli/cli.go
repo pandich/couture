@@ -19,6 +19,8 @@ import (
 	"strings"
 )
 
+// TODO per-source help?
+
 const applicationName = "couture"
 
 var (
@@ -53,7 +55,8 @@ var rootCmd = &cobra.Command{
 	}, ""),
 	Args: cobra.MinimumNArgs(1),
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if err := viper.BindPFlag(paginatorEnvKey, cmd.PersistentFlags().Lookup(paginatorFlag)); err != nil {
+		flags := cmd.PersistentFlags
+		if err := viper.BindPFlag(paginatorEnvKey, flags().Lookup(paginatorFlag)); err != nil {
 			return err
 		}
 
@@ -98,12 +101,12 @@ var sourceMetadata = source.MetadataGroup{
 // Execute ...
 func Execute() error {
 	flags := rootCmd.PersistentFlags()
-	flags.StringP(outputFormatFlag, "o", defaultSink, "The output format. [pretty | json]")
+	flags.StringP(outputFormatFlag, "o", defaultSink, "The output format. ( pretty | json )")
 	flags.CountP(verboseFlag, "v", "Display additional diagnostic data.")
 	flags.StringP(paginatorFlag, "", defaultPaginator, "Specify the paginator.")
 	flags.BoolP(paginateFlag, "p", false, "Paginate output.")
 	flags.UintP(wrapFlag, "w", manager.NoWrap, "Display no diagnostic data.")
-	flags.StringP(levelFlag, "l", defaultLevel, "Minimum log level to display (trace, debug, info warn, error.")
+	flags.StringP(levelFlag, "l", defaultLevel, "Minimum log level to display (trace | debug | info | warn | error).")
 	flags.StringP(sinceFlag, "s", defaultSince, "How far back in time to search for events.")
 	flags.StringSliceP(includeFilterFlag, "i", defaultFilters, "Include filter regular expressions. Performed before excludes.")
 	flags.StringSliceP(excludeFilterFlag, "e", defaultFilters, "Exclude filter regular expressions. Performed after includes.")

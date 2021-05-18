@@ -29,7 +29,14 @@ func Metadata() source.Metadata {
 			}[url.Scheme]
 			return ok
 		},
-		Creator: create,
+		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {
+			src, err := newSource(sourceURL)
+			if err != nil {
+				return nil, err
+			}
+			var i interface{} = src
+			return &i, nil
+		},
 		ExampleURLs: []string{
 			"elasticsearch+http://...",
 			"elasticsearch+https://...",
@@ -57,16 +64,6 @@ type elasticSearch struct {
 	scrollID  string
 	indexName string
 	esClient  *elastic.Client
-}
-
-// create CloudFormation source casted to an *interface{}.
-func create(sourceURL model.SourceURL) (*interface{}, error) {
-	src, err := newSource(sourceURL)
-	if err != nil {
-		return nil, err
-	}
-	var i interface{} = src
-	return &i, nil
 }
 
 // newSource ...

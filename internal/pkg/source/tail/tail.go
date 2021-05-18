@@ -17,9 +17,16 @@ import (
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{
-		Type:        reflect.TypeOf(fileSource{}),
-		CanHandle:   func(url model.SourceURL) bool { return url.Scheme == "file" },
-		Creator:     create,
+		Type:      reflect.TypeOf(fileSource{}),
+		CanHandle: func(url model.SourceURL) bool { return url.Scheme == "file" },
+		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {
+			src, err := newSource(sourceURL)
+			if err != nil {
+				return nil, err
+			}
+			var i interface{} = src
+			return &i, nil
+		},
 		ExampleURLs: []string{"file://<path>"},
 	}
 }
@@ -29,16 +36,6 @@ type fileSource struct {
 	source.Pushing
 	tailer *tail.Tail
 	file   *os.File
-}
-
-// create CloudFormation source casted to an *interface{}.
-func create(sourceURL model.SourceURL) (*interface{}, error) {
-	src, err := newSource(sourceURL)
-	if err != nil {
-		return nil, err
-	}
-	var i interface{} = src
-	return &i, nil
 }
 
 // newSource ...

@@ -6,6 +6,8 @@ import (
 	"sort"
 )
 
+// TODO cleaner message/stacktrace approach
+
 // Message ...
 type (
 	// Message a message.
@@ -131,5 +133,5 @@ func NewException(err error) *Exception {
 	if err == nil {
 		return nil
 	}
-	return &Exception{StackTrace: StackTrace(fmt.Sprintf("%+v", err))}
+	return &Exception{StackTrace: StackTrace(fmt.Sprint(err))}
 }

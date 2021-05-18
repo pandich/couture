@@ -6,6 +6,7 @@ import (
 	"couture/pkg/model/level"
 	"fmt"
 	"net/url"
+	"os"
 	"time"
 )
 
@@ -22,6 +23,7 @@ func (mgr *publishingManager) publishError(
 	message string,
 	args ...interface{},
 ) {
+	_, _ = fmt.Fprintln(os.Stderr, err)
 	event := newDiagnosticEvent(level, methodName, message, args...)
 	event.Exception = model.NewException(err)
 	mgr.publishEvent(internalSource, event)

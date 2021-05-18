@@ -33,7 +33,14 @@ func Metadata() source.Metadata {
 			}[url.Scheme]
 			return ok
 		},
-		Creator:     create,
+		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {
+			src, err := newSource(sourceURL)
+			if err != nil {
+				return nil, err
+			}
+			var i interface{} = src
+			return &i, nil
+		},
 		ExampleURLs: exampleURLs,
 	}
 }
@@ -76,15 +83,6 @@ const (
 	schemeAliasFriendly = "stack"
 )
 
-// normalizeURL take the sourceURL and expands any syntactic sugar.
-func normalizeURL(sourceURL model.SourceURL) {
-	switch {
-	case sourceURL.Scheme == schemeAliasShort:
-	case sourceURL.Scheme == schemeAliasFriendly:
-		sourceURL.Scheme = scheme
-	}
-}
-
 // cloudFormationSource ...
 type (
 	// cloudFormationSource a CloudFormation stack event, and stack resource log watcher.
@@ -98,8 +96,8 @@ type (
 		// includeStackEvents specifies whether or not to include stack events in the log.
 		includeStackEvents bool
 		// children represents all child sources added during stack-resource discovery.
-		// For example: a lambda's log group's cloudwatch.Source.
-		children []cloudwatch.Source
+		// For example: a lambda's log group's cloudwatch.cloudwatchSource.
+		children []source.Pollable
 		// cf represents the clo
 		cf        *cloudformation.Client
 		stackName string
@@ -108,19 +106,9 @@ type (
 	}
 )
 
-// create CloudFormation source casted to an *interface{}.
-func create(sourceURL model.SourceURL) (*interface{}, error) {
-	src, err := newSource(sourceURL)
-	if err != nil {
-		return nil, err
-	}
-	var i interface{} = src
-	return &i, nil
-}
-
 // newSource CloudFormation source.
 func newSource(sourceURL model.SourceURL) (*cloudFormationSource, error) {
-	normalizeURL(sourceURL)
+	normalizeURL(&sourceURL)
 	stackName := sourceURL.Path
 	awsSource, err := aws.New(&sourceURL)
 	if err != nil {
@@ -134,31 +122,15 @@ func newSource(sourceURL model.SourceURL) (*cloudFormationSource, error) {
 
 	cf := cloudformation.NewFromConfig(awsSource.Config())
 
-	var children []cloudwatch.Source
+	var children []source.Pollable
 	// add lambda functions
-	{
-		lambdaResources, err := discoverLambdaResources(cf, stackName)
-		if err != nil {
-			return nil, err
-		}
-		for _, lambdaResource := range lambdaResources {
-			// This needs work: it is really ugly to have to create the CW source this way
-			// however, the constructor chain all expects model.URL instances
-			// as the primary constructor element. It doesn't quite reach the level of a to-do task yet.
-			var rawQuery = fmt.Sprintf("%s=%s&%s=%s", aws.RegionQueryFlag, awsSource.Region(), aws.ProfileQueryFlag, awsSource.Profile())
-			if lookbackTime != nil {
-				rawQuery += fmt.Sprintf("&%s=%s", lookbackTimeFlag, lookbackTime.Format(time.RFC3339))
-			}
-			child, err := cloudwatch.New(model.SourceURL{
-				Scheme:   "lambda",
-				Path:     *lambdaResource.PhysicalResourceId,
-				RawQuery: rawQuery,
-			})
-			if err != nil {
-				return nil, err
-			}
-			children = append(children, *child)
-		}
+	lambdaResources, err := discoverLambdaResources(cf, stackName)
+	if err != nil {
+		return nil, err
+	}
+	for _, lambdaResource := range lambdaResources {
+		logGroupName := fmt.Sprintf("/log/lambda/%s", *lambdaResource.PhysicalResourceId)
+		children = append(children, *cloudwatch.New(awsSource, lookbackTime, logGroupName))
 	}
 
 	return &cloudFormationSource{
@@ -170,6 +142,16 @@ func newSource(sourceURL model.SourceURL) (*cloudFormationSource, error) {
 		stackName:            stackName,
 		stackEventsNextToken: nil,
 	}, nil
+}
+
+// normalizeURL take the sourceURL and expands any syntactic sugar.
+func normalizeURL(sourceURL *model.SourceURL) {
+	sourceURL.Normalize()
+	switch {
+	case sourceURL.Scheme == schemeAliasShort:
+	case sourceURL.Scheme == schemeAliasFriendly:
+		sourceURL.Scheme = scheme
+	}
 }
 
 // Poll for more events.

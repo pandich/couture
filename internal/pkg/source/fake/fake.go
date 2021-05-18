@@ -13,31 +13,27 @@ import (
 	"time"
 )
 
-var applicationName = model.ApplicationName(gofakeit.AppName())
-
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{
-		Type:        reflect.TypeOf(fakeSource{}),
-		CanHandle:   func(url model.SourceURL) bool { return url.Scheme == "fake" },
-		Creator:     create,
-		ExampleURLs: []string{"fake://(?seed=<seed_int>)"},
+		Type:      reflect.TypeOf(fakeSource{}),
+		CanHandle: func(url model.SourceURL) bool { return url.Scheme == "fake" },
+		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {
+			src, err := newSource(sourceURL)
+			if err != nil {
+				return nil, err
+			}
+			var i interface{} = src
+			return &i, nil
+		},
+		ExampleURLs: []string{},
 	}
 }
 
 // fakeSource provides fake test data.
 type fakeSource struct {
 	source.Polling
-}
-
-// create CloudFormation source casted to an *interface{}.
-func create(sourceURL model.SourceURL) (*interface{}, error) {
-	src, err := newSource(sourceURL)
-	if err != nil {
-		return nil, err
-	}
-	var i interface{} = src
-	return &i, nil
+	applicationName model.ApplicationName
 }
 
 // newSource ...
@@ -49,13 +45,19 @@ func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
 	if seed != nil {
 		gofakeit.Seed(*seed)
 	}
-	var src source.Pollable = fakeSource{source.NewPollable(sourceURL, time.Second)}
+	var src source.Pollable = fakeSource{
+		Polling: source.NewPollable(
+			sourceURL,
+			time.Second,
+		),
+		applicationName: model.ApplicationName(gofakeit.AppName()),
+	}
 	return &src, nil
 }
 
 // Poll ...
 //nolint:gosec,gomnd
-func (source fakeSource) Poll() ([]model.Event, error) {
+func (src fakeSource) Poll() ([]model.Event, error) {
 	if rand.Intn(100) >= 90 {
 		return []model.Event{}, io.EOF
 	}
@@ -80,7 +82,7 @@ func (source fakeSource) Poll() ([]model.Event, error) {
 
 	threadName := model.ThreadName(gofakeit.Username())
 	return []model.Event{{
-		ApplicationName: &applicationName,
+		ApplicationName: &src.applicationName,
 		Timestamp:       model.Timestamp(time.Now().Truncate(time.Hour)),
 		Level:           lvl,
 		Message:         model.Message(gofakeit.HipsterParagraph(1, 4, count, "\n")),

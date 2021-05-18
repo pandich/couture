@@ -10,7 +10,7 @@ import (
 
 // prettySink provides render output.
 type prettySink struct {
-	*sink.Base
+	out io.Writer
 	// sourceStyles provides a (semi-)unique Color per source.
 	styles      *styler
 	paginate    bool
@@ -20,7 +20,7 @@ type prettySink struct {
 // New provides a configured prettySink sink.
 func New(out io.Writer) *sink.Sink {
 	pretty := &prettySink{
-		Base:        sink.New(out),
+		out:         out,
 		styles:      newStyler(),
 		shortPrefix: true,
 		paginate:    true,
@@ -52,5 +52,5 @@ func (snk *prettySink) Accept(src source.Pushable, event model.Event) {
 	if stackTrace := event.StackTrace(); stackTrace != nil {
 		fields = append(fields, "\n", model.StackTrace(snk.styles.render(event.HighlightedStackTrace()...)))
 	}
-	_, _ = fmt.Fprintln(snk.Out(), snk.styles.render(fields...))
+	_, _ = fmt.Fprintln(snk.out, snk.styles.render(fields...))
 }
