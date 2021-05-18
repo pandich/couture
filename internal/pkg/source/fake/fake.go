@@ -32,7 +32,7 @@ func Metadata() source.Metadata {
 
 // fakeSource provides fake test data.
 type fakeSource struct {
-	source.Polling
+	*source.Polling
 	applicationName model.ApplicationName
 }
 
@@ -45,7 +45,7 @@ func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
 	if seed != nil {
 		gofakeit.Seed(*seed)
 	}
-	var src source.Pollable = fakeSource{
+	var src source.Pollable = &fakeSource{
 		Polling: source.NewPollable(
 			sourceURL,
 			time.Second,
@@ -57,7 +57,7 @@ func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
 
 // Poll ...
 //nolint:gosec,gomnd
-func (src fakeSource) Poll() ([]model.Event, error) {
+func (src *fakeSource) Poll() ([]model.Event, error) {
 	if rand.Intn(100) >= 90 {
 		return []model.Event{}, io.EOF
 	}

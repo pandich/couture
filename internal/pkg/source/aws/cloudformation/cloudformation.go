@@ -90,7 +90,7 @@ type (
 	// Currently Supported Resources:
 	//		Lambda Functions
 	cloudFormationSource struct {
-		aws.Source
+		*aws.Source
 		// lookbackTime is how far back to look for log events.
 		lookbackTime *time.Time
 		// includeStackEvents specifies whether or not to include stack events in the log.
@@ -134,7 +134,7 @@ func newSource(sourceURL model.SourceURL) (*cloudFormationSource, error) {
 	}
 
 	return &cloudFormationSource{
-		Source:               *awsSource,
+		Source:               awsSource,
 		lookbackTime:         lookbackTime,
 		includeStackEvents:   sourceURL.QueryFlag(includeStackEventsFlag),
 		children:             children,
@@ -155,7 +155,7 @@ func normalizeURL(sourceURL *model.SourceURL) {
 }
 
 // Poll for more events.
-func (source cloudFormationSource) Poll() ([]model.Event, error) {
+func (source *cloudFormationSource) Poll() ([]model.Event, error) {
 	var events []model.Event
 
 	childEvents, err := source.getChildEvents()

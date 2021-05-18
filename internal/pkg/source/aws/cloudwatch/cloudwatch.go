@@ -63,7 +63,7 @@ const (
 
 // cloudwatchSource a Cloudwatch log poller.
 type cloudwatchSource struct {
-	aws.Source
+	*aws.Source
 	// lookbackTime is how far back to look for log events.
 	lookbackTime *time.Time
 	// logs is the CloudWatch logs client.
@@ -95,12 +95,12 @@ func New(
 	logGroupName string,
 ) *source.Pollable {
 	src := cloudwatchSource{
-		Source:       *awsSource,
+		Source:       awsSource,
 		lookbackTime: lookbackTime,
 		logGroupName: logGroupName,
 		logs:         cloudwatchlogs.NewFromConfig(awsSource.Config()),
 	}
-	var p source.Pollable = src
+	var p source.Pollable = &src
 	return &p
 }
 
@@ -118,7 +118,7 @@ func normalizeURL(sourceURL *model.SourceURL) {
 }
 
 // Poll for more events.
-func (src cloudwatchSource) Poll() ([]model.Event, error) {
+func (src *cloudwatchSource) Poll() ([]model.Event, error) {
 	var events []model.Event
 	var startTime *int64
 	if src.lookbackTime != nil {

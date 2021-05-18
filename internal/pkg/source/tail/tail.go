@@ -33,7 +33,7 @@ func Metadata() source.Metadata {
 
 // fileSource ...
 type fileSource struct {
-	source.Pushing
+	*source.Pushing
 	tailer *tail.Tail
 	file   *os.File
 }

@@ -22,8 +22,8 @@ type (
 )
 
 // New base source.
-func New(sourceURL model.SourceURL) Pushing {
-	return Pushing{
+func New(sourceURL model.SourceURL) *Pushing {
+	return &Pushing{
 		sourceURL: sourceURL,
 	}
 }

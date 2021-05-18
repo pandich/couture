@@ -19,7 +19,7 @@ const (
 // Source ...
 // Source represents an AWS entity in a specific region and profile.
 type Source struct {
-	source.Polling
+	*source.Polling
 	// entity an arbitrary name whose meaning is implementation specific.
 	entity string
 	// config is the config for AWS clients.

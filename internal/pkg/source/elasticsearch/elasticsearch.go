@@ -59,7 +59,7 @@ type eventHolder struct {
 
 // elasticSearch provides elasticsearch test data.
 type elasticSearch struct {
-	source.Polling
+	*source.Polling
 	query     elastic.Query
 	scrollID  string
 	indexName string
@@ -78,7 +78,7 @@ func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
 	indexName := strings.Trim(sourceURL.Path, "/")
 	query := elastic.NewQueryStringQuery(sourceURL.RawQuery)
 
-	var src source.Pollable = elasticSearch{
+	var src source.Pollable = &elasticSearch{
 		Polling:   source.NewPollable(sourceURL, time.Second),
 		esClient:  esClient,
 		query:     query,
@@ -101,7 +101,7 @@ func normalizeURL(sourceURL *model.SourceURL) {
 }
 
 // Poll ...
-func (source elasticSearch) Poll() ([]model.Event, error) {
+func (source *elasticSearch) Poll() ([]model.Event, error) {
 	result, err := source.esClient.Scroll(source.indexName).
 		KeepAlive(keepAliveOneMinute).
 		ScrollId(source.scrollID).

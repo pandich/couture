@@ -18,7 +18,7 @@ type (
 
 	// Polling polling source.
 	Polling struct {
-		Pushing
+		*Pushing
 		pollInterval time.Duration
 	}
 )
@@ -30,8 +30,8 @@ func (src Polling) PollInterval() time.Duration {
 }
 
 // NewPollable polling source.
-func NewPollable(sourceURL model.SourceURL, pollInterval time.Duration) Polling {
-	return Polling{
+func NewPollable(sourceURL model.SourceURL, pollInterval time.Duration) *Polling {
+	return &Polling{
 		Pushing:      New(sourceURL),
 		pollInterval: pollInterval,
 	}
