@@ -1,7 +1,6 @@
 package pretty
 
 import (
-	"couture/internal/pkg/manager"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	"couture/pkg/model"
@@ -11,6 +10,12 @@ import (
 	"io"
 	"sync"
 )
+
+// AutoWrap ...
+const AutoWrap = -1
+
+// NoWrap ...
+const NoWrap = 0
 
 // prettySink provides render output.
 type prettySink struct {
@@ -22,10 +27,17 @@ type prettySink struct {
 }
 
 // New provides a configured prettySink sink.
-func New(out io.Writer) *sink.Sink {
-	var terminalWidth = manager.NoWrap
-	if size, err := ts.GetSize(); err == nil {
-		terminalWidth = size.Col()
+func New(out io.Writer, wrap int) *sink.Sink {
+	var terminalWidth = 72
+	switch wrap {
+	case AutoWrap:
+		if size, err := ts.GetSize(); err == nil {
+			terminalWidth = size.Col()
+		}
+	case NoWrap:
+		terminalWidth = NoWrap
+	default:
+		terminalWidth = wrap
 	}
 	var snk sink.Sink = &prettySink{
 		out:              out,

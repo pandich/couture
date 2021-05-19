@@ -20,6 +20,7 @@ const (
 	excludeFilterFlag = "exclude"
 	includeFilterFlag = "include"
 	levelFlag         = "level"
+	noWrapFlag        = "no-wrap"
 	outputFormatFlag  = "format"
 	paginatorFlag     = "pager"
 	paginateFlag      = "paginate"
@@ -35,7 +36,6 @@ const (
 
 var optionCreators = []func(*pflag.FlagSet) (interface{}, error){
 	verbosityOption,
-	wrapOption,
 	filterOption,
 	levelOption,
 	sinceOption,
@@ -101,14 +101,6 @@ func verbosityOption(flags *pflag.FlagSet) (interface{}, error) {
 	}
 	lvl := level.ByPriority(verbosity)
 	return manager.VerboseDisplayOption(lvl), nil
-}
-
-func wrapOption(flags *pflag.FlagSet) (interface{}, error) {
-	wrap, err := flags.GetUint(wrapFlag)
-	if err != nil {
-		return nil, err
-	}
-	return manager.WrapOption(wrap), nil
 }
 
 func levelOption(flags *pflag.FlagSet) (interface{}, error) {

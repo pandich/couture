@@ -2,6 +2,7 @@ package cli
 
 import (
 	"couture/internal/pkg/manager"
+	"couture/internal/pkg/sink/pretty"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/aws/cloudformation"
 	"couture/internal/pkg/source/aws/cloudwatch"
@@ -105,7 +106,8 @@ func Execute() error {
 	flags.CountP(verboseFlag, "v", "Display additional diagnostic data.")
 	flags.StringP(paginatorFlag, "", defaultPaginator, "Specify the paginator.")
 	flags.BoolP(paginateFlag, "p", false, "Paginate output.")
-	flags.UintP(wrapFlag, "w", manager.NoWrap, "Display no diagnostic data.")
+	flags.BoolP(noWrapFlag, "W", false, "No wrapping.")
+	flags.IntP(wrapFlag, "w", pretty.AutoWrap, "Display no diagnostic data.")
 	flags.StringP(levelFlag, "l", defaultLevel, "Minimum log level to display (trace | debug | info | warn | error).")
 	flags.StringP(sinceFlag, "s", defaultSince, "How far back in time to search for events.")
 	flags.StringSliceP(includeFilterFlag, "i", defaultFilters, "Include filter regular expressions. Performed before excludes.")

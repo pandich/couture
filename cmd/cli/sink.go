@@ -25,7 +25,18 @@ func sinkOption(flags *pflag.FlagSet) (interface{}, error) {
 	case "json":
 		return json.New(out), nil
 	case "pretty":
-		return pretty.New(out), nil
+		var wrap, err = flags.GetInt(wrapFlag)
+		if err != nil {
+			return nil, err
+		}
+		noWrap, err := flags.GetBool(noWrapFlag)
+		if err != nil {
+			return nil, err
+		}
+		if noWrap {
+			wrap = pretty.NoWrap
+		}
+		return pretty.New(out, wrap), nil
 	default:
 		return nil, errors2.Errorf("unknown output format: %s", outputFormat)
 	}

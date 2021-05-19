@@ -1,7 +1,6 @@
 package pretty
 
 import (
-	"couture/internal/pkg/manager"
 	"couture/internal/pkg/source"
 	"couture/pkg/model"
 	"github.com/i582/cfmt/cmd/cfmt"
@@ -83,7 +82,7 @@ func (snk *prettySink) renderHighlightedStackTrace(event model.Event) string {
 }
 
 func (snk *prettySink) wrapToTerminal(s string) (string, error) {
-	if snk.terminalWidth == manager.NoWrap {
+	if snk.terminalWidth == NoWrap {
 		return s, nil
 	}
 	wrapper := wordwrap.NewWriter(snk.terminalWidth)

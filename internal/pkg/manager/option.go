@@ -6,9 +6,6 @@ import (
 	"time"
 )
 
-// NoWrap ...
-const NoWrap = 0
-
 // SinceOption ...
 func SinceOption(t time.Time) interface{} {
 	return baseOption{applier: func(options *managerOptions) {
@@ -38,20 +35,10 @@ func LogLevelOption(level level.Level) interface{} {
 	}}
 }
 
-// WrapOption ...
-func WrapOption(width uint) interface{} {
-	return baseOption{applier: func(options *managerOptions) {
-		if width > 0 {
-			options.wrap = &width
-		}
-	}}
-}
-
 type (
 	// managerOptions
 	managerOptions struct {
 		level          level.Level
-		wrap           *uint
 		since          *time.Time
 		includeFilters []*regexp.Regexp
 		excludeFilters []*regexp.Regexp
