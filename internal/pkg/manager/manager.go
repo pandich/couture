@@ -1,23 +1,20 @@
 package manager
 
 import (
+	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	"couture/pkg/model"
 	"github.com/asaskevich/EventBus"
-	"github.com/mattn/go-isatty"
 	"go.uber.org/ratelimit"
-	"os"
 	"sync"
 )
 
-const ttyMaxEventsPerSecond = 200
-
-var isTTY = isatty.IsTerminal(os.Stdout.Fd())
-
 // New creates an empty Manager.
 func New(opts ...interface{}) (*model.Manager, error) {
+	const ttyMaxEventsPerSecond = 200
+
 	var rl ratelimit.Limiter
-	if isTTY {
+	if sink.IsTTY() {
 		rl = ratelimit.New(ttyMaxEventsPerSecond)
 	} else {
 		rl = ratelimit.NewUnlimited()

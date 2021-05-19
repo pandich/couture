@@ -10,13 +10,13 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/cloudformation v1.3.2
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.2.2
 	github.com/brianvoe/gofakeit/v6 v6.4.1
-	github.com/charmbracelet/lipgloss v0.2.1
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
+	github.com/i582/cfmt v1.3.0
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mattn/go-isatty v0.0.12
 	github.com/muesli/gamut v0.2.0
-	github.com/muesli/termenv v0.8.1
+	github.com/muesli/reflow v0.3.0
 	github.com/nxadm/tail v1.4.8
 	github.com/olekukonko/ts v0.0.0-20171002115256-78ecb04241c0
 	github.com/pkg/errors v0.9.1

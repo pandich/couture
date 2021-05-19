@@ -24,10 +24,6 @@ type Source struct {
 	entity string
 	// config is the config for AWS clients.
 	config aws.Config
-	// region is the AWS region.
-	region string
-	// profile is the AWS profile.
-	profile string
 }
 
 // New parses the baseSource.sourceURL into region, profile, and entity.

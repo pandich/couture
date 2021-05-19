@@ -50,8 +50,7 @@ func (event Event) ThreadNameOrBlank() ThreadName {
 	return ""
 }
 
-// StackTrace ...
-func (event Event) StackTrace() *StackTrace {
+func (event Event) stackTrace() *StackTrace {
 	if event.Exception != nil && event.Exception.StackTrace != "" {
 		return &event.Exception.StackTrace
 	}
@@ -71,7 +70,7 @@ func (event *Event) Matches(includes []*regexp.Regexp, excludes []*regexp.Regexp
 	}
 
 	event.stackTraceHighlightMarks = []highlightMark{}
-	trace := event.StackTrace()
+	trace := event.stackTrace()
 	if trace != nil {
 		if highlightMarks, matches := Message(*trace).matches(includes, excludes); matches {
 			event.stackTraceHighlightMarks = highlightMarks
@@ -91,7 +90,7 @@ func (event Event) HighlightedMessage() []interface{} {
 
 // HighlightedStackTrace ...
 func (event Event) HighlightedStackTrace() []interface{} {
-	trace := event.StackTrace()
+	trace := event.stackTrace()
 	if trace == nil {
 		return []interface{}{}
 	}

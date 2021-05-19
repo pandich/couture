@@ -27,15 +27,18 @@ func New(out io.Writer) *sink.Sink {
 }
 
 // Accept ...
-func (snk jsonSink) Accept(src source.Pushable, event model.Event) {
+func (snk jsonSink) Accept(src source.Pushable, event model.Event) error {
 	sourceEvent := sourceEvent{
 		SourceURL: src.URL().String(),
 		Event:     event,
 	}
 	contents, err := json.Marshal(sourceEvent)
+	if err != nil {
+		return err
+	}
 	_, err = fmt.Fprintln(snk.out, string(contents))
 	if err != nil {
-		// TODO handle this
-		return
+		return err
 	}
+	return nil
 }
