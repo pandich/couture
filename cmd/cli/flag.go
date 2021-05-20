@@ -4,6 +4,7 @@ import (
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/sink/json"
 	"couture/internal/pkg/sink/pretty"
+	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/gamut"
 	errors2 "github.com/pkg/errors"
 	"image/color"
@@ -12,6 +13,18 @@ import (
 	"os/exec"
 	"strings"
 )
+
+const purpleRain = "#AE99BF"
+const crystalBlue = "#A0D7D9"
+const paleChestnut = "#E2A3B4"
+const celadonGreen = "#A5E0B6"
+
+var themeColors = map[string]color.Color{
+	"prince":  gamut.Hex(purpleRain),
+	"ocean":   gamut.Hex(crystalBlue),
+	"warm":    gamut.Hex(paleChestnut),
+	"forrest": gamut.Hex(celadonGreen),
+}
 
 func getFlags() ([]interface{}, error) {
 	snk, err := sinkFlag()
@@ -63,17 +76,11 @@ func paginatorFlag() (io.Writer, error) {
 	return writer, nil
 }
 
-const purpleRain = "#AE99BF"
-const crystalBlue = "#E2A3B4"
-const paleChestnut = "#A0D7D9"
-
-var themeColors = map[string]color.Color{
-	"prince": gamut.Hex(purpleRain),
-	"ocean":  gamut.Hex(crystalBlue),
-	"warm":   gamut.Hex(paleChestnut),
-}
-
 func themeFlag() color.Color {
+	if cli.Theme == "none" {
+		cfmt.DisableColors()
+		return color.White
+	}
 	if c, ok := themeColors[cli.Theme]; ok {
 		return c
 	}

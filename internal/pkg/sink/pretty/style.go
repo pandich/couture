@@ -25,7 +25,7 @@ type palette struct {
 	sourceColors chan string
 }
 
-func newPalette(c color.Color) palette {
+func newPalette(baseColor color.Color) palette {
 	const defaultColor = "#ffffff"
 	const timestampColor = "#877FD7"
 	const errorColor = "#DD2A12"
@@ -38,7 +38,7 @@ func newPalette(c color.Color) palette {
 	const punctuationColor = "#FEC8D8"
 	sourceColorGenerator := gamut.PastelGenerator{}
 
-	methodColor, classColor, lineNumberColor := sink.Triple(c)
+	methodColor, classColor, lineNumberColor := sink.Triple(baseColor)
 	threadRawColor, _ := colorful.MakeColor(gamut.Darker(gamut.Hex(classColor), 0.4))
 	threadColor := threadRawColor.Hex()
 	applicationRawColor, _ := colorful.MakeColor(gamut.Lighter(gamut.Hex(classColor), 0.4))
