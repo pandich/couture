@@ -7,8 +7,8 @@ import (
 	"couture/internal/pkg/source/aws/cloudwatch"
 	"couture/internal/pkg/source/elasticsearch"
 	"couture/internal/pkg/source/fake"
-	"couture/internal/pkg/source/ssh"
-	"couture/internal/pkg/source/tail"
+	local2 "couture/internal/pkg/source/pipe/local"
+	ssh2 "couture/internal/pkg/source/pipe/ssh"
 	errors2 "github.com/pkg/errors"
 )
 
@@ -18,8 +18,8 @@ var SourceMetadata = []source.Metadata{
 	cloudwatch.Metadata(),
 	cloudformation.Metadata(),
 	elasticsearch.Metadata(),
-	tail.Metadata(),
-	ssh.Metadata(),
+	local2.Metadata(),
+	ssh2.Metadata(),
 }
 
 // GetSource ...

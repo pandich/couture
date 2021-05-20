@@ -43,7 +43,6 @@ func (snk *prettySink) renderCaller(event model.Event) string {
 	return caller
 }
 
-// FIXME linebreaks messed up in highlighting process?
 func (snk *prettySink) renderHighlightedMessage(event model.Event) string {
 	var message = ""
 	for _, chunk := range event.HighlightedMessage() {
@@ -60,7 +59,6 @@ func (snk *prettySink) renderHighlightedMessage(event model.Event) string {
 	return message
 }
 
-// FIXME linebreaks messed up in highlighting process?
 func (snk *prettySink) renderHighlightedStackTrace(event model.Event) string {
 	var stackTrace = ""
 	for _, chunk := range event.HighlightedStackTrace() {

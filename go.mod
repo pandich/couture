@@ -12,19 +12,18 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.2.2
 	github.com/brianvoe/gofakeit/v6 v6.4.1
 	github.com/fortytw2/leaktest v1.3.0 // indirect
+	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/i582/cfmt v1.3.0
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mattn/go-isatty v0.0.12
+	github.com/melbahja/goph v1.2.1
 	github.com/muesli/gamut v0.2.0
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.8.1
-	github.com/nxadm/tail v1.4.8
 	github.com/olekukonko/ts v0.0.0-20171002115256-78ecb04241c0
 	github.com/pkg/errors v0.9.1
-	github.com/posener/complete v1.2.3
 	github.com/spf13/viper v1.7.1
-	github.com/willabides/kongplete v0.2.0
 	go.uber.org/ratelimit v0.2.0
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9 // indirect
 	golang.org/x/sys v0.0.0-20210507161434-a76c4d0a0096 // indirect

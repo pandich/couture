@@ -1,7 +1,5 @@
 package cloudwatch
 
-// TODO CloudWatch source
-
 import (
 	"context"
 	"couture/internal/pkg/model"

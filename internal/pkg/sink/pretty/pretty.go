@@ -12,6 +12,16 @@ import (
 	"sync"
 )
 
+// TODO color schemes
+
+// TODO configuration column widths
+// TODO adaptive column widths
+// TODO configurable column order
+
+// FIXME source URLs don't display well
+// FIXME column widths are bad
+// FIXME linebreaks messed up in highlighting process?
+
 // noWrap ...
 const noWrap = 0
 

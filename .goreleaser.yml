@@ -40,9 +40,3 @@ brews:
     folder: Formula
     description: "Allows for tailing multiple event sources."
     download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
-
-# TODO goreleaser: release to homebrew
-# TODO goreleaser: private github release
-# TODO goreleaser: sign the artifact
-# TODO goreleaser: between this and the makefile, how do we do real releases?
-# semantic versioning makes sense: https://goreleaser.com/cookbooks/semantic-release/
