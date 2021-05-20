@@ -3,7 +3,6 @@ package cli
 import (
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model"
-	errors2 "github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
 	"os"
 )
@@ -11,24 +10,13 @@ import (
 func getArgs() ([]interface{}, error) {
 	var sources []interface{}
 	var violations []error
-	for _, u := range cli.Log.Source {
+	for _, u := range cli.Source {
 		sourceURL := model.SourceURL(u)
-		var handled bool
-		for _, metadata := range manager.SourceMetadata {
-			if !metadata.CanHandle(sourceURL) {
-				continue
-			}
-			handled = true
-			configuredSource, err := metadata.Creator(sourceURL)
-			if err != nil {
-				violations = append(violations, err)
-			} else {
-				sources = append(sources, *configuredSource)
-			}
-			break
-		}
-		if !handled {
-			violations = append(violations, errors2.Errorf("invalid source URL: %+v\n", sourceURL))
+		src, err := manager.GetSource(sourceURL)
+		if len(err) > 0 {
+			violations = append(violations, err...)
+		} else {
+			sources = append(sources, src...)
 		}
 	}
 	if len(violations) > 0 {
@@ -38,20 +26,12 @@ func getArgs() ([]interface{}, error) {
 }
 
 func evaluateArgs() []string {
-	if len(os.Args) >= 2 && os.Args[1] == installCompletionsCommand {
-		return os.Args[1:]
-	}
-	// use the log command by default
-	args := append([]string{logCommand}, os.Args[1:]...)
-	expandArgAliases(args[1:])
-	return args
-}
-
-func expandArgAliases(args []string) {
 	aliases := aliasConfig()
+	args := os.Args[1:]
 	for i := range args {
 		if alias, ok := aliases[args[i]]; ok {
 			args[i] = alias
 		}
 	}
+	return args
 }

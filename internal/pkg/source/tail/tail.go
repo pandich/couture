@@ -17,6 +17,7 @@ import (
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{
+		Name:      "Local File",
 		Type:      reflect.TypeOf(fileSource{}),
 		CanHandle: func(url model.SourceURL) bool { return url.Scheme == "file" },
 		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {

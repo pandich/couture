@@ -4,8 +4,6 @@ import (
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model/level"
 	"github.com/alecthomas/kong"
-	"github.com/posener/complete"
-	"github.com/willabides/kongplete"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -14,47 +12,74 @@ import (
 )
 
 const (
-	applicationName           = "couture"
-	logCommand                = "log"
-	installCompletionsCommand = "install-completions"
+	applicationName = "couture"
+	helpSummary     = "Tails one or more event sources."
 )
 
-func newParser() *kong.Kong {
+//nolint:lll
+var cli struct {
+	OutputFormat string `group:"Display Options" help:"The output format: ${enum}." enum:"pretty,json" default:"pretty" placeholder:"format" short:"f" required:"true" env:"COUTURE_DEFAULT_FORMAT"`
+	Paginator    string `group:"Display Options" help:"Set the paginator for --paginate mode." default:"" placeholder:"command" env:"COUTURE_PAGINATOR"`
+	Paginate     bool   `group:"Display Options" help:"Paginate the results using an external paginator.  (default=${default})" short:"p" default:"false" negatable:"true"`
+	Wrap         bool   `group:"Display Options" help:"Wrap the output. (default=${default})" placeholder:"width" short:"w" default:"true" negatable:"true"`
+
+	Level   level.Level     `group:"Filter Options" help:"The minimum log level to display: ${enum}." default:"info" placeholder:"level" short:"l" enum:"trace,debug,info,warn,error" env:"COUTURE_DEFAULT_LEVEL"`
+	Since   time.Time       `group:"Filter Options" help:"How far back to look for events. May be a time or duration expression." placeholder:"(time|duration)" short:"s" default:"15m" env:"COUTURE_DEFAULT_SINCE"`
+	Include []regexp.Regexp `group:"Filter Options" help:"Include filter regular expressions; they are performed before excludes." placeholder:"regex" short:"i" sep:"|"`
+	Exclude []regexp.Regexp `group:"Filter Options" help:"Exclude filter regular expressions; they are performed after includes." placeholder:"regex" short:"x" sep:"|"`
+
+	Source []url.URL `arg:"true" help:"Log event sources." name:"url" required:"true"`
+}
+
+// Run ...
+func Run() {
+	// new cli parser
 	parser := kong.Must(&cli,
 		kong.Name(applicationName),
-		// TODO description doesn't show up in standard help?
 		kong.Description(description()),
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{Summary: false, Tree: true}),
 		kong.TypeMapper(reflect.TypeOf(regexp.Regexp{}), regexpDecoder()),
 		kong.TypeMapper(reflect.TypeOf(time.Time{}), timeLikeDecoder()),
 	)
-	// FIXME kongplete doesn't do anything detectable
-	kongplete.Complete(parser, kongplete.WithPredictor("file", complete.PredictFiles("*")))
-	return parser
-}
 
-//nolint:lll
-var cli struct {
-	Log struct {
-		OutputFormat string          `help:"The output format: ${enum}" enum:"pretty,json" default:"pretty" placeholder:"format" short:"f"`
-		Paginator    string          `help:"Set the paginator for --paginate mode." default:"" placeholder:"command" env:"COUTURE_PAGINATOR"`
-		Paginate     bool            `help:"Paginate the results using an external paginator" short:"p" negatable:"true"`
-		Wrap         uint            `help:"Wrap the output. Use --no-wrap or --wrap=0 to disable." placeholder:"width" short:"w" xor:"wrap"`
-		NoWrap       bool            `hide:"true" xor:"wrap"`
-		Level        level.Level     `help:"The minimum log level to display: ${enum}" default:"info" placeholder:"level" enum:"trace,debug,info,warn,error"`
-		Since        time.Time       `help:"How far back to look for events. May be a time or duration expression." default:"15m"`
-		Include      []regexp.Regexp `help:"Include filter regular expressions. Performed before excludes." placeholder:"regex" short:"i"`
-		Exclude      []regexp.Regexp `help:"Exclude filter regular expressions. Performed after includes." placeholder:"regex" short:"x"`
-		Source       []url.URL       `arg:"true" help:"Log event sources." name:"url" required:"true"`
-	} `cmd:""`
+	// load config
+	err := loadConfig()
+	parser.FatalIfErrorf(err)
 
-	InstallCompletions kongplete.InstallCompletions `cmd:""`
+	// parse args
+	_, err = parser.Parse(evaluateArgs())
+	parser.FatalIfErrorf(err)
+
+	// get cli flags
+	mgrOptions, err := getFlags()
+	parser.FatalIfErrorf(err)
+
+	// get cli args
+	sources, err := getArgs()
+	parser.FatalIfErrorf(err)
+
+	// create the manager and start it
+	mgr, err := manager.New(append(mgrOptions, sources...)...)
+	parser.FatalIfErrorf(err)
+	err = (*mgr).Start()
+	parser.FatalIfErrorf(err)
 }
 
 func description() string {
-	const delimiter = "\n  "
-	allExampleURLs := manager.SourceMetadata.ExampleURLs()
-	return "Tails one or more event sources.\n\nExamples Source URLs:" +
-		delimiter + strings.Join(allExampleURLs, delimiter)
+	var lines = []string{
+		"Examples Source URLs:",
+		"",
+	}
+	for _, src := range manager.SourceMetadata {
+		if len(src.ExampleURLs) > 0 {
+			lines = append(lines, "  "+src.Name+":")
+			for _, u := range src.ExampleURLs {
+				lines = append(lines, "    "+u)
+			}
+			lines = append(lines, "")
+		}
+	}
+	examples := strings.Join(lines, "\n")
+	return helpSummary + "\n\n" + examples
 }

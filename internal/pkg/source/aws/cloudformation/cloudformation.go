@@ -24,6 +24,7 @@ func Metadata() source.Metadata {
 		)
 	}
 	return source.Metadata{
+		Name: "AWS CloudFormation",
 		Type: reflect.TypeOf(cloudFormationSource{}),
 		CanHandle: func(url model.SourceURL) bool {
 			_, ok := map[string]bool{

@@ -16,6 +16,7 @@ import (
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{
+		Name:      "Fake",
 		Type:      reflect.TypeOf(fakeSource{}),
 		CanHandle: func(url model.SourceURL) bool { return url.Scheme == "fake" },
 		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {

@@ -5,7 +5,10 @@ import (
 	"couture/internal/pkg/sink/json"
 	"couture/internal/pkg/sink/pretty"
 	errors2 "github.com/pkg/errors"
+	"io"
 	"os"
+	"os/exec"
+	"strings"
 )
 
 func getFlags() ([]interface{}, error) {
@@ -14,31 +17,46 @@ func getFlags() ([]interface{}, error) {
 		return nil, err
 	}
 	return []interface{}{
-		manager.LogLevelOption(cli.Log.Level),
-		manager.FilterOption(cli.Log.Include, cli.Log.Exclude),
-		manager.SinceOption(cli.Log.Since),
+		manager.LogLevelOption(cli.Level),
+		manager.FilterOption(cli.Include, cli.Exclude),
+		manager.SinceOption(cli.Since),
 		snk,
 	}, nil
 }
 
 func sinkFlag() (interface{}, error) {
-	wrap := wrapFlag()
-	switch cli.Log.OutputFormat {
+	paginator, err := paginatorFlag()
+	if err != nil {
+		return nil, err
+	}
+	switch cli.OutputFormat {
 	case "json":
-		return json.New(os.Stdout), nil
+		return json.New(paginator), nil
 	case "pretty":
-		return pretty.New(os.Stdout, wrap), nil
+		return pretty.New(paginator, cli.Wrap), nil
 	default:
-		return nil, errors2.Errorf("unknown output format: %s\n", cli.Log.OutputFormat)
+		return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
 	}
 }
 
-func wrapFlag() int {
-	var wrap = pretty.AutoWrap
-	if cli.Log.NoWrap {
-		wrap = pretty.NoWrap
-	} else if cli.Log.Wrap != pretty.NoWrap {
-		wrap = int(cli.Log.Wrap)
+func paginatorFlag() (io.Writer, error) {
+	if !cli.Paginate {
+		return os.Stdout, nil
 	}
-	return wrap
+
+	var pagerArgs = strings.Split(cli.Paginator, " \t\n")
+	pager, pagerArgs := pagerArgs[0], pagerArgs[1:]
+	pagerCmd := exec.Command(pager, pagerArgs...)
+
+	// I/O
+	pagerCmd.Stdout, pagerCmd.Stderr = os.Stdout, os.Stderr
+	writer, err := pagerCmd.StdinPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	if err = pagerCmd.Start(); err != nil {
+		return nil, err
+	}
+	return writer, nil
 }

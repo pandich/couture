@@ -12,7 +12,7 @@ import (
 func regexpDecoder() kong.MapperFunc {
 	return func(ctx *kong.DecodeContext, target reflect.Value) error {
 		var value string
-		if err := ctx.Scan.PopValueInto("pattern", &value); err != nil {
+		if err := ctx.Scan.PopValueInto("regex", &value); err != nil {
 			return err
 		}
 		r, err := regexp.Compile(value)
@@ -27,7 +27,7 @@ func regexpDecoder() kong.MapperFunc {
 func timeLikeDecoder() kong.MapperFunc {
 	return func(ctx *kong.DecodeContext, target reflect.Value) error {
 		var value string
-		if err := ctx.Scan.PopValueInto("duration", &value); err != nil {
+		if err := ctx.Scan.PopValueInto("(time|duration)", &value); err != nil {
 			return err
 		}
 		var t time.Time

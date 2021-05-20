@@ -12,6 +12,7 @@ import (
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{
+		Name:      "SSH",
 		Type:      reflect.TypeOf(sshSource{}),
 		CanHandle: func(url model.SourceURL) bool { return url.Scheme == "ssh" },
 		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {

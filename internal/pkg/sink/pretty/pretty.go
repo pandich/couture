@@ -12,11 +12,8 @@ import (
 	"sync"
 )
 
-// AutoWrap ...
-const AutoWrap = -1
-
-// NoWrap ...
-const NoWrap = 0
+// noWrap ...
+const noWrap = 0
 
 // prettySink provides render output.
 type prettySink struct {
@@ -28,17 +25,12 @@ type prettySink struct {
 }
 
 // New provides a configured prettySink sink.
-func New(out io.Writer, wrap int) *sink.Sink {
-	var terminalWidth = 72
-	switch wrap {
-	case AutoWrap:
+func New(out io.Writer, wrap bool) *sink.Sink {
+	var terminalWidth = noWrap
+	if wrap {
 		if size, err := ts.GetSize(); err == nil {
 			terminalWidth = size.Col()
 		}
-	case NoWrap:
-		terminalWidth = NoWrap
-	default:
-		terminalWidth = wrap
 	}
 	var snk sink.Sink = &prettySink{
 		out:              out,

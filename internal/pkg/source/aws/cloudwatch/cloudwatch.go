@@ -27,6 +27,7 @@ func Metadata() source.Metadata {
 	}
 	exampleURLs = append(exampleURLs, "lambda://<lambda-name>?profile=<profile>&region=<region>&lookbackTime=<interval|date>")
 	return source.Metadata{
+		Name: "AWS CloudWatch",
 		Type: reflect.TypeOf(cloudwatchSource{}),
 		CanHandle: func(url model.SourceURL) bool {
 			_, ok := map[string]bool{

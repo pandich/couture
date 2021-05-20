@@ -82,7 +82,7 @@ func (snk *prettySink) renderHighlightedStackTrace(event model.Event) string {
 }
 
 func (snk *prettySink) wrapToTerminal(s string) (string, error) {
-	if snk.terminalWidth == NoWrap {
+	if snk.terminalWidth == noWrap {
 		return s, nil
 	}
 	wrapper := wordwrap.NewWriter(snk.terminalWidth)

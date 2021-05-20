@@ -19,6 +19,7 @@ const eventsPerFetch = 100
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{
+		Name: "ElasticSearch",
 		Type: reflect.TypeOf(elasticSearch{}),
 		CanHandle: func(url model.SourceURL) bool {
 			_, ok := map[string]bool{
