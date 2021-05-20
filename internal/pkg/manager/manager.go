@@ -43,15 +43,22 @@ type (
 		// options contains general settings and toggles.
 		options managerOptions
 
-		// bus is the event bus used to route events between sourceStarters and sinks
+		// bus is the event bus used to route events between pollingSourcePollers and sinks
 		bus EventBus.Bus
 
-		// sourceStarters is the set of source pollingSourceCreator functions to start as goroutines. Each source has exactly one poller.
-		sourceStarters []func(wg *sync.WaitGroup)
+		// pollingSourcePollers is the set of source pollingSourceCreator functions to start as goroutines.
+		// Each source has exactly one poller.
+		pollingSourcePollers []func(wg *sync.WaitGroup)
 
-		// sources is the set of registry which push to the event queue. Their lifecycle follows the Manager's lifecycle.
+		// pushingSources is the set of registry which push to the event queue. Their lifecycle follows the Manager's lifecycle.
 		// (i.e. Start and Stop)
-		sources []source.Pushable
+		pushingSources []source.Pushable
+
+		// allSources contains all source.Pushable and source.Pollable instances.
+		allSources []source.Source
+
+		// sinks contains all registered sink.Sink instances.
+		sinks []sink.Sink
 
 		// rateLimiter ensures a cap on total events/second to avoid flooding the terminal.
 		rateLimiter ratelimit.Limiter

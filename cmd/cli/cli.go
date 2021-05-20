@@ -23,6 +23,7 @@ var cli struct {
 	Paginator    string `group:"Display Options" help:"Set the paginator for --paginate mode." default:"more" placeholder:"command" env:"PAGINATOR"`
 	Paginate     bool   `group:"Display Options" help:"Paginate the results using an external paginator.  (default=${default})" short:"p" default:"false" negatable:"true"`
 	Wrap         bool   `group:"Display Options" help:"Wrap the output. (default=${default})" placeholder:"width" short:"w" default:"true" negatable:"true"`
+	Theme        string `group:"Display Options" help:"Specify the core theme color. ($(enum)" placeholder:"color" default:"prince" enum:"prince,ocean,warm"`
 
 	Level   level.Level     `group:"Filter Options" help:"The minimum log level to display: ${enum}." default:"info" placeholder:"level" short:"l" enum:"trace,debug,info,warn,error" env:"COUTURE_DEFAULT_LEVEL"`
 	Since   time.Time       `group:"Filter Options" help:"How far back to look for events. May be a time or duration expression." placeholder:"(time|duration)" short:"s" default:"15m" env:"COUTURE_DEFAULT_SINCE"`

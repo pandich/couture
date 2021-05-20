@@ -4,12 +4,13 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
 	errors2 "github.com/pkg/errors"
+	"image/color"
 	"math/rand"
 	"time"
 )
 
 // NewColorCycle ...
-func NewColorCycle(generator gamut.ColorGenerator) chan string {
+func NewColorCycle(generator gamut.ColorGenerator, defaultColor string) chan string {
 	const cycleLength = 50
 	rawColors, err := gamut.Generate(cycleLength, generator)
 	if err != nil {
@@ -17,12 +18,11 @@ func NewColorCycle(generator gamut.ColorGenerator) chan string {
 	}
 	var colors []string
 	for _, rawColor := range rawColors {
-		const white = "#ffffff"
-		color, ok := colorful.MakeColor(rawColor)
+		c, ok := colorful.MakeColor(rawColor)
 		if ok {
-			colors = append(colors, color.Hex())
+			colors = append(colors, c.Hex())
 		} else {
-			colors = append(colors, white)
+			colors = append(colors, defaultColor)
 		}
 	}
 
@@ -42,4 +42,19 @@ func NewColorCycle(generator gamut.ColorGenerator) chan string {
 		}
 	}()
 	return cycle
+}
+
+// Triple ...
+func Triple(center color.Color) (string, string, string) {
+	surrounding := gamut.Analogous(center)
+	leftColor, _ := colorful.MakeColor(surrounding[0])
+	centerColor, _ := colorful.MakeColor(center)
+	rightColor, _ := colorful.MakeColor(surrounding[1])
+	return leftColor.Hex(), centerColor.Hex(), rightColor.Hex()
+}
+
+// HexContrast ...
+func HexContrast(hex string) string {
+	cf, _ := colorful.MakeColor(gamut.Contrast(gamut.Hex(hex)))
+	return cf.Hex()
 }

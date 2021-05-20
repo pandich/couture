@@ -15,7 +15,7 @@ func IsTTY() bool {
 // Sink of events. Responsible for consuming an event.
 type Sink interface {
 	// Init called prior to the beginning of logging.
-	Init(sources []model.SourceURL)
+	Init(sources []source.Source)
 	// Accept consumes an event, typically for display.
-	Accept(src source.Pushable, event model.Event) error
+	Accept(src source.Source, event model.Event) error
 }

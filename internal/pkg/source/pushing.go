@@ -2,26 +2,20 @@ package source
 
 import (
 	"couture/internal/pkg/model"
-	"sync"
 )
 
 // Pushable ...
 type (
-	// Pushable of events. Responsible for ingest and conversion to the standard format.
-	Pushable interface {
-		URL() model.SourceURL
-		// Start collecting events.
-		Start(wg *sync.WaitGroup, running func() bool, callback func(event model.Event)) error
-	}
+	Pushable Source
 
-	// Pushing for all Pushable implementations.
+	// Pushing Source.
 	Pushing struct {
 		Pushable
 		sourceURL model.SourceURL
 	}
 )
 
-// New base source.
+// New base Source.
 func New(sourceURL model.SourceURL) *Pushing {
 	return &Pushing{
 		sourceURL: sourceURL,

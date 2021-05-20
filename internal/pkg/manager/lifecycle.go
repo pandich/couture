@@ -11,12 +11,17 @@ import (
 // Waits until it has been stopped.
 func (mgr *publishingManager) Start() error {
 	mgr.publishDiagnostic(level.Debug, "start", "starting")
-	for _, poller := range mgr.sourceStarters {
+	for _, poller := range mgr.pollingSourcePollers {
 		mgr.wg.Add(1)
 		go poller(mgr.wg)
 	}
+
+	for _, snk := range mgr.sinks {
+		snk.Init(mgr.allSources)
+	}
+
 	mgr.running = true
-	for _, pusher := range mgr.sources {
+	for _, pusher := range mgr.pushingSources {
 		if err := pusher.Start(mgr.wg, func() bool { return mgr.running }, func(event model.Event) {
 			mgr.publishEvent(pusher, event)
 		}); err != nil {

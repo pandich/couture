@@ -8,8 +8,8 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
-func (snk *prettySink) renderEvent(src source.Pushable, event model.Event) (string, error) {
-	sourceStyleName := snk.getSourceStyleName(src)
+func (snk *prettySink) renderEvent(src source.Source, event model.Event) (string, error) {
+	sourceStyleName := snk.palette.sourceStyle(src.URL())
 	line := cfmt.Sprintf(
 		"{{%s}}::"+sourceStyleName+" "+
 			"{{%s}}::Timestamp "+

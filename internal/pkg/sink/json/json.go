@@ -27,11 +27,11 @@ func New(out io.Writer) *sink.Sink {
 }
 
 // Init ...
-func (snk jsonSink) Init(_ []model.SourceURL) {
+func (snk jsonSink) Init(_ []source.Source) {
 }
 
 // Accept ...
-func (snk jsonSink) Accept(src source.Pushable, event model.Event) error {
+func (snk jsonSink) Accept(src source.Source, event model.Event) error {
 	sourceEvent := sourceEvent{
 		SourceURL: src.URL().String(),
 		Event:     event,

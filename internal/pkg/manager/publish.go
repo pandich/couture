@@ -34,7 +34,7 @@ func (mgr *publishingManager) publishDiagnostic(level level.Level, methodName mo
 	mgr.publishEvent(internalSource, event)
 }
 
-func (mgr *publishingManager) publishEvent(src source.Pushable, event model.Event) {
+func (mgr *publishingManager) publishEvent(src source.Source, event model.Event) {
 	if !event.Level.IsAtLeast(mgr.options.level) {
 		return
 	}

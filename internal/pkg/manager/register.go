@@ -17,10 +17,12 @@ func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error 
 	for _, registrant := range registrants {
 		switch v := registrant.(type) {
 		case *source.Pollable:
+			mgr.allSources = append(mgr.allSources, *v)
 			if err := mgr.registerPollingSource(*v); err != nil {
 				return err
 			}
 		case *source.Pushable:
+			mgr.allSources = append(mgr.allSources, *v)
 			if err := mgr.registerPushingSource(*v); err != nil {
 				return err
 			}
@@ -41,14 +43,14 @@ func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error 
 
 // registerPushingSource registers a source that pushes events into the queue.
 func (mgr *publishingManager) registerPushingSource(src source.Pushable) error {
-	mgr.sources = append(mgr.sources, src)
+	mgr.pushingSources = append(mgr.pushingSources, src)
 	return nil
 }
 
 // registerPollingSource registers one or more registry to be polled for events.
 // If no events are available the source pauses for pollInterval.
 func (mgr *publishingManager) registerPollingSource(src source.Pollable) error {
-	mgr.sourceStarters = append(mgr.sourceStarters, func(wg *sync.WaitGroup) {
+	mgr.pollingSourcePollers = append(mgr.pollingSourcePollers, func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		for mgr.running {
 			var err error
@@ -88,6 +90,7 @@ func (mgr *publishingManager) registerPollingSource(src source.Pollable) error {
 
 // registerSink registers one or more sinks.
 func (mgr *publishingManager) registerSink(sink sink.Sink) error {
+	mgr.sinks = append(mgr.sinks, sink)
 	return mgr.bus.SubscribeAsync(eventTopic, sink.Accept, false)
 }
 

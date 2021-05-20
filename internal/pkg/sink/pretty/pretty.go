@@ -5,11 +5,10 @@ import (
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	"fmt"
-	"github.com/muesli/gamut"
 	"github.com/muesli/termenv"
 	"github.com/olekukonko/ts"
+	"image/color"
 	"io"
-	"sync"
 )
 
 // TODO color schemes
@@ -27,39 +26,42 @@ const noWrap = 0
 
 // prettySink provides render output.
 type prettySink struct {
-	out              io.Writer
-	terminalWidth    int
-	sourceStyle      map[model.SourceURL]string
-	sourceStyleMutex sync.RWMutex
-	sourceColors     chan string
+	out           io.Writer
+	terminalWidth int
+	palette       palette
 }
 
 // New provides a configured prettySink sink.
-func New(out io.Writer, wrap bool) *sink.Sink {
+func New(out io.Writer, wrap bool, baseColor color.Color) *sink.Sink {
+	var snk sink.Sink = &prettySink{
+		out:           out,
+		terminalWidth: terminalWidth(wrap),
+		palette:       newPalette(baseColor),
+	}
+	return &snk
+}
+
+// Init ...
+func (snk *prettySink) Init(sources []source.Source) {
+	for _, src := range sources {
+		snk.palette.registerSource(src.URL())
+	}
+	termenv.Reset()
+	termenv.ClearScreen()
+}
+
+func terminalWidth(wrap bool) int {
 	var terminalWidth = noWrap
 	if wrap {
 		if size, err := ts.GetSize(); err == nil {
 			terminalWidth = size.Col()
 		}
 	}
-	var snk sink.Sink = &prettySink{
-		out:              out,
-		terminalWidth:    terminalWidth,
-		sourceStyleMutex: sync.RWMutex{},
-		sourceStyle:      map[model.SourceURL]string{},
-		sourceColors:     sink.NewColorCycle(gamut.PastelGenerator{}),
-	}
-	return &snk
-}
-
-// Init ...
-func (snk *prettySink) Init(_ []model.SourceURL) {
-	termenv.Reset()
-	termenv.ClearScreen()
+	return terminalWidth
 }
 
 // Accept ...
-func (snk *prettySink) Accept(src source.Pushable, event model.Event) error {
+func (snk *prettySink) Accept(src source.Source, event model.Event) error {
 	line, err := snk.renderEvent(src, event)
 	if err != nil {
 		return err

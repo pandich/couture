@@ -4,7 +4,9 @@ import (
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/sink/json"
 	"couture/internal/pkg/sink/pretty"
+	"github.com/muesli/gamut"
 	errors2 "github.com/pkg/errors"
+	"image/color"
 	"io"
 	"os"
 	"os/exec"
@@ -33,7 +35,7 @@ func sinkFlag() (interface{}, error) {
 	case "json":
 		return json.New(paginator), nil
 	case "pretty":
-		return pretty.New(paginator, cli.Wrap), nil
+		return pretty.New(paginator, cli.Wrap, themeFlag()), nil
 	default:
 		return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
 	}
@@ -59,4 +61,21 @@ func paginatorFlag() (io.Writer, error) {
 		return nil, err
 	}
 	return writer, nil
+}
+
+const purpleRain = "#AE99BF"
+const crystalBlue = "#E2A3B4"
+const paleChestnut = "#A0D7D9"
+
+var themeColors = map[string]color.Color{
+	"prince": gamut.Hex(purpleRain),
+	"ocean":  gamut.Hex(crystalBlue),
+	"warm":   gamut.Hex(paleChestnut),
+}
+
+func themeFlag() color.Color {
+	if c, ok := themeColors[cli.Theme]; ok {
+		return c
+	}
+	return color.White
 }

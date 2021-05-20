@@ -9,14 +9,14 @@ import (
 type (
 	// Pollable of events which need to be periodically polled.
 	Pollable interface {
-		Pushable
+		Source
 		// Poll performs a non-blocking poll for an event. Nil is returned if no event is available.
 		Poll() ([]model.Event, error)
 		// PollInterval is the frequency with which the pollStarters are polled.
 		PollInterval() time.Duration
 	}
 
-	// Polling polling source.
+	// Polling polling Source.
 	Polling struct {
 		*Pushing
 		pollInterval time.Duration
@@ -29,7 +29,7 @@ func (src Polling) PollInterval() time.Duration {
 	return src.pollInterval
 }
 
-// NewPollable polling source.
+// NewPollable polling Source.
 func NewPollable(sourceURL model.SourceURL, pollInterval time.Duration) *Polling {
 	return &Polling{
 		Pushing:      New(sourceURL),
