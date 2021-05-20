@@ -1,11 +1,12 @@
 package pretty
 
 import (
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
-	"couture/pkg/model"
 	"fmt"
 	"github.com/muesli/gamut"
+	"github.com/muesli/termenv"
 	"github.com/olekukonko/ts"
 	"io"
 	"sync"
@@ -47,6 +48,12 @@ func New(out io.Writer, wrap int) *sink.Sink {
 		sourceColors:     sink.NewColorCycle(gamut.PastelGenerator{}),
 	}
 	return &snk
+}
+
+// Init ...
+func (snk *prettySink) Init(_ []model.SourceURL) {
+	termenv.Reset()
+	termenv.ClearScreen()
 }
 
 // Accept ...

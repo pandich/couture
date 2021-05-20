@@ -1,9 +1,9 @@
 package pretty
 
 import (
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
-	"couture/pkg/model/level"
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"math/rand"

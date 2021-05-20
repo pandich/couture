@@ -6,7 +6,7 @@ default: all
 
 # Core
 APPLICATION	= couture
-SOURCE_DIRS	= cmd pkg internal
+SOURCE_DIRS	= cmd internal
 COMMAND		= cmd/$(APPLICATION).go
 
 # Go

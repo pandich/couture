@@ -1,8 +1,8 @@
 package tail
 
 import (
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/source"
-	"couture/pkg/model"
 	"encoding/json"
 	"fmt"
 	"github.com/nxadm/tail"

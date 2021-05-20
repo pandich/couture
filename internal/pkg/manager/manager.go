@@ -1,9 +1,9 @@
 package manager
 
 import (
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
-	"couture/pkg/model"
 	"github.com/asaskevich/EventBus"
 	"go.uber.org/ratelimit"
 	"sync"

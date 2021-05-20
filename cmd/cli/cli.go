@@ -2,173 +2,59 @@ package cli
 
 import (
 	"couture/internal/pkg/manager"
-	"couture/internal/pkg/sink/pretty"
-	"couture/internal/pkg/source"
-	"couture/internal/pkg/source/aws/cloudformation"
-	"couture/internal/pkg/source/aws/cloudwatch"
-	"couture/internal/pkg/source/elasticsearch"
-	"couture/internal/pkg/source/fake"
-	"couture/internal/pkg/source/ssh"
-	"couture/internal/pkg/source/tail"
-	"github.com/pkg/errors"
-	"github.com/riywo/loginshell"
-	"github.com/spf13/cobra"
-	"github.com/spf13/cobra/doc"
-	"github.com/spf13/viper"
-	"os"
-	"path"
+	"couture/internal/pkg/model/level"
+	"github.com/alecthomas/kong"
+	"github.com/posener/complete"
+	"github.com/willabides/kongplete"
+	"net/url"
+	"reflect"
+	"regexp"
 	"strings"
-)
-
-// TODO per-source help?
-
-const applicationName = "couture"
-
-var (
-	errConfigNotFound = &viper.ConfigFileNotFoundError{}
+	"time"
 )
 
 const (
-	generateShellCompletionCommand = "complete"
-	generateDocumentationCommand   = "doc"
+	applicationName           = "couture"
+	logCommand                = "log"
+	installCompletionsCommand = "install-completions"
 )
 
-var defaultFilters []string
-
-const (
-	defaultSince     = "5m"
-	defaultSink      = "pretty"
-	defaultPaginator = ""
-	defaultLevel     = "info"
-)
-
-var rootCmd = &cobra.Command{
-	Use:   applicationName + " [flags] source_url ...",
-	Short: "Tails one or more event sources.\n",
-	Long: "Description:\n\nTails one or more event sources.\n" +
-		"When providing a CloudFormation stack, resources are recursively analyzed until all loggable entities are found. " +
-		"This includes the stack events of the stack itself, as well as any log groups " +
-		"its entities contain.\n",
-	Example: strings.Join([]string{
-		"\n  " + applicationName + " " + strings.Join(
-			sourceMetadata.ExampleURLs(),
-			"\n  "+applicationName+" "),
-	}, ""),
-	Args: cobra.MinimumNArgs(1),
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		flags := cmd.PersistentFlags
-		if err := viper.BindPFlag(paginatorEnvKey, flags().Lookup(paginatorFlag)); err != nil {
-			return err
-		}
-
-		viper.SetConfigName("." + applicationName)
-		viper.SetConfigType("yaml")
-		viper.AddConfigPath("$HOME")
-		viper.AddConfigPath(".")
-
-		err := viper.ReadInConfig()
-		if err != nil && !errors.As(err, &errConfigNotFound) {
-			return errors.Errorf("fatal error config file: %s\n", err)
-		}
-		viper.AutomaticEnv()
-		return nil
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		flags := cmd.PersistentFlags()
-		resources, err := allOptions(flags, args)
-		if err != nil {
-			return err
-		}
-
-		mgr, err := manager.New(resources...)
-		if err != nil {
-			return err
-		}
-
-		return (*mgr).Start()
-	},
+func newParser() *kong.Kong {
+	parser := kong.Must(&cli,
+		kong.Name(applicationName),
+		// TODO description doesn't show up in standard help?
+		kong.Description(description()),
+		kong.UsageOnError(),
+		kong.ConfigureHelp(kong.HelpOptions{Summary: false, Tree: true}),
+		kong.TypeMapper(reflect.TypeOf(regexp.Regexp{}), regexpDecoder()),
+		kong.TypeMapper(reflect.TypeOf(time.Time{}), timeLikeDecoder()),
+	)
+	// FIXME kongplete doesn't do anything detectable
+	kongplete.Complete(parser, kongplete.WithPredictor("file", complete.PredictFiles("*")))
+	return parser
 }
 
-// sourceMetadata is a list of sourceMetadata sourceMetadata.
-var sourceMetadata = source.MetadataGroup{
-	fake.Metadata(),
-	cloudwatch.Metadata(),
-	cloudformation.Metadata(),
-	elasticsearch.Metadata(),
-	tail.Metadata(),
-	ssh.Metadata(),
+//nolint:lll
+var cli struct {
+	Log struct {
+		OutputFormat string          `help:"The output format: ${enum}" enum:"pretty,json" default:"pretty" placeholder:"format" short:"f"`
+		Paginator    string          `help:"Set the paginator for --paginate mode." default:"" placeholder:"command" env:"COUTURE_PAGINATOR"`
+		Paginate     bool            `help:"Paginate the results using an external paginator" short:"p" negatable:"true"`
+		Wrap         uint            `help:"Wrap the output. Use --no-wrap or --wrap=0 to disable." placeholder:"width" short:"w" xor:"wrap"`
+		NoWrap       bool            `hide:"true" xor:"wrap"`
+		Level        level.Level     `help:"The minimum log level to display: ${enum}" default:"info" placeholder:"level" enum:"trace,debug,info,warn,error"`
+		Since        time.Time       `help:"How far back to look for events. May be a time or duration expression." default:"15m"`
+		Include      []regexp.Regexp `help:"Include filter regular expressions. Performed before excludes." placeholder:"regex" short:"i"`
+		Exclude      []regexp.Regexp `help:"Exclude filter regular expressions. Performed after includes." placeholder:"regex" short:"x"`
+		Source       []url.URL       `arg:"true" help:"Log event sources." name:"url" required:"true"`
+	} `cmd:""`
+
+	InstallCompletions kongplete.InstallCompletions `cmd:""`
 }
 
-// Execute ...
-func Execute() error {
-	flags := rootCmd.PersistentFlags()
-	flags.StringP(outputFormatFlag, "o", defaultSink, "The output format. ( pretty | json )")
-	flags.CountP(verboseFlag, "v", "Display additional diagnostic data.")
-	flags.StringP(paginatorFlag, "", defaultPaginator, "Specify the paginator.")
-	flags.BoolP(paginateFlag, "p", false, "Paginate output.")
-	flags.BoolP(noWrapFlag, "W", false, "No wrapping.")
-	flags.IntP(wrapFlag, "w", pretty.AutoWrap, "Display no diagnostic data.")
-	flags.StringP(levelFlag, "l", defaultLevel, "Minimum log level to display (trace | debug | info | warn | error).")
-	flags.StringP(sinceFlag, "s", defaultSince, "How far back in time to search for events.")
-	flags.StringSliceP(includeFilterFlag, "i", defaultFilters, "Include filter regular expressions. Performed before excludes.")
-	flags.StringSliceP(excludeFilterFlag, "e", defaultFilters, "Exclude filter regular expressions. Performed after includes.")
-
-	if (len(os.Args) == 2 || len(os.Args) == 3) && os.Args[1] == generateShellCompletionCommand {
-		return handleCompleteCommand(rootCmd)
-	}
-	if len(os.Args) == 3 && os.Args[1] == generateDocumentationCommand {
-		return handleDocCommand(rootCmd)
-	}
-	return rootCmd.Execute()
-}
-
-func handleDocCommand(cmd *cobra.Command) error {
-	docFormat := os.Args[2]
-	switch docFormat {
-	case "man":
-		return doc.GenMan(cmd, &doc.GenManHeader{Title: applicationName, Section: "1"}, os.Stdout)
-	case "markdown":
-		return doc.GenMarkdown(cmd, os.Stdout)
-	case "yaml":
-		return doc.GenYaml(cmd, os.Stdout)
-	default:
-		return errors.Errorf("invalid documentation format: %s - must be (man | markdown | yaml)\n", docFormat)
-	}
-}
-
-func handleCompleteCommand(cmd *cobra.Command) error {
-	// FIXME file is generated, but completions don't work
-	shellName, err := shellName()
-	if err != nil {
-		return err
-	}
-
-	writer := os.Stdout
-	switch shellName {
-	case "bash":
-		return cmd.GenBashCompletion(writer)
-	case "zsh":
-		return cmd.GenZshCompletion(writer)
-	case "fish":
-		return cmd.GenFishCompletion(writer, true)
-	case "powershell", "powershell.exe":
-		return cmd.GenPowerShellCompletionWithDesc(writer)
-	default:
-		return errors.Errorf("invalid shell: %s - must be (bash | fish | zsh | powershell(.exe))\n", shellName)
-	}
-}
-
-func shellName() (string, error) {
-	const shellNameArgIndex = 2
-	var shellName string
-	if len(os.Args) > shellNameArgIndex {
-		shellName = os.Args[shellNameArgIndex]
-	} else {
-		shellBinary, err := loginshell.Shell()
-		if err != nil {
-			return "", err
-		}
-		shellName = path.Base(shellBinary)
-	}
-	return shellName, nil
+func description() string {
+	const delimiter = "\n  "
+	allExampleURLs := manager.SourceMetadata.ExampleURLs()
+	return "Tails one or more event sources.\n\nExamples Source URLs:" +
+		delimiter + strings.Join(allExampleURLs, delimiter)
 }

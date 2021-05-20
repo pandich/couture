@@ -1,20 +1,15 @@
 package manager
 
 import (
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
-	"couture/pkg/model"
-	"couture/pkg/model/level"
 	"errors"
 	errors2 "github.com/pkg/errors"
 	"io"
 	"sync"
 	"time"
-)
-
-var (
-	// errBadOption is raised
-	errBadOption = errors.New("unknown manager option type: ")
 )
 
 // RegisterOptions registers a configuration option, source, or sink.
@@ -38,7 +33,7 @@ func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error 
 				return err
 			}
 		default:
-			return errors2.Wrapf(errBadOption, "%T (%+v)\n", v, v)
+			return errors2.Errorf("unknown manager option type: %T (%+v)\n", registrant, registrant)
 		}
 	}
 	return nil

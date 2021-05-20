@@ -19,7 +19,7 @@ Couture combines multiple log streams from disparate sources into friendly outpu
 
 ### Usage:
 
-For usage run `couture --help`. For shell completions run `eval $(couture complete)`.
+For usage run `couture --help`. For shell completions run `eval $(couture shell-completion)`.
 
 ### Configuration
 

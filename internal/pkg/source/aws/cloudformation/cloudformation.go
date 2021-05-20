@@ -2,11 +2,11 @@ package cloudformation
 
 import (
 	"context"
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/aws"
 	"couture/internal/pkg/source/aws/cloudwatch"
-	"couture/pkg/model"
-	"couture/pkg/model/level"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"

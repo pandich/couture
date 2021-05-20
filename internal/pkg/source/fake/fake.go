@@ -1,9 +1,9 @@
 package fake
 
 import (
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
-	"couture/pkg/model"
-	"couture/pkg/model/level"
 	"github.com/brianvoe/gofakeit/v6"
 	errors2 "github.com/pkg/errors"
 	"io"

@@ -1,7 +1,7 @@
 package model
 
 import (
-	"couture/pkg/model/level"
+	"couture/internal/pkg/model/level"
 	"regexp"
 )
 
@@ -58,7 +58,7 @@ func (event Event) stackTrace() *StackTrace {
 }
 
 // Matches ...
-func (event *Event) Matches(includes []*regexp.Regexp, excludes []*regexp.Regexp) bool {
+func (event *Event) Matches(includes []regexp.Regexp, excludes []regexp.Regexp) bool {
 	if len(includes) == 0 && len(excludes) == 0 {
 		return true
 	}

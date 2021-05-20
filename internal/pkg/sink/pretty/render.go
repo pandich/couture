@@ -1,8 +1,8 @@
 package pretty
 
 import (
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/source"
-	"couture/pkg/model"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/padding"
 	"github.com/muesli/reflow/wordwrap"

@@ -1,9 +1,9 @@
 package elasticsearch
 
 import (
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
-	"couture/pkg/model"
-	"couture/pkg/model/level"
 	"encoding/json"
 	"errors"
 	errors2 "github.com/pkg/errors"

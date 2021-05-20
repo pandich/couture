@@ -1,9 +1,9 @@
 package manager
 
 import (
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
-	"couture/pkg/model"
-	"couture/pkg/model/level"
 	"fmt"
 	"net/url"
 	"os"

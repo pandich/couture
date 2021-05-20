@@ -3,6 +3,7 @@ module couture
 go 1.16
 
 require (
+	github.com/alecthomas/kong v0.2.16
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/aws/aws-sdk-go-v2 v1.3.2
@@ -17,18 +18,18 @@ require (
 	github.com/mattn/go-isatty v0.0.12
 	github.com/muesli/gamut v0.2.0
 	github.com/muesli/reflow v0.3.0
+	github.com/muesli/termenv v0.8.1
 	github.com/nxadm/tail v1.4.8
 	github.com/olekukonko/ts v0.0.0-20171002115256-78ecb04241c0
 	github.com/pkg/errors v0.9.1
-	github.com/riywo/loginshell v0.0.0-20200815045211-7d26008be1ab
-	github.com/spf13/cobra v1.1.3
-	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.7.0
+	github.com/posener/complete v1.2.3
+	github.com/spf13/viper v1.7.1
+	github.com/willabides/kongplete v0.2.0
 	go.uber.org/ratelimit v0.2.0
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9 // indirect
 	golang.org/x/sys v0.0.0-20210507161434-a76c4d0a0096 // indirect
-	golang.org/x/text v0.3.6 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/multierror.v1 v1.0.2
 	gopkg.in/olivere/elastic.v3 v3.0.75
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

@@ -4,10 +4,10 @@ package cloudwatch
 
 import (
 	"context"
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/aws"
-	"couture/pkg/model"
-	"couture/pkg/model/level"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"

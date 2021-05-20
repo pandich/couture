@@ -1,9 +1,9 @@
 package json
 
 import (
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
-	"couture/pkg/model"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -24,6 +24,10 @@ func New(out io.Writer) *sink.Sink {
 	jsonSink := jsonSink{out: out}
 	var snk sink.Sink = jsonSink
 	return &snk
+}
+
+// Init ...
+func (snk jsonSink) Init(_ []model.SourceURL) {
 }
 
 // Accept ...

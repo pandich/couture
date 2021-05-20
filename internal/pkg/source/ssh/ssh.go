@@ -3,8 +3,8 @@ package ssh
 // TODO ssh source implementation
 
 import (
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/source"
-	"couture/pkg/model"
 	"reflect"
 	"sync"
 )

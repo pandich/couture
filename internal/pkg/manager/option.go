@@ -1,7 +1,7 @@
 package manager
 
 import (
-	"couture/pkg/model/level"
+	"couture/internal/pkg/model/level"
 	"regexp"
 	"time"
 )
@@ -13,15 +13,8 @@ func SinceOption(t time.Time) interface{} {
 	}}
 }
 
-// VerboseDisplayOption ...
-func VerboseDisplayOption(level level.Level) interface{} {
-	return baseOption{applier: func(options *managerOptions) {
-		options.level = level
-	}}
-}
-
 // FilterOption ...
-func FilterOption(includeFilters []*regexp.Regexp, excludeFilters []*regexp.Regexp) interface{} {
+func FilterOption(includeFilters []regexp.Regexp, excludeFilters []regexp.Regexp) interface{} {
 	return baseOption{applier: func(options *managerOptions) {
 		options.includeFilters = includeFilters
 		options.excludeFilters = excludeFilters
@@ -40,8 +33,8 @@ type (
 	managerOptions struct {
 		level          level.Level
 		since          *time.Time
-		includeFilters []*regexp.Regexp
-		excludeFilters []*regexp.Regexp
+		includeFilters []regexp.Regexp
+		excludeFilters []regexp.Regexp
 	}
 
 	// option is an entity capable of mutating the state of a managerOptions struct.

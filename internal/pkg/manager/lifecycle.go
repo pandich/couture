@@ -1,8 +1,8 @@
 package manager
 
 import (
-	"couture/pkg/model"
-	"couture/pkg/model/level"
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
 	"os"
 	"os/signal"
 )

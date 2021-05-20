@@ -1,7 +1,7 @@
 package source
 
 import (
-	"couture/pkg/model"
+	"couture/internal/pkg/model"
 	"reflect"
 )
 

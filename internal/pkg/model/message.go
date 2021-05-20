@@ -37,7 +37,7 @@ type (
 )
 
 // matches determines if an event matches the filters criteria.
-func (msg Message) matches(include []*regexp.Regexp, exclude []*regexp.Regexp) (highlightMarks, bool) {
+func (msg Message) matches(include []regexp.Regexp, exclude []regexp.Regexp) (highlightMarks, bool) {
 	var marks highlightMarks
 
 	// process the includes returning true on the first match
