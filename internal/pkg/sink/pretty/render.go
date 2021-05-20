@@ -13,12 +13,12 @@ func (snk *prettySink) renderEvent(src source.Pushable, event model.Event) (stri
 	line := cfmt.Sprintf(
 		"{{%s}}::"+sourceStyleName+" "+
 			"{{%s}}::Timestamp "+
-			"{{%s}}::Log"+string(event.Level)+" "+
+			"{{%s}}::Level"+string(event.Level)+" "+
 			"{{%s}}::ApplicationName "+
 			"{{%s}}::ThreadName "+
-			"%s "+
-			"%s"+
-			"%s",
+			"%s "+ // caller
+			"%s"+ // message
+			"%s", // stack trace
 		src.URL().ShortForm(),
 		event.Timestamp.Stamp(),
 		string(event.Level[0]),

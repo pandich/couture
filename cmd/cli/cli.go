@@ -71,7 +71,7 @@ func description() string {
 		"Examples Source URLs:",
 		"",
 	}
-	for _, src := range manager.SourceMetadata {
+	for _, src := range manager.AvailableSources {
 		if len(src.ExampleURLs) > 0 {
 			lines = append(lines, "  "+src.Name+":")
 			for _, u := range src.ExampleURLs {

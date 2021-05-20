@@ -12,8 +12,8 @@ import (
 	errors2 "github.com/pkg/errors"
 )
 
-// SourceMetadata is a list of sourceMetadata sourceMetadata.
-var SourceMetadata = []source.Metadata{
+// AvailableSources is a list of sourceMetadata sourceMetadata.
+var AvailableSources = []source.Metadata{
 	fake.Metadata(),
 	cloudwatch.Metadata(),
 	cloudformation.Metadata(),
@@ -42,7 +42,7 @@ func GetSource(sourceURL model.SourceURL) ([]interface{}, []error) {
 
 // getSourceMetadata ...
 func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
-	for _, metadata := range SourceMetadata {
+	for _, metadata := range AvailableSources {
 		if metadata.CanHandle(sourceURL) {
 			return &metadata
 		}

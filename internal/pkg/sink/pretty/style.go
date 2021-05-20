@@ -18,7 +18,7 @@ func init() {
 func init() {
 	reg := cfmt.RegisterStyle
 	regLog := func(lvl level.Level, color string) {
-		reg("Log"+string(lvl), func(s string) string { return cfmt.Sprintf("{{ %s }}::"+color+"|reverse", string(s[0])) })
+		reg("Level"+string(lvl), func(s string) string { return cfmt.Sprintf("{{ %s }}::"+color+"|reverse", string(s[0])) })
 	}
 
 	reg("Punctuation", func(s string) string { return cfmt.Sprintf("{{%s}}::#FEC8D8", s) })
