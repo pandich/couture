@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"reflect"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -19,7 +20,7 @@ const (
 //nolint:lll
 var cli struct {
 	OutputFormat string `group:"Display Options" help:"The output format: ${enum}." enum:"pretty,json" default:"pretty" placeholder:"format" short:"f" required:"true" env:"COUTURE_DEFAULT_FORMAT"`
-	Paginator    string `group:"Display Options" help:"Set the paginator for --paginate mode." default:"" placeholder:"command" env:"COUTURE_PAGINATOR"`
+	Paginator    string `group:"Display Options" help:"Set the paginator for --paginate mode." default:"more" placeholder:"command" env:"PAGINATOR"`
 	Paginate     bool   `group:"Display Options" help:"Paginate the results using an external paginator.  (default=${default})" short:"p" default:"false" negatable:"true"`
 	Wrap         bool   `group:"Display Options" help:"Wrap the output. (default=${default})" placeholder:"width" short:"w" default:"true" negatable:"true"`
 
@@ -42,6 +43,9 @@ func Run() {
 		kong.TypeMapper(reflect.TypeOf(regexp.Regexp{}), regexpDecoder()),
 		kong.TypeMapper(reflect.TypeOf(time.Time{}), timeLikeDecoder()),
 	)
+	if runtime.GOOS == "windows" {
+		parser.Fatalf("unsupported operating system: %s", runtime.GOOS)
+	}
 
 	// load config
 	err := loadConfig()
