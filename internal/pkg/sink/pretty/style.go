@@ -6,18 +6,27 @@ import (
 	"couture/internal/pkg/sink"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
-	"image/color"
+	"github.com/muesli/termenv"
 	"net/url"
 )
 
-func init() {
-	if !sink.IsTTY() {
-		cfmt.DisableColors()
-	}
+// Theme ...
+type Theme struct {
+	BaseColor        string
+	ApplicationColor string
+	DefaultColor     string
+	TimestampColor   string
+	ErrorColor       string
+	TraceColor       string
+	DebugColor       string
+	InfoColor        string
+	WarnColor        string
+	MessageColor     string
+	StackTraceColor  string
+	SourceColors     gamut.ColorGenerator
 }
 
 type palette struct {
@@ -25,55 +34,54 @@ type palette struct {
 	sourceColors chan string
 }
 
-func newPalette(baseColor color.Color) palette {
-	const defaultColor = "#ffffff"
-	const timestampColor = "#877FD7"
-	const errorColor = "#DD2A12"
-	const traceColor = "#868686"
-	const debugColor = "#F6F6F6"
-	const infoColor = "#66A71E"
-	const warnColor = "#FFE127"
-	const messageColor = "#FBF0D7"
-	const stackTraceColor = errorColor
-	const punctuationColor = "#FEC8D8"
-	sourceColorGenerator := gamut.PastelGenerator{}
+func newPalette(theme Theme) palette {
+	faintly := func(hex string) string { return hex + "|bg" + fainter(hex, 0.96) }
 
-	methodColor, classColor, lineNumberColor := sink.Triple(baseColor)
-	threadRawColor, _ := colorful.MakeColor(gamut.Darker(gamut.Hex(classColor), 0.4))
-	threadColor := threadRawColor.Hex()
-	applicationRawColor, _ := colorful.MakeColor(gamut.Lighter(gamut.Hex(classColor), 0.4))
-	applicationColor := applicationRawColor.Hex()
+	methodColor, classColor, lineNumberColor, threadColor := caller(theme.BaseColor)
+	const contrastPercent = 0.25
+	var methodDelimiterColor = lighter(methodColor, contrastPercent)
+	var lineNumberDelimiterColor = lighter(lineNumberColor, contrastPercent)
+	if isDark(methodColor) {
+		methodDelimiterColor = darker(methodColor, contrastPercent)
+		lineNumberDelimiterColor = darker(lineNumberColor, contrastPercent)
+	}
 
 	reg := cfmt.RegisterStyle
 	regLog := func(lvl level.Level, bgColor string) {
-		fgColor := sink.HexContrast(bgColor)
-		reg("Level"+string(lvl), func(s string) string { return cfmt.Sprintf("{{ %s }}::bg"+bgColor+"|"+fgColor, string(s[0])) })
+		messageBgColor := fainter(bgColor, 0.90)
+		fgColor := contrast(bgColor)
+		reg("Level"+string(lvl), func(s string) string { return cfmt.Sprintf("{{ %1.1s }}::bg"+bgColor+"|"+fgColor, s) })
+		reg("Message"+string(lvl), func(s string) string { return cfmt.Sprintf("{{%s}}::"+theme.MessageColor+"|bg"+messageBgColor, s) })
+		reg("HighlightedMessage"+string(lvl), func(s string) string {
+			return cfmt.Sprintf("{{%s}}::bg"+theme.MessageColor+"|"+messageBgColor, s)
+		})
 	}
 
 	reg("Default", func(s string) string { return s })
-	reg("Punctuation", func(s string) string { return cfmt.Sprintf("{{%s}}::"+punctuationColor, s) })
+	reg("MethodDelimiter", func(s string) string { return cfmt.Sprintf("{{%s}}::"+methodDelimiterColor, s) })
+	reg("LineNumberDelimiter", func(s string) string { return cfmt.Sprintf("{{%s}}::"+lineNumberDelimiterColor, s) })
 
-	reg("Timestamp", func(s string) string { return cfmt.Sprintf("{{%s}}::"+timestampColor, s) })
-	reg("ApplicationName", func(s string) string { return cfmt.Sprintf("{{%-20.20s}}::"+applicationColor, s) })
-	reg("ThreadName", func(s string) string { return cfmt.Sprintf("{{%-15.15s}}::"+threadColor, s) })
-	reg("ClassName", func(s string) string { return cfmt.Sprintf("{{%.30s}}::"+classColor, s) })
-	reg("MethodName", func(s string) string { return cfmt.Sprintf("{{%.30s}}::"+methodColor, s) })
+	reg("Timestamp", func(s string) string { return cfmt.Sprintf("{{ %s }}::"+faintly(theme.TimestampColor), s) })
+	reg("Application", func(s string) string {
+		return cfmt.Sprintf("{{ %-20.20s }}::"+faintly(theme.ApplicationColor), s)
+	})
+	reg("Thread", func(s string) string { return cfmt.Sprintf("{{ %-15.15s }}::"+faintly(threadColor), s) })
+	reg("Class", func(s string) string { return cfmt.Sprintf("{{%.30s}}::"+classColor, s) })
+	reg("Method", func(s string) string { return cfmt.Sprintf("{{%.30s}}::"+methodColor, s) })
 	reg("LineNumber", func(s string) string { return cfmt.Sprintf("{{%s}}::"+lineNumberColor, s) })
 
-	regLog(level.Trace, traceColor)
-	regLog(level.Debug, debugColor)
-	regLog(level.Info, infoColor)
-	regLog(level.Warn, warnColor)
-	regLog(level.Error, errorColor)
+	regLog(level.Trace, theme.TraceColor)
+	regLog(level.Debug, theme.DebugColor)
+	regLog(level.Info, theme.InfoColor)
+	regLog(level.Warn, theme.WarnColor)
+	regLog(level.Error, theme.ErrorColor)
 
-	reg("Message", func(s string) string { return cfmt.Sprintf("{{%s}}::"+messageColor, s) })
-	reg("HighlightedMessage", func(s string) string { return cfmt.Sprintf("{{%s}}::reverse|"+messageColor, s) })
-	reg("StackTrace", func(s string) string { return cfmt.Sprintf("{{%s}}::"+stackTraceColor, s) })
-	reg("HighlightedStackTrace", func(s string) string { return cfmt.Sprintf("{{%s}}::reverse|"+errorColor, s) })
+	reg("StackTrace", func(s string) string { return cfmt.Sprintf("{{%s}}::"+faintly(theme.StackTraceColor), s) })
+	reg("HighlightedStackTrace", func(s string) string { return cfmt.Sprintf("{{%s}}::bg"+faintly(theme.ErrorColor), s) })
 
 	return palette{
-		defaultColor: defaultColor,
-		sourceColors: sink.NewColorCycle(sourceColorGenerator, defaultColor),
+		defaultColor: theme.DefaultColor,
+		sourceColors: sink.NewColorCycle(theme.SourceColors, theme.DefaultColor),
 	}
 }
 
@@ -88,10 +96,47 @@ func (p *palette) sourceStyle(sourceURL model.SourceURL) string {
 }
 
 func (p *palette) registerSource(sourceURL model.SourceURL) {
-	name := p.sourceStyle(sourceURL)
-	bgHex := <-p.sourceColors
-	fgHex := sink.HexContrast(bgHex)
-	cfmt.RegisterStyle(name, func(s string) string {
-		return cfmt.Sprintf(fmt.Sprintf("{{%%-30.30s}}::%s|bg%s", fgHex, bgHex), s)
-	})
+	styleName := p.sourceStyle(sourceURL)
+	sourceColor := <-p.sourceColors
+	cfmt.RegisterStyle(styleName, func(s string) string { return cfmt.Sprintf("{{/%-30.30s }}::"+sourceColor, s) })
+}
+
+func caller(center string) (string, string, string, string) {
+	col := gamut.Hex(center)
+	q := gamut.Analogous(col)
+	a, _ := colorful.MakeColor(col)
+	b, _ := colorful.MakeColor(q[0])
+	c, _ := colorful.MakeColor(q[1])
+	d, _ := colorful.MakeColor(gamut.Darker(col, 0.5))
+	return a.Hex(), b.Hex(), c.Hex(), d.Hex()
+}
+
+func contrast(hex string) string {
+	cf, _ := colorful.MakeColor(gamut.Contrast(gamut.Hex(hex)))
+	return cf.Hex()
+}
+
+func lighter(hex string, percent float64) string {
+	cf, _ := colorful.MakeColor(gamut.Lighter(gamut.Hex(hex), percent))
+	return cf.Hex()
+}
+
+func darker(hex string, percent float64) string {
+	cf, _ := colorful.MakeColor(gamut.Darker(gamut.Hex(hex), percent))
+	return cf.Hex()
+}
+func fainter(hex string, percent float64) string {
+	const count = 1000
+	i := int(count * percent)
+	bg := termenv.ConvertToRGB(termenv.BackgroundColor())
+	fainter := gamut.Blends(bg, gamut.Hex(hex), count)[count-i]
+	col, _ := colorful.MakeColor(fainter)
+	return col.Hex()
+}
+
+func isDark(hex string) bool {
+	const gray = 0.5
+	col, _ := colorful.MakeColor(gamut.Hex(hex))
+	_, _, l := col.Hcl()
+	return l < gray
 }

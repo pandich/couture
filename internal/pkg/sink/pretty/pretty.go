@@ -5,19 +5,16 @@ import (
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	"fmt"
+	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/termenv"
 	"github.com/olekukonko/ts"
-	"image/color"
 	"io"
 )
-
-// TODO color schemes
 
 // TODO configuration column widths
 // TODO adaptive column widths
 // TODO configurable column order
 
-// FIXME source URLs don't display well
 // FIXME column widths are bad
 // FIXME linebreaks messed up in highlighting process?
 
@@ -32,11 +29,14 @@ type prettySink struct {
 }
 
 // New provides a configured prettySink sink.
-func New(out io.Writer, wrap bool, baseColor color.Color) *sink.Sink {
+func New(out io.Writer, wrap bool, theme Theme) *sink.Sink {
+	if !sink.IsTTY() || theme.BaseColor == "" {
+		cfmt.DisableColors()
+	}
 	var snk sink.Sink = &prettySink{
 		out:           out,
 		terminalWidth: terminalWidth(wrap),
-		palette:       newPalette(baseColor),
+		palette:       newPalette(theme),
 	}
 	return &snk
 }
@@ -66,6 +66,10 @@ func (snk *prettySink) Accept(src source.Source, event model.Event) error {
 	if err != nil {
 		return err
 	}
-	_, err = fmt.Fprintln(snk.out, line)
+	_, err = fmt.Fprint(snk.out, line)
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintln(snk.out, termenv.CSI+termenv.ResetSeq+"m")
 	return err
 }

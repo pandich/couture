@@ -4,27 +4,13 @@ import (
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/sink/json"
 	"couture/internal/pkg/sink/pretty"
-	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/gamut"
 	errors2 "github.com/pkg/errors"
-	"image/color"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
 )
-
-const purpleRain = "#AE99BF"
-const crystalBlue = "#A0D7D9"
-const paleChestnut = "#E2A3B4"
-const celadonGreen = "#A5E0B6"
-
-var themeColors = map[string]color.Color{
-	"prince":  gamut.Hex(purpleRain),
-	"ocean":   gamut.Hex(crystalBlue),
-	"warm":    gamut.Hex(paleChestnut),
-	"forrest": gamut.Hex(celadonGreen),
-}
 
 func getFlags() ([]interface{}, error) {
 	snk, err := sinkFlag()
@@ -48,7 +34,11 @@ func sinkFlag() (interface{}, error) {
 	case "json":
 		return json.New(paginator), nil
 	case "pretty":
-		return pretty.New(paginator, cli.Wrap, themeFlag()), nil
+		theme, err := themeFlag()
+		if err != nil {
+			return nil, err
+		}
+		return pretty.New(paginator, cli.Wrap, theme), nil
 	default:
 		return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
 	}
@@ -76,13 +66,34 @@ func paginatorFlag() (io.Writer, error) {
 	return writer, nil
 }
 
-func themeFlag() color.Color {
-	if cli.Theme == "none" {
-		cfmt.DisableColors()
-		return color.White
+func themeFlag() (pretty.Theme, error) {
+	t, ok := themeByName[cli.Theme]
+	if !ok {
+		return t, errors2.Errorf("unknown Theme: %s", cli.Theme)
 	}
-	if c, ok := themeColors[cli.Theme]; ok {
-		return c
-	}
-	return color.White
+	return t, nil
+}
+
+const purpleRain = "#AE99BF"
+
+// TODO theme colors
+var themeByName = map[string]pretty.Theme{
+	"none": {
+		BaseColor:    "",
+		SourceColors: gamut.PastelGenerator{},
+	},
+	"prince": {
+		BaseColor:        purpleRain,
+		ApplicationColor: "#ffb694",
+		DefaultColor:     "#ffffff",
+		TimestampColor:   "#f9f871",
+		ErrorColor:       "#dd2a12",
+		TraceColor:       "#868686",
+		DebugColor:       "#f6f6f6",
+		InfoColor:        "#66a71e",
+		WarnColor:        "#ffe127",
+		MessageColor:     "#fefedf",
+		StackTraceColor:  "#dd2a12",
+		SourceColors:     gamut.PastelGenerator{},
+	},
 }

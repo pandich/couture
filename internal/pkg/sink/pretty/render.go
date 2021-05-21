@@ -11,20 +11,20 @@ import (
 func (snk *prettySink) renderEvent(src source.Source, event model.Event) (string, error) {
 	sourceStyleName := snk.palette.sourceStyle(src.URL())
 	line := cfmt.Sprintf(
-		"{{%s}}::"+sourceStyleName+" "+
-			"{{%s}}::Timestamp "+
-			"{{%s}}::Level"+string(event.Level)+" "+
-			"{{%s}}::ApplicationName "+
-			"{{%s}}::ThreadName "+
-			"%s "+ // caller
+		"{{%s}}::"+sourceStyleName+
+			"{{%s}}::Timestamp"+
+			"{{%s}}::Application"+
+			"{{%s}}::Thread"+
+			"%s"+ // caller
+			"{{%s}}::Level"+string(event.Level)+
 			"%s"+ // message
 			"%s", // stack trace
 		src.URL().ShortForm(),
 		event.Timestamp.Stamp(),
-		string(event.Level[0]),
 		event.ApplicationNameOrBlank(),
 		event.ThreadNameOrBlank(),
 		snk.renderCaller(event),
+		event.Level,
 		snk.renderHighlightedMessage(event),
 		snk.renderHighlightedStackTrace(event),
 	)
@@ -35,7 +35,7 @@ func (snk *prettySink) renderCaller(event model.Event) string {
 	const classNameWidth = 30
 	const callerWidth = 55
 	caller := padding.String(cfmt.Sprintf(
-		"{{%s}}::ClassName{{.}}::Punctuation{{%s}}::MethodName{{#}}::Punctuation{{%d}}::LineNumber  ",
+		"{{%s}}::Class{{/}}::MethodDelimiter{{%s}}::Method{{#}}::LineNumberDelimiter{{%d}}::LineNumber  ",
 		event.ClassName.Abbreviate(classNameWidth),
 		event.MethodName,
 		event.LineNumber,
@@ -49,11 +49,11 @@ func (snk *prettySink) renderHighlightedMessage(event model.Event) string {
 		message += " "
 		switch chunk.(type) {
 		case model.HighlightedMessage:
-			message += cfmt.Sprintf("{{%s}}::HighlightedMessage", chunk)
+			message += cfmt.Sprintf("{{%s}}::HighlightedMessage"+string(event.Level), chunk)
 		case model.UnhighlightedMessage:
-			message += cfmt.Sprintf("{{%s}}::Message", chunk)
+			message += cfmt.Sprintf("{{%s}}::Message"+string(event.Level), chunk)
 		default:
-			message += cfmt.Sprintf("{{%s}}::Message", chunk)
+			message += cfmt.Sprintf("{{%s}}::Message"+string(event.Level), chunk)
 		}
 	}
 	return message

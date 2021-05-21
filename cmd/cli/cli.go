@@ -20,10 +20,10 @@ const (
 //nolint:lll
 var cli struct {
 	OutputFormat string `group:"Display Options" help:"The output format: ${enum}." enum:"pretty,json" default:"pretty" placeholder:"format" short:"f" required:"true" env:"COUTURE_DEFAULT_FORMAT"`
-	Paginator    string `group:"Display Options" help:"Set the paginator for --paginate mode." default:"more" placeholder:"command" env:"PAGINATOR"`
+	Paginator    string `group:"Display Options" help:"Set the paginator for --paginate mode." default:"more" placeholder:"command" env:"PAGER"`
 	Paginate     bool   `group:"Display Options" help:"Paginate the results using an external paginator.  (default=${default})" short:"p" default:"false" negatable:"true"`
 	Wrap         bool   `group:"Display Options" help:"Wrap the output. (default=${default})" placeholder:"width" short:"w" default:"true" negatable:"true"`
-	Theme        string `group:"Display Options" help:"Specify the core theme color: ${enum}." placeholder:"theme" default:"prince" enum:"none,forrest,ocean,prince,warm"`
+	Theme        string `group:"Display Options" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"prince" enum:"none,prince"`
 
 	Level   level.Level     `group:"Filter Options" help:"The minimum log level to display: ${enum}." default:"info" placeholder:"level" short:"l" enum:"trace,debug,info,warn,error" env:"COUTURE_DEFAULT_LEVEL"`
 	Since   time.Time       `group:"Filter Options" help:"How far back to look for events. May be a time or duration expression." placeholder:"(time|duration)" short:"s" default:"15m" env:"COUTURE_DEFAULT_SINCE"`

@@ -11,7 +11,7 @@ import (
 
 // New creates an empty Manager.
 func New(opts ...interface{}) (*model.Manager, error) {
-	const ttyMaxEventsPerSecond = 200
+	const ttyMaxEventsPerSecond = 100
 
 	var rl ratelimit.Limiter
 	if sink.IsTTY() {

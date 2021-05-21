@@ -84,7 +84,7 @@ func (src *fakeSource) Poll() ([]model.Event, error) {
 	threadName := model.ThreadName(gofakeit.Username())
 	return []model.Event{{
 		ApplicationName: &src.applicationName,
-		Timestamp:       model.Timestamp(time.Now().Truncate(time.Hour)),
+		Timestamp:       model.Timestamp(time.Now()),
 		Level:           lvl,
 		Message:         model.Message(gofakeit.HipsterParagraph(1, 4, count, "\n")),
 		MethodName:      model.MethodName(gofakeit.Animal()),

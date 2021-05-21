@@ -4,7 +4,6 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
 	errors2 "github.com/pkg/errors"
-	"image/color"
 	"math/rand"
 	"time"
 )
@@ -42,19 +41,4 @@ func NewColorCycle(generator gamut.ColorGenerator, defaultColor string) chan str
 		}
 	}()
 	return cycle
-}
-
-// Triple ...
-func Triple(center color.Color) (string, string, string) {
-	surrounding := gamut.Analogous(center)
-	leftColor, _ := colorful.MakeColor(surrounding[0])
-	centerColor, _ := colorful.MakeColor(center)
-	rightColor, _ := colorful.MakeColor(surrounding[1])
-	return leftColor.Hex(), centerColor.Hex(), rightColor.Hex()
-}
-
-// HexContrast ...
-func HexContrast(hex string) string {
-	cf, _ := colorful.MakeColor(gamut.Contrast(gamut.Hex(hex)))
-	return cf.Hex()
 }
