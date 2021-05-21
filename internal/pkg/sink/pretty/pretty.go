@@ -5,7 +5,6 @@ import (
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	"fmt"
-	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/termenv"
 	"github.com/olekukonko/ts"
 	"io"
@@ -30,9 +29,7 @@ type prettySink struct {
 
 // New provides a configured prettySink sink.
 func New(out io.Writer, wrap bool, theme Theme) *sink.Sink {
-	if !sink.IsTTY() || theme.BaseColor == "" {
-		cfmt.DisableColors()
-	}
+	theme.init()
 	var snk sink.Sink = &prettySink{
 		out:           out,
 		terminalWidth: terminalWidth(wrap),

@@ -7,9 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"github.com/i582/cfmt/cmd/cfmt"
-	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
-	"github.com/muesli/termenv"
 	"net/url"
 )
 
@@ -29,12 +27,11 @@ type Theme struct {
 	SourceColors     gamut.ColorGenerator
 }
 
-type palette struct {
-	defaultColor string
-	sourceColors chan string
-}
+func (theme Theme) init() {
+	if !sink.IsTTY() || theme.BaseColor == "" {
+		cfmt.DisableColors()
+	}
 
-func newPalette(theme Theme) palette {
 	faintly := func(hex string) string { return hex + "|bg" + fainter(hex, 0.96) }
 
 	methodColor, classColor, lineNumberColor, threadColor := caller(theme.BaseColor)
@@ -78,7 +75,14 @@ func newPalette(theme Theme) palette {
 
 	reg("StackTrace", func(s string) string { return cfmt.Sprintf("{{%s}}::"+faintly(theme.StackTraceColor), s) })
 	reg("HighlightedStackTrace", func(s string) string { return cfmt.Sprintf("{{%s}}::bg"+faintly(theme.ErrorColor), s) })
+}
 
+type palette struct {
+	defaultColor string
+	sourceColors chan string
+}
+
+func newPalette(theme Theme) palette {
 	return palette{
 		defaultColor: theme.DefaultColor,
 		sourceColors: sink.NewColorCycle(theme.SourceColors, theme.DefaultColor),
@@ -99,44 +103,4 @@ func (p *palette) registerSource(sourceURL model.SourceURL) {
 	styleName := p.sourceStyle(sourceURL)
 	sourceColor := <-p.sourceColors
 	cfmt.RegisterStyle(styleName, func(s string) string { return cfmt.Sprintf("{{/%-30.30s }}::"+sourceColor, s) })
-}
-
-func caller(center string) (string, string, string, string) {
-	col := gamut.Hex(center)
-	q := gamut.Analogous(col)
-	a, _ := colorful.MakeColor(col)
-	b, _ := colorful.MakeColor(q[0])
-	c, _ := colorful.MakeColor(q[1])
-	d, _ := colorful.MakeColor(gamut.Darker(col, 0.5))
-	return a.Hex(), b.Hex(), c.Hex(), d.Hex()
-}
-
-func contrast(hex string) string {
-	cf, _ := colorful.MakeColor(gamut.Contrast(gamut.Hex(hex)))
-	return cf.Hex()
-}
-
-func lighter(hex string, percent float64) string {
-	cf, _ := colorful.MakeColor(gamut.Lighter(gamut.Hex(hex), percent))
-	return cf.Hex()
-}
-
-func darker(hex string, percent float64) string {
-	cf, _ := colorful.MakeColor(gamut.Darker(gamut.Hex(hex), percent))
-	return cf.Hex()
-}
-func fainter(hex string, percent float64) string {
-	const count = 1000
-	i := int(count * percent)
-	bg := termenv.ConvertToRGB(termenv.BackgroundColor())
-	fainter := gamut.Blends(bg, gamut.Hex(hex), count)[count-i]
-	col, _ := colorful.MakeColor(fainter)
-	return col.Hex()
-}
-
-func isDark(hex string) bool {
-	const gray = 0.5
-	col, _ := colorful.MakeColor(gamut.Hex(hex))
-	_, _, l := col.Hcl()
-	return l < gray
 }
