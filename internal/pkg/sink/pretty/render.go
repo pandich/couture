@@ -9,7 +9,7 @@ import (
 )
 
 func (snk *prettySink) renderEvent(src source.Source, event model.Event) (string, error) {
-	sourceStyleName := snk.palette.sourceStyle(src.URL())
+	sourceStyleName := snk.palette.styleName(src.URL())
 	line := cfmt.Sprintf(
 		"{{%s}}::"+sourceStyleName+
 			"{{%s}}::Timestamp"+

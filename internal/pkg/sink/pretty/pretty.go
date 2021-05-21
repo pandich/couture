@@ -24,7 +24,7 @@ const noWrap = 0
 type prettySink struct {
 	out           io.Writer
 	terminalWidth int
-	palette       palette
+	palette       sourceColors
 }
 
 // New provides a configured prettySink sink.
@@ -33,7 +33,7 @@ func New(out io.Writer, wrap bool, theme Theme) *sink.Sink {
 	var snk sink.Sink = &prettySink{
 		out:           out,
 		terminalWidth: terminalWidth(wrap),
-		palette:       newPalette(theme),
+		palette:       newSourceColors(theme),
 	}
 	return &snk
 }

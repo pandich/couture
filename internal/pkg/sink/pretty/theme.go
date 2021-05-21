@@ -1,15 +1,14 @@
 package pretty
 
 import (
-	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/sink"
-	"crypto/sha256"
-	"encoding/hex"
 	"github.com/i582/cfmt/cmd/cfmt"
+	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
-	"net/url"
 )
+
+var reg = cfmt.RegisterStyle
 
 // Theme ...
 type Theme struct {
@@ -31,76 +30,58 @@ func (theme Theme) init() {
 	if !sink.IsTTY() || theme.BaseColor == "" {
 		cfmt.DisableColors()
 	}
+	reg("Default", func(s string) string { return s })
+	reg("Timestamp", func(s string) string { return cfmt.Sprintf("{{ %s }}::"+sink.WithFaintBg(theme.TimestampColor), s) })
+	reg("Application", func(s string) string {
+		return cfmt.Sprintf("{{ %-20.20s }}::"+sink.WithFaintBg(theme.ApplicationColor), s)
+	})
+	theme.initCaller()
+	theme.initMessage()
+}
 
-	faintly := func(hex string) string { return hex + "|bg" + fainter(hex, 0.96) }
-
-	methodColor, classColor, lineNumberColor, threadColor := caller(theme.BaseColor)
+func (theme Theme) initCaller() {
 	const contrastPercent = 0.25
-	var methodDelimiterColor = lighter(methodColor, contrastPercent)
-	var lineNumberDelimiterColor = lighter(lineNumberColor, contrastPercent)
-	if isDark(methodColor) {
-		methodDelimiterColor = darker(methodColor, contrastPercent)
-		lineNumberDelimiterColor = darker(lineNumberColor, contrastPercent)
+	callerPalette := func(center string) (string, string, string, string) {
+		col := gamut.Hex(center)
+		q := gamut.Analogous(col)
+		a, _ := colorful.MakeColor(col)
+		b, _ := colorful.MakeColor(q[0])
+		c, _ := colorful.MakeColor(q[1])
+		d, _ := colorful.MakeColor(gamut.Darker(col, 0.5))
+		return a.Hex(), b.Hex(), c.Hex(), d.Hex()
+	}
+	methodColor, classColor, lineNumberColor, threadColor := callerPalette(theme.BaseColor)
+
+	var methodDelimiterColor = sink.Lighter(methodColor, contrastPercent)
+	var lineNumberDelimiterColor = sink.Lighter(lineNumberColor, contrastPercent)
+	if sink.IsDark(methodColor) {
+		methodDelimiterColor = sink.Darker(methodColor, contrastPercent)
+		lineNumberDelimiterColor = sink.Darker(lineNumberColor, contrastPercent)
 	}
 
-	reg := cfmt.RegisterStyle
+	reg("Thread", func(s string) string { return cfmt.Sprintf("{{ %-15.15s }}::"+sink.WithFaintBg(threadColor), s) })
+	reg("Class", func(s string) string { return cfmt.Sprintf("{{%.30s}}::"+classColor, s) })
+	reg("MethodDelimiter", func(s string) string { return cfmt.Sprintf("{{%s}}::"+methodDelimiterColor, s) })
+	reg("Method", func(s string) string { return cfmt.Sprintf("{{%.30s}}::"+methodColor, s) })
+	reg("LineNumberDelimiter", func(s string) string { return cfmt.Sprintf("{{%s}}::"+lineNumberDelimiterColor, s) })
+	reg("LineNumber", func(s string) string { return cfmt.Sprintf("{{%s}}::"+lineNumberColor, s) })
+	reg("StackTrace", func(s string) string { return cfmt.Sprintf("{{%s}}::"+sink.WithFaintBg(theme.StackTraceColor), s) })
+	reg("HighlightedStackTrace", func(s string) string { return cfmt.Sprintf("{{%s}}::bg"+sink.WithFaintBg(theme.ErrorColor), s) })
+}
+
+func (theme Theme) initMessage() {
 	regLog := func(lvl level.Level, bgColor string) {
-		messageBgColor := fainter(bgColor, 0.90)
-		fgColor := contrast(bgColor)
+		messageBgColor := sink.Fainter(bgColor, 0.90)
+		fgColor := sink.Contrast(bgColor)
 		reg("Level"+string(lvl), func(s string) string { return cfmt.Sprintf("{{ %1.1s }}::bg"+bgColor+"|"+fgColor, s) })
 		reg("Message"+string(lvl), func(s string) string { return cfmt.Sprintf("{{%s}}::"+theme.MessageColor+"|bg"+messageBgColor, s) })
 		reg("HighlightedMessage"+string(lvl), func(s string) string {
 			return cfmt.Sprintf("{{%s}}::bg"+theme.MessageColor+"|"+messageBgColor, s)
 		})
 	}
-
-	reg("Default", func(s string) string { return s })
-	reg("MethodDelimiter", func(s string) string { return cfmt.Sprintf("{{%s}}::"+methodDelimiterColor, s) })
-	reg("LineNumberDelimiter", func(s string) string { return cfmt.Sprintf("{{%s}}::"+lineNumberDelimiterColor, s) })
-
-	reg("Timestamp", func(s string) string { return cfmt.Sprintf("{{ %s }}::"+faintly(theme.TimestampColor), s) })
-	reg("Application", func(s string) string {
-		return cfmt.Sprintf("{{ %-20.20s }}::"+faintly(theme.ApplicationColor), s)
-	})
-	reg("Thread", func(s string) string { return cfmt.Sprintf("{{ %-15.15s }}::"+faintly(threadColor), s) })
-	reg("Class", func(s string) string { return cfmt.Sprintf("{{%.30s}}::"+classColor, s) })
-	reg("Method", func(s string) string { return cfmt.Sprintf("{{%.30s}}::"+methodColor, s) })
-	reg("LineNumber", func(s string) string { return cfmt.Sprintf("{{%s}}::"+lineNumberColor, s) })
-
 	regLog(level.Trace, theme.TraceColor)
 	regLog(level.Debug, theme.DebugColor)
 	regLog(level.Info, theme.InfoColor)
 	regLog(level.Warn, theme.WarnColor)
 	regLog(level.Error, theme.ErrorColor)
-
-	reg("StackTrace", func(s string) string { return cfmt.Sprintf("{{%s}}::"+faintly(theme.StackTraceColor), s) })
-	reg("HighlightedStackTrace", func(s string) string { return cfmt.Sprintf("{{%s}}::bg"+faintly(theme.ErrorColor), s) })
-}
-
-type palette struct {
-	defaultColor string
-	sourceColors chan string
-}
-
-func newPalette(theme Theme) palette {
-	return palette{
-		defaultColor: theme.DefaultColor,
-		sourceColors: sink.NewColorCycle(theme.SourceColors, theme.DefaultColor),
-	}
-}
-
-func (p *palette) sourceStyle(sourceURL model.SourceURL) string {
-	u := url.URL(sourceURL)
-	if s := u.String(); s != "" {
-		hasher := sha256.New()
-		hasher.Write([]byte(s))
-		return "Source" + hex.EncodeToString(hasher.Sum(nil))
-	}
-	return "Default"
-}
-
-func (p *palette) registerSource(sourceURL model.SourceURL) {
-	styleName := p.sourceStyle(sourceURL)
-	sourceColor := <-p.sourceColors
-	cfmt.RegisterStyle(styleName, func(s string) string { return cfmt.Sprintf("{{/%-30.30s }}::"+sourceColor, s) })
 }
