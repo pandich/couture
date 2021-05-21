@@ -10,6 +10,7 @@ import (
 	local2 "couture/internal/pkg/source/pipe/local"
 	ssh2 "couture/internal/pkg/source/pipe/ssh"
 	errors2 "github.com/pkg/errors"
+	"sync"
 )
 
 // AvailableSources is a list of sourceMetadata sourceMetadata.
@@ -49,3 +50,22 @@ func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
 	}
 	return nil
 }
+
+type internalSource struct{}
+
+// ID ...
+func (i internalSource) ID() string {
+	return "Manager"
+}
+
+// URL ...
+func (i internalSource) URL() model.SourceURL {
+	return model.SourceURL{}
+}
+
+// Start ...
+func (i internalSource) Start(_ *sync.WaitGroup, _ func() bool, _ func(event model.Event)) error {
+	return nil
+}
+
+var managerSource = internalSource{}

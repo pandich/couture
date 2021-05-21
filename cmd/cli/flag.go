@@ -26,6 +26,11 @@ func getFlags() ([]interface{}, error) {
 }
 
 func sinkFlag() (interface{}, error) {
+	var columnNames []pretty.ColumnName
+	for _, n := range cli.Column {
+		columnNames = append(columnNames, pretty.ColumnName(n))
+	}
+
 	paginator, err := paginatorFlag()
 	if err != nil {
 		return nil, err
@@ -38,7 +43,11 @@ func sinkFlag() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		return pretty.New(paginator, cli.Wrap, theme), nil
+		return pretty.New(paginator, pretty.Config{
+			Wrap:    cli.Wrap,
+			Theme:   theme,
+			Columns: columnNames,
+		}), nil
 	default:
 		return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
 	}

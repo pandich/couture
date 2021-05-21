@@ -5,16 +5,12 @@ import (
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"fmt"
-	"net/url"
 	"os"
 	"time"
 )
 
 // eventTopic is the topic for all registry and sinks to communicate over.
 const eventTopic = "topic:event"
-
-// internalSource is the source used for all diagnostic messages.
-var internalSource = source.New(model.SourceURL{})
 
 func (mgr *publishingManager) publishError(
 	methodName model.MethodName,
@@ -26,12 +22,12 @@ func (mgr *publishingManager) publishError(
 	_, _ = fmt.Fprintln(os.Stderr, err)
 	event := newDiagnosticEvent(level, methodName, message, args...)
 	event.Exception = model.NewException(err)
-	mgr.publishEvent(internalSource, event)
+	mgr.publishEvent(managerSource, event)
 }
 
 func (mgr *publishingManager) publishDiagnostic(level level.Level, methodName model.MethodName, message string) {
 	event := newDiagnosticEvent(level, methodName, message)
-	mgr.publishEvent(internalSource, event)
+	mgr.publishEvent(managerSource, event)
 }
 
 func (mgr *publishingManager) publishEvent(src source.Source, event model.Event) {
@@ -50,7 +46,6 @@ func newDiagnosticEvent(
 	message string,
 	messageArgs ...interface{},
 ) model.Event {
-	u := url.URL(internalSource.URL())
 	threadName := model.ThreadName("[-]")
 	return model.Event{
 		Timestamp:  model.Timestamp(time.Now()),
@@ -59,6 +54,6 @@ func newDiagnosticEvent(
 		MethodName: methodName,
 		LineNumber: model.NoLineNumber,
 		ThreadName: &threadName,
-		ClassName:  model.ClassName(u.String()),
+		ClassName:  "Manager",
 	}
 }

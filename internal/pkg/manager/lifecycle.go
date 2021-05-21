@@ -16,8 +16,9 @@ func (mgr *publishingManager) Start() error {
 		go poller(mgr.wg)
 	}
 
+	allSources := append(mgr.allSources, managerSource)
 	for _, snk := range mgr.sinks {
-		snk.Init(mgr.allSources)
+		snk.Init(allSources)
 	}
 
 	mgr.running = true
