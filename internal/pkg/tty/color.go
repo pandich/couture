@@ -1,4 +1,4 @@
-package sink
+package tty
 
 import (
 	"github.com/lucasb-eyer/go-colorful"
@@ -10,7 +10,7 @@ import (
 )
 
 // NewColorCycle ...
-func NewColorCycle(generator gamut.ColorGenerator, defaultColor string) chan string {
+func NewColorCycle(generator gamut.ColorGenerator) chan string {
 	const cycleLength = 50
 	rawColors, err := gamut.Generate(cycleLength, generator)
 	if err != nil {
@@ -18,12 +18,8 @@ func NewColorCycle(generator gamut.ColorGenerator, defaultColor string) chan str
 	}
 	var colors []string
 	for _, rawColor := range rawColors {
-		c, ok := colorful.MakeColor(rawColor)
-		if ok {
-			colors = append(colors, c.Hex())
-		} else {
-			colors = append(colors, defaultColor)
-		}
+		c, _ := colorful.MakeColor(rawColor)
+		colors = append(colors, c.Hex())
 	}
 
 	rand.Seed(time.Now().Unix())
@@ -75,12 +71,23 @@ func Fainter(hex string, percent float64) string {
 // IsDark ...
 func IsDark(hex string) bool {
 	const gray = 0.5
-	col, _ := colorful.MakeColor(gamut.Hex(hex))
+	col := hexColorful(hex)
 	_, _, l := col.Hcl()
 	return l < gray
 }
 
-// WithFaintBg ...
-func WithFaintBg(hex string) string {
+// SimilarBg ...
+func SimilarBg(hex string) string {
 	return hex + "|bg" + Fainter(hex, 0.96)
+}
+
+// Tinted ...
+func Tinted(baseHex string, hex string) string {
+	complementary, _ := colorful.MakeColor(gamut.Complementary(gamut.Hex(baseHex)))
+	return complementary.BlendHcl(hexColorful(hex), 0.85).Hex()
+}
+
+func hexColorful(hex string) colorful.Color {
+	cl, _ := colorful.MakeColor(gamut.Hex(hex))
+	return cl
 }

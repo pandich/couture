@@ -4,6 +4,7 @@ import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
+	"couture/internal/pkg/tty"
 	"github.com/asaskevich/EventBus"
 	"go.uber.org/ratelimit"
 	"sync"
@@ -14,7 +15,7 @@ func New(opts ...interface{}) (*model.Manager, error) {
 	const ttyMaxEventsPerSecond = 100
 
 	var rl ratelimit.Limiter
-	if sink.IsTTY() {
+	if tty.IsTTY() {
 		rl = ratelimit.New(ttyMaxEventsPerSecond)
 	} else {
 		rl = ratelimit.NewUnlimited()

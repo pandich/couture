@@ -6,7 +6,6 @@ import (
 	"couture/internal/pkg/source"
 	"encoding/json"
 	"fmt"
-	"io"
 )
 
 type (
@@ -15,13 +14,12 @@ type (
 		model.Event
 	}
 	jsonSink struct {
-		out io.Writer
 	}
 )
 
 // New ...
-func New(out io.Writer) *sink.Sink {
-	jsonSink := jsonSink{out: out}
+func New() *sink.Sink {
+	jsonSink := jsonSink{}
 	var snk sink.Sink = jsonSink
 	return &snk
 }
@@ -40,9 +38,6 @@ func (snk jsonSink) Accept(src source.Source, event model.Event) error {
 	if err != nil {
 		return err
 	}
-	_, err = fmt.Fprintln(snk.out, string(contents))
-	if err != nil {
-		return err
-	}
+	fmt.Println(string(contents))
 	return nil
 }

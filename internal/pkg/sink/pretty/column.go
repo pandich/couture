@@ -3,27 +3,17 @@ package pretty
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
+	"couture/internal/pkg/tty"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
 	"github.com/muesli/reflow/padding"
+	"time"
 )
 
-const highlighted = "Highlighted"
-
-// ColumnName ...
-type ColumnName string
-type columnRegister func(Theme)
-type columnFormat func(source.Source, model.Event) string
-type columnValue func(source.Source, model.Event) string
-
-type column struct {
-	format   columnFormat
-	value    columnValue
-	register columnRegister
-}
+// TODO render's have a lot of potentially expensive (or at least highly redundant) operations
+// TODO column widths should adapt to the terminal
 
 const (
 	applicationColumn ColumnName = "application"
@@ -46,30 +36,63 @@ var defaultColumnOrder = []ColumnName{
 	stackTraceColumn,
 }
 
-var columns = map[ColumnName]column{
+const degrees60 = 60 / 360.0
+
+var yellow = colorful.Hcl(degrees60, 1, 1)
+
+const highlighted = "H"
+
+// ColumnName ...
+type (
+	// ColumnName ...
+	ColumnName string
+
+	columnRegisterer func(Theme)
+	columnFormatter  func(source.Source, model.Event) string
+	columnRenderer   func(Config, source.Source, model.Event) string
+
+	column struct {
+		formatter columnFormatter
+		renderer  columnRenderer
+		register  columnRegisterer
+	}
+
+	columnRegistry map[ColumnName]column
+)
+
+func (r columnRegistry) init(theme Theme) {
+	for _, col := range r {
+		col.register(theme)
+	}
+}
+
+var columns = columnRegistry{
 	applicationColumn: {
-		format: func(src source.Source, evt model.Event) string {
+		formatter: func(src source.Source, evt model.Event) string {
 			return "{{%s}}::" + string(applicationColumn)
 		},
-		value: func(src source.Source, event model.Event) string {
+		renderer: func(_ Config, src source.Source, event model.Event) string {
 			return string(event.ApplicationNameOrBlank())
 		},
 		register: func(theme Theme) {
+			cf, _ := colorful.MakeColor(gamut.Quadratic(gamut.Hex(theme.BaseColor))[2])
+			h, _, _ := cf.Hcl()
+			applicationColor := colorful.Hcl(h, 0.9, 0.8).Hex()
 			cfmt.RegisterStyle(string(applicationColumn), func(s string) string {
-				return cfmt.Sprintf("{{ %-20.20s }}::"+sink.WithFaintBg(theme.ApplicationColor), s)
+				return cfmt.Sprintf("{{ %-20.20s }}::"+tty.SimilarBg(applicationColor), s)
 			})
 		},
 	},
 
 	callerColumn: {
-		format: func(src source.Source, evt model.Event) string {
+		formatter: func(src source.Source, evt model.Event) string {
 			return "%s"
 		},
-		value: func(src source.Source, event model.Event) string {
+		renderer: func(_ Config, src source.Source, event model.Event) string {
 			const classNameWidth = 30
 			const callerWidth = 55
 			caller := padding.String(cfmt.Sprintf(
-				"{{%s}}::Class{{/}}::MethodDelimiter{{%s}}::Method{{#}}::LineNumberDelimiter{{%d}}::LineNumber  ",
+				"{{ %s}}::Class{{/}}::MethodDelimiter{{%s}}::Method{{#}}::LineNumberDelimiter{{%d }}::LineNumber",
 				event.ClassName.Abbreviate(classNameWidth),
 				event.MethodName,
 				event.LineNumber,
@@ -78,21 +101,18 @@ var columns = map[ColumnName]column{
 		},
 		register: func(theme Theme) {
 			const contrastPercent = 0.25
-			callerPalette := func(center string) (string, string, string) {
-				col := gamut.Hex(center)
-				q := gamut.Analogous(col)
-				a, _ := colorful.MakeColor(col)
-				b, _ := colorful.MakeColor(q[0])
-				c, _ := colorful.MakeColor(q[1])
-				return a.Hex(), b.Hex(), c.Hex()
-			}
-			methodColor, classColor, lineNumberColor := callerPalette(theme.BaseColor)
+			col := gamut.Hex(theme.BaseColor)
+			q := gamut.Analogous(col)
+			a, _ := colorful.MakeColor(gamut.Darker(col, 0.4))
+			b, _ := colorful.MakeColor(q[0])
+			c, _ := colorful.MakeColor(q[1])
+			methodColor, classColor, lineNumberColor := a.Hex(), b.Hex(), c.Hex()
 
-			var methodDelimiterColor = sink.Lighter(methodColor, contrastPercent)
-			var lineNumberDelimiterColor = sink.Lighter(lineNumberColor, contrastPercent)
-			if sink.IsDark(methodColor) {
-				methodDelimiterColor = sink.Darker(methodColor, contrastPercent)
-				lineNumberDelimiterColor = sink.Darker(lineNumberColor, contrastPercent)
+			var methodDelimiterColor = tty.Lighter(methodColor, contrastPercent)
+			var lineNumberDelimiterColor = tty.Lighter(lineNumberColor, contrastPercent)
+			if tty.IsDark(methodColor) {
+				methodDelimiterColor = tty.Darker(methodColor, contrastPercent)
+				lineNumberDelimiterColor = tty.Darker(lineNumberColor, contrastPercent)
 			}
 
 			cfmt.RegisterStyle("Class", func(s string) string {
@@ -114,33 +134,35 @@ var columns = map[ColumnName]column{
 	},
 
 	levelColumn: {
-		format: func(src source.Source, evt model.Event) string {
+		formatter: func(src source.Source, evt model.Event) string {
 			return "{{%s}}::" + string(levelColumn) + string(evt.Level)
 		},
-		value: func(src source.Source, event model.Event) string {
+		renderer: func(_ Config, src source.Source, event model.Event) string {
 			return string(event.Level)
 		},
 		register: func(theme Theme) {
 			reg := func(lvl level.Level, bgColor string) {
-				fgColor := sink.Contrast(bgColor)
+				fgColor := tty.Contrast(bgColor)
 				cfmt.RegisterStyle(string(levelColumn)+string(lvl), func(s string) string {
 					return cfmt.Sprintf("{{ %1.1s }}::bg"+bgColor+"|"+fgColor, s)
 				})
 			}
-			reg(level.Trace, theme.TraceColor)
-			reg(level.Debug, theme.DebugColor)
-			reg(level.Info, theme.InfoColor)
-			reg(level.Warn, theme.WarnColor)
-			reg(level.Error, theme.ErrorColor)
+			reg(level.Trace, theme.tinted(traceColor))
+			reg(level.Debug, theme.tinted(debugColor))
+			reg(level.Info, theme.tinted(infoColor))
+			reg(level.Warn, theme.tinted(warnColor))
+			reg(level.Error, theme.tinted(errorColor))
 		},
 	},
 
 	messageColumn: {
-		format: func(src source.Source, evt model.Event) string { return "%s" },
-		value: func(src source.Source, event model.Event) string {
+		formatter: func(src source.Source, evt model.Event) string { return "%s" },
+		renderer: func(config Config, src source.Source, event model.Event) string {
 			var message = ""
 			for _, chunk := range event.HighlightedMessage() {
-				message += " "
+				if message != "" {
+					message += " "
+				}
 				switch chunk.(type) {
 				case model.HighlightedMessage:
 					message += cfmt.Sprintf("{{%s}}::"+highlighted+string(messageColumn)+string(event.Level), chunk)
@@ -150,40 +172,45 @@ var columns = map[ColumnName]column{
 					message += cfmt.Sprintf("{{%s}}::"+string(messageColumn)+string(event.Level), chunk)
 				}
 			}
-			return message
+			var prefix = " "
+			if config.MultiLine {
+				prefix = "\n"
+			}
+			return prefix + message
 		},
 		register: func(theme Theme) {
 			reg := func(lvl level.Level, bgColor string) {
-				messageBgColor := sink.Fainter(bgColor, 0.90)
+				cf, _ := colorful.MakeColor(gamut.Tints(gamut.Hex(theme.BaseColor), 64)[60])
+				messageColor := cf.Hex()
+				messageBgColor := tty.Fainter(bgColor, 0.90)
 				cfmt.RegisterStyle(string(messageColumn)+string(lvl), func(s string) string {
-					return cfmt.Sprintf("{{%s}}::"+theme.MessageColor+"|bg"+messageBgColor, s)
+					return cfmt.Sprintf("{{%s}}::"+messageColor+"|bg"+messageBgColor, s)
 				})
 				cfmt.RegisterStyle(highlighted+string(messageColumn)+string(lvl), func(s string) string {
-					return cfmt.Sprintf("{{%s}}::bg"+theme.MessageColor+"|"+messageBgColor, s)
+					return cfmt.Sprintf("{{%s}}::bg"+messageColor+"|"+messageBgColor, s)
 				})
 			}
-			reg(level.Trace, theme.TraceColor)
-			reg(level.Debug, theme.DebugColor)
-			reg(level.Info, theme.InfoColor)
-			reg(level.Warn, theme.WarnColor)
-			reg(level.Error, theme.ErrorColor)
+			reg(level.Trace, theme.tinted(traceColor))
+			reg(level.Debug, theme.tinted(debugColor))
+			reg(level.Info, theme.tinted(infoColor))
+			reg(level.Warn, theme.tinted(warnColor))
+			reg(level.Error, theme.tinted(errorColor))
 		},
 	},
 
 	sourceColumn: {
-		format: func(src source.Source, evt model.Event) string {
-			styleName := "source" + src.ID()
-			return "{{%s}}::" + styleName
+		formatter: func(src source.Source, evt model.Event) string {
+			return "{{%s}}::" + src.ID()
 		},
-		value: func(src source.Source, event model.Event) string {
+		renderer: func(_ Config, src source.Source, event model.Event) string {
 			return src.URL().ShortForm()
 		},
 		register: func(theme Theme) {},
 	},
 
 	stackTraceColumn: {
-		format: func(src source.Source, evt model.Event) string { return "%s" },
-		value: func(src source.Source, event model.Event) string {
+		formatter: func(src source.Source, evt model.Event) string { return "%s" },
+		renderer: func(_ Config, src source.Source, event model.Event) string {
 			var stackTrace = ""
 			for _, chunk := range event.HighlightedStackTrace() {
 				if stackTrace == "" {
@@ -204,40 +231,47 @@ var columns = map[ColumnName]column{
 		},
 		register: func(theme Theme) {
 			cfmt.RegisterStyle(string(stackTraceColumn), func(s string) string {
-				return cfmt.Sprintf("{{%s}}::"+sink.WithFaintBg(theme.StackTraceColor), s)
+				return cfmt.Sprintf("{{%s}}::"+tty.SimilarBg(theme.tinted(errorColor)), s)
 			})
 			cfmt.RegisterStyle(highlighted+string(stackTraceColumn), func(s string) string {
-				return cfmt.Sprintf("{{%s}}::bg"+sink.WithFaintBg(theme.ErrorColor), s)
+				return cfmt.Sprintf("{{%s}}::bg"+tty.SimilarBg(theme.tinted(errorColor)), s)
 			})
 		},
 	},
 
 	threadColumn: {
-		format: func(src source.Source, evt model.Event) string {
+		formatter: func(src source.Source, evt model.Event) string {
 			return "{{%s}}::" + string(threadColumn)
 		},
-		value: func(src source.Source, event model.Event) string {
+		renderer: func(_ Config, src source.Source, event model.Event) string {
 			return string(event.ThreadNameOrBlank())
 		},
 		register: func(theme Theme) {
-			d, _ := colorful.MakeColor(gamut.Darker(gamut.Hex(theme.BaseColor), 0.5))
+			d := tty.SimilarBg(tty.Darker(theme.BaseColor, 0.5))
 			cfmt.RegisterStyle(string(threadColumn), func(s string) string {
-				return cfmt.Sprintf("{{ %-15.15s }}::"+sink.WithFaintBg(d.Hex()), s)
+				return cfmt.Sprintf("{{ %-15.15s }}::"+d, s)
 			})
 		},
 	},
 
 	timestampColumn: {
-		format: func(src source.Source, evt model.Event) string {
+		formatter: func(src source.Source, evt model.Event) string {
 			return "{{%s}}::" + string(timestampColumn)
 		},
-		value: func(src source.Source, event model.Event) string {
-			return event.Timestamp.Stamp()
+		renderer: func(config Config, src source.Source, event model.Event) string {
+			return time.Time(event.Timestamp).Format(config.TimeFormat)
 		},
 		register: func(theme Theme) {
+			cf, _ := colorful.MakeColor(gamut.Tints(gamut.Complementary(gamut.Hex(theme.BaseColor)), 3)[1])
+			timestampColor := gamut.Blends(yellow, cf, 16)[3]
+			timestampCf, _ := colorful.MakeColor(timestampColor)
 			cfmt.RegisterStyle(string(timestampColumn), func(s string) string {
-				return cfmt.Sprintf("{{ %s }}::"+sink.WithFaintBg(theme.TimestampColor), s)
+				return cfmt.Sprintf("{{ %s }}::"+tty.SimilarBg(timestampCf.Hex()), s)
 			})
 		},
 	},
+}
+
+func registerSourceStyle(src source.Source, styleColor string) {
+	cfmt.RegisterStyle(src.ID(), func(s string) string { return cfmt.Sprintf("{{/%-30.30s }}::"+styleColor, s) })
 }

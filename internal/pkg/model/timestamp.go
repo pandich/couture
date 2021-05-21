@@ -18,8 +18,3 @@ func (t *Timestamp) UnmarshalJSON(bytes []byte) error {
 	*t = Timestamp(ts)
 	return nil
 }
-
-// Stamp ...
-func (t Timestamp) Stamp() string {
-	return time.Time(t).Format(time.Stamp)
-}

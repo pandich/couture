@@ -27,7 +27,7 @@ func New(sourceURL model.SourceURL) *Pushing {
 	hasher := sha256.New()
 	hasher.Write([]byte(s))
 	return &Pushing{
-		id:        strings.ToUpper(hex.EncodeToString(hasher.Sum(nil))[0:15]),
+		id:        "Source" + strings.ToUpper(hex.EncodeToString(hasher.Sum(nil))[0:15]),
 		sourceURL: sourceURL,
 	}
 }

@@ -6,11 +6,22 @@ import (
 	"couture/internal/pkg/sink/pretty"
 	"github.com/muesli/gamut"
 	errors2 "github.com/pkg/errors"
-	"io"
-	"os"
-	"os/exec"
-	"strings"
 )
+
+const (
+	blackAndWhite = ""
+	purpleRain    = "#ae99bf"
+	merlot        = "#a01010"
+	ocean         = "#5198eb"
+)
+
+// TODO theme color tweaks
+var themeByName = map[string]pretty.Theme{
+	"none":     {BaseColor: blackAndWhite, SourceColors: gamut.PastelGenerator{}},
+	"prince":   {BaseColor: purpleRain, SourceColors: gamut.PastelGenerator{}},
+	"brougham": {BaseColor: merlot, SourceColors: gamut.WarmGenerator{}},
+	"ocean":    {BaseColor: ocean, SourceColors: gamut.HappyGenerator{}},
+}
 
 func getFlags() ([]interface{}, error) {
 	snk, err := sinkFlag()
@@ -31,48 +42,25 @@ func sinkFlag() (interface{}, error) {
 		columnNames = append(columnNames, pretty.ColumnName(n))
 	}
 
-	paginator, err := paginatorFlag()
-	if err != nil {
-		return nil, err
-	}
 	switch cli.OutputFormat {
 	case "json":
-		return json.New(paginator), nil
+		return json.New(), nil
 	case "pretty":
 		theme, err := themeFlag()
 		if err != nil {
 			return nil, err
 		}
-		return pretty.New(paginator, pretty.Config{
-			Wrap:    cli.Wrap,
-			Theme:   theme,
-			Columns: columnNames,
+		return pretty.New(pretty.Config{
+			Wrap:       cli.Wrap,
+			Width:      cli.Width,
+			MultiLine:  cli.MultiLine,
+			Theme:      theme,
+			Columns:    columnNames,
+			TimeFormat: cli.TimeFormat,
 		}), nil
 	default:
 		return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
 	}
-}
-
-func paginatorFlag() (io.Writer, error) {
-	if !cli.Paginate {
-		return os.Stdout, nil
-	}
-
-	var pagerArgs = strings.Split(cli.Paginator, " \t\n")
-	pager, pagerArgs := pagerArgs[0], pagerArgs[1:]
-	pagerCmd := exec.Command(pager, pagerArgs...)
-
-	// I/O
-	pagerCmd.Stdout, pagerCmd.Stderr = os.Stdout, os.Stderr
-	writer, err := pagerCmd.StdinPipe()
-	if err != nil {
-		return nil, err
-	}
-
-	if err = pagerCmd.Start(); err != nil {
-		return nil, err
-	}
-	return writer, nil
 }
 
 func themeFlag() (pretty.Theme, error) {
@@ -81,28 +69,4 @@ func themeFlag() (pretty.Theme, error) {
 		return t, errors2.Errorf("unknown Theme: %s", cli.Theme)
 	}
 	return t, nil
-}
-
-const purpleRain = "#AE99BF"
-
-// TODO theme colors
-var themeByName = map[string]pretty.Theme{
-	"none": {
-		BaseColor:    "",
-		SourceColors: gamut.PastelGenerator{},
-	},
-	"prince": {
-		BaseColor:        purpleRain,
-		ApplicationColor: "#ffb694",
-		DefaultColor:     "#ffffff",
-		TimestampColor:   "#f9f871",
-		ErrorColor:       "#dd2a12",
-		TraceColor:       "#868686",
-		DebugColor:       "#f6f6f6",
-		InfoColor:        "#66a71e",
-		WarnColor:        "#ffe127",
-		MessageColor:     "#fefedf",
-		StackTraceColor:  "#dd2a12",
-		SourceColors:     gamut.PastelGenerator{},
-	},
 }

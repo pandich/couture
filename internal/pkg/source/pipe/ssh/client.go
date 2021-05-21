@@ -10,6 +10,10 @@ import (
 	"strconv"
 )
 
+// TODO rsa key configurable
+// TODO ability to use PEM key
+// TODO figure out how this works (if at all) with ssh-agent
+
 func getClient(sourceURL model.SourceURL) (*goph.Client, error) {
 	auth, err := getAuth(sourceURL)
 	if err != nil {
@@ -38,6 +42,18 @@ func getClient(sourceURL model.SourceURL) (*goph.Client, error) {
 	return client, err
 }
 
+func getUser(sourceURL model.SourceURL) (string, error) {
+	currentUser, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+	var usr = currentUser.Username
+	if userInfo := sourceURL.User; userInfo != nil {
+		usr = userInfo.Username()
+	}
+	return usr, nil
+}
+
 func getPassphrase(sourceURL model.SourceURL) string {
 	if sourceURL.User != nil {
 		if password, ok := sourceURL.User.Password(); ok {
@@ -54,16 +70,4 @@ func getAuth(sourceURL model.SourceURL) (goph.Auth, error) {
 	}
 	idPath := path.Join(homeDir, ".ssh", "id_rsa")
 	return goph.Key(idPath, getPassphrase(sourceURL))
-}
-
-func getUser(sourceURL model.SourceURL) (string, error) {
-	currentUser, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-	var usr = currentUser.Username
-	if userInfo := sourceURL.User; userInfo != nil {
-		usr = userInfo.Username()
-	}
-	return usr, nil
 }
