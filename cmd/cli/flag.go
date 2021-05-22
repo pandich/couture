@@ -24,6 +24,18 @@ func managerOptionFlags() ([]interface{}, error) {
 }
 
 func sinkFlag() (interface{}, error) {
+	var columns = cli.Column
+	if len(columns) == 0 {
+		columns = []string{
+			"timestamp",
+			"application",
+			"thread",
+			"caller",
+			"level",
+			"message",
+			"error",
+		}
+	}
 	switch cli.OutputFormat {
 	case "pretty":
 		return pretty.New(config.Config{
@@ -33,7 +45,7 @@ func sinkFlag() (interface{}, error) {
 			Theme:       themeFlag(),
 			ClearScreen: cli.ClearScreen,
 			ShowSigils:  cli.Sigil,
-			Columns:     cli.Column,
+			Columns:     columns,
 			TimeFormat:  timeFormatFlag(),
 		}), nil
 	default:

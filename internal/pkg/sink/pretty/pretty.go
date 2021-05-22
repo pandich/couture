@@ -35,10 +35,11 @@ func New(cfg config.Config) *sink.Sink {
 		cfmt.DisableColors()
 	}
 	column.ByName.Init(cfg.Theme)
+	cols := append([]string{"source"}, cfg.Columns...)
 	var snk sink.Sink = &prettySink{
 		terminalWidth: cfg.WrapWidth(),
 		palette:       tty.NewColorCycle(cfg.Theme.SourceColors),
-		columnOrder:   column.EffectiveColumns(cfg),
+		columnOrder:   cols,
 		config:        cfg,
 		printer:       newPrinter(),
 	}

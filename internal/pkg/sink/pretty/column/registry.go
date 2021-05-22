@@ -14,7 +14,7 @@ var ByName = registry{}
 
 func init() {
 	for _, col := range columns {
-		ByName[col.name] = col
+		ByName[col.Name()] = col
 	}
 }
 
@@ -22,7 +22,7 @@ func init() {
 func Names() []string {
 	var columnNames []string
 	for _, col := range columns {
-		columnNames = append(columnNames, col.name)
+		columnNames = append(columnNames, col.Name())
 	}
 	return columnNames
 }
@@ -30,7 +30,7 @@ func Names() []string {
 // Init ...
 func (registry registry) Init(theme theme.Theme) {
 	for _, col := range registry {
-		col.register(theme)
+		col.Register(theme)
 	}
 }
 
