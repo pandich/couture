@@ -5,10 +5,10 @@ import (
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/tty"
+	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
-	"github.com/muesli/reflow/padding"
 	"time"
 )
 
@@ -17,8 +17,10 @@ import (
 
 const (
 	applicationColumn ColumnName = "application"
-	callerColumn      ColumnName = "caller"
+	classColumn       ColumnName = "class"
+	methodColumn      ColumnName = "method"
 	levelColumn       ColumnName = "level"
+	lineNumberColumn  ColumnName = "lineNumber"
 	messageColumn     ColumnName = "message"
 	sourceColumn      ColumnName = "source"
 	stackTraceColumn  ColumnName = "stackTrace"
@@ -26,11 +28,27 @@ const (
 	timestampColumn   ColumnName = "timestamp"
 )
 
+// AllColumns ...
+var AllColumns = []ColumnName{
+	applicationColumn,
+	classColumn,
+	methodColumn,
+	levelColumn,
+	lineNumberColumn,
+	messageColumn,
+	sourceColumn,
+	stackTraceColumn,
+	threadColumn,
+	timestampColumn,
+}
+
 var defaultColumnOrder = []ColumnName{
 	timestampColumn,
 	applicationColumn,
 	threadColumn,
-	callerColumn,
+	classColumn,
+	methodColumn,
+	lineNumberColumn,
 	levelColumn,
 	messageColumn,
 	stackTraceColumn,
@@ -62,6 +80,8 @@ func (r columnRegistry) init(theme Theme) {
 	}
 }
 
+// TODO the caller display should be unified properly
+
 var columns = columnRegistry{
 	applicationColumn: {
 		formatter: func(src source.Source, evt model.Event) string {
@@ -77,36 +97,50 @@ var columns = columnRegistry{
 		},
 	},
 
-	callerColumn: {
+	classColumn: {
 		formatter: func(src source.Source, evt model.Event) string {
-			return "%s"
+			return "{{ %s}}::Class"
 		},
 		renderer: func(_ Config, src source.Source, event model.Event) string {
-			const classNameWidth = 30
-			const callerWidth = 55
-			caller := padding.String(cfmt.Sprintf(
-				"{{ %s}}::Class{{/}}::MethodDelimiter{{%s}}::Method{{#}}::LineNumberDelimiter{{%d }}::LineNumber",
-				event.ClassName.Abbreviate(classNameWidth),
-				event.MethodName,
-				event.LineNumber,
-			), callerWidth)
-			return caller
+			const maxClassNameWidth = 30
+			return string(event.ClassName.Abbreviate(maxClassNameWidth))
 		},
 		register: func(theme Theme) {
 			cfmt.RegisterStyle("Class", func(s string) string {
-				return cfmt.Sprintf("{{%.30s}}::"+theme.classColor(), s)
+				return cfmt.Sprintf("{{%30.30s}}::"+theme.classColor(), s)
 			})
+		},
+	},
+
+	methodColumn: {
+		formatter: func(src source.Source, evt model.Event) string {
+			return "{{/}}::MethodDelimiter{{%30.30s}}::Method"
+		},
+		renderer: func(_ Config, src source.Source, event model.Event) string {
+			return string(event.MethodName)
+		},
+		register: func(theme Theme) {
 			cfmt.RegisterStyle("MethodDelimiter", func(s string) string {
 				return cfmt.Sprintf("{{%s}}::"+theme.methodDelimiterColor(), s)
 			})
 			cfmt.RegisterStyle("Method", func(s string) string {
-				return cfmt.Sprintf("{{%.30s}}::"+theme.methodColor(), s)
+				return cfmt.Sprintf("{{%s}}::"+theme.methodColor(), s)
 			})
+		},
+	},
+	lineNumberColumn: {
+		formatter: func(src source.Source, evt model.Event) string {
+			return "{{#}}::LineNumberDelimiter{{%s}}::LineNumber "
+		},
+		renderer: func(_ Config, src source.Source, event model.Event) string {
+			return fmt.Sprintf("%04d", event.LineNumber)
+		},
+		register: func(theme Theme) {
 			cfmt.RegisterStyle("LineNumberDelimiter", func(s string) string {
 				return cfmt.Sprintf("{{%s}}::"+theme.lineNumberDelimiterColor(), s)
 			})
 			cfmt.RegisterStyle("LineNumber", func(s string) string {
-				return cfmt.Sprintf("{{%s}}::"+theme.lineNumberColor(), s)
+				return cfmt.Sprintf("{{%04.4s}}::"+theme.lineNumberColor(), s)
 			})
 		},
 	},

@@ -8,6 +8,33 @@ import (
 )
 
 const (
+	blackAndWhite = ""
+	purpleRain    = "#ae99bf"
+	merlot        = "#a01010"
+	ocean         = "#5198eb"
+)
+
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+const (
+	// BlackAndWhite ...
+	BlackAndWhite = "none"
+	// Prince ...
+	Prince = "prince"
+	// Brougham ...
+	Brougham = "brougham"
+	// Ocean ...
+	Ocean = "ocean"
+)
+
+// ThemeByName TODO theme color tweaks
+var ThemeByName = map[string]Theme{
+	BlackAndWhite: {BaseColor: blackAndWhite, SourceColors: gamut.PastelGenerator{}},
+	Prince:        {BaseColor: purpleRain, SourceColors: gamut.PastelGenerator{}},
+	Brougham:      {BaseColor: merlot, SourceColors: gamut.WarmGenerator{}},
+	Ocean:         {BaseColor: ocean, SourceColors: gamut.HappyGenerator{}},
+}
+
+const (
 	errorColor = "#ff0000"
 	traceColor = "#868686"
 	debugColor = "#f6f6f6"

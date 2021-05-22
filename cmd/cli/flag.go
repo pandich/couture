@@ -4,26 +4,12 @@ import (
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/sink/json"
 	"couture/internal/pkg/sink/pretty"
-	"github.com/muesli/gamut"
 	errors2 "github.com/pkg/errors"
+	"strings"
+	"time"
 )
 
-const (
-	blackAndWhite = ""
-	purpleRain    = "#ae99bf"
-	merlot        = "#a01010"
-	ocean         = "#5198eb"
-)
-
-// TODO theme color tweaks
-var themeByName = map[string]pretty.Theme{
-	"none":     {BaseColor: blackAndWhite, SourceColors: gamut.PastelGenerator{}},
-	"prince":   {BaseColor: purpleRain, SourceColors: gamut.PastelGenerator{}},
-	"brougham": {BaseColor: merlot, SourceColors: gamut.WarmGenerator{}},
-	"ocean":    {BaseColor: ocean, SourceColors: gamut.HappyGenerator{}},
-}
-
-func getFlags() ([]interface{}, error) {
+func managerOptionFlags() ([]interface{}, error) {
 	snk, err := sinkFlag()
 	if err != nil {
 		return nil, err
@@ -37,36 +23,68 @@ func getFlags() ([]interface{}, error) {
 }
 
 func sinkFlag() (interface{}, error) {
-	var columnNames []pretty.ColumnName
-	for _, n := range cli.Column {
-		columnNames = append(columnNames, pretty.ColumnName(n))
-	}
-
 	switch cli.OutputFormat {
 	case "json":
 		return json.New(), nil
 	case "pretty":
-		theme, err := themeFlag()
-		if err != nil {
-			return nil, err
-		}
 		return pretty.New(pretty.Config{
 			Wrap:       cli.Wrap,
 			Width:      cli.Width,
 			MultiLine:  cli.MultiLine,
-			Theme:      theme,
-			Columns:    columnNames,
-			TimeFormat: cli.TimeFormat,
+			Theme:      themeFlag(),
+			Columns:    columnNamesFlag(),
+			TimeFormat: timeFormatFlag(),
 		}), nil
 	default:
 		return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
 	}
 }
 
-func themeFlag() (pretty.Theme, error) {
-	t, ok := themeByName[cli.Theme]
-	if !ok {
-		return t, errors2.Errorf("unknown Theme: %s", cli.Theme)
+func timeFormatFlag() string {
+	var timeFormat = cli.TimeFormat
+	switch strings.ToLower(timeFormat) {
+	case "c":
+		timeFormat = time.ANSIC
+	case "unix":
+		timeFormat = time.UnixDate
+	case "ruby":
+		timeFormat = time.RubyDate
+	case "rfc822":
+		timeFormat = time.RFC822
+	case "rfc822-utc":
+		timeFormat = time.RFC822Z
+	case "rfc850":
+		timeFormat = time.RFC850
+	case "rfc1123":
+		timeFormat = time.RFC1123
+	case "rfc1123-utc":
+		timeFormat = time.RFC1123Z
+	case "rfc3339", "iso8601":
+		timeFormat = time.RFC3339
+	case "rfc3339-nanos", "iso8601-nanos":
+		timeFormat = time.RFC3339Nano
+	case "kitchen":
+		timeFormat = time.Kitchen
+	case "stamp":
+		timeFormat = time.Stamp
+	case "stamp-millis":
+		timeFormat = time.StampMilli
+	case "stamp-micros":
+		timeFormat = time.StampMicro
+	case "stamp-nanos":
+		timeFormat = time.StampNano
 	}
-	return t, nil
+	return timeFormat
+}
+
+func themeFlag() pretty.Theme {
+	return pretty.ThemeByName[cli.Theme]
+}
+
+func columnNamesFlag() []pretty.ColumnName {
+	var columnNames []pretty.ColumnName
+	for _, n := range cli.Column {
+		columnNames = append(columnNames, pretty.ColumnName(n))
+	}
+	return columnNames
 }

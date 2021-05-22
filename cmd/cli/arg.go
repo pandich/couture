@@ -7,7 +7,19 @@ import (
 	"os"
 )
 
-func getArgs() ([]interface{}, error) {
+// TODO this method should support templating or prefix detection
+func evaluatedOsArgs() []string {
+	aliases := aliasConfig()
+	args := os.Args[1:]
+	for i := range args {
+		if alias, ok := aliases[args[i]]; ok {
+			args[i] = alias
+		}
+	}
+	return args
+}
+
+func sourceArgs() ([]interface{}, error) {
 	var sources []interface{}
 	var violations []error
 	for _, u := range cli.Source {
@@ -23,15 +35,4 @@ func getArgs() ([]interface{}, error) {
 		return nil, multierror.New(violations)
 	}
 	return sources, nil
-}
-
-func evaluateArgs() []string {
-	aliases := aliasConfig()
-	args := os.Args[1:]
-	for i := range args {
-		if alias, ok := aliases[args[i]]; ok {
-			args[i] = alias
-		}
-	}
-	return args
 }
