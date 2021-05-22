@@ -3,6 +3,9 @@ package pretty
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/pretty/column"
+	"couture/internal/pkg/sink/pretty/config"
+	"couture/internal/pkg/sink/pretty/theme"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/tty"
 	"fmt"
@@ -18,23 +21,28 @@ import (
 type prettySink struct {
 	terminalWidth int
 	palette       chan string
-	columnOrder   []ColumnName
+	columnOrder   []string
 	printLock     sync.Mutex
-	config        Config
+	config        config.Config
 }
 
 // New provides a configured prettySink sink.
-func New(config Config) *sink.Sink {
-	if !tty.IsTTY() || config.Theme.BaseColor == "" {
+func New(cfg config.Config) *sink.Sink {
+	if !tty.IsTTY() || cfg.Theme.BaseColor == theme.White {
 		cfmt.DisableColors()
 	}
-	columns.init(config.Theme)
+	column.ByName.Init(cfg.Theme)
+	var effectiveColumns = column.DefaultOrder
+	if len(cfg.Columns) > 0 {
+		effectiveColumns = cfg.Columns
+	}
+	effectiveColumns = append([]string{column.SourceColumn}, effectiveColumns...)
 	var snk sink.Sink = &prettySink{
-		terminalWidth: config.wrapWidth(),
-		palette:       tty.NewColorCycle(config.Theme.SourceColors),
-		columnOrder:   config.effectiveColumns(),
+		terminalWidth: cfg.WrapWidth(),
+		palette:       tty.NewColorCycle(cfg.Theme.SourceColors),
+		columnOrder:   effectiveColumns,
 		printLock:     sync.Mutex{},
-		config:        config,
+		config:        cfg,
 	}
 	return &snk
 }
@@ -42,31 +50,38 @@ func New(config Config) *sink.Sink {
 // Init ...
 func (snk *prettySink) Init(sources []source.Source) {
 	for _, src := range sources {
-		registerSourceStyle(src, <-snk.palette)
+		column.RegisterSourceStyle(src, <-snk.palette)
 	}
-	termenv.Reset()
-	termenv.ClearScreen()
+	if snk.config.ClearScreen {
+		termenv.ClearScreen()
+	}
 }
 
 // Accept ...
 func (snk *prettySink) Accept(src source.Source, event model.Event) error {
-	snk.printLock.Lock()
-	termenv.Reset()
-	defer snk.printLock.Unlock()
+	snk.println(snk.render(src, event))
+	return nil
+}
 
+func (snk *prettySink) render(src source.Source, event model.Event) string {
 	// get format string and arguments
 	var format = ""
 	var values []interface{}
 	for _, name := range snk.columnOrder {
-		col := columns[name]
-		format += col.formatter(src, event)
-		values = append(values, col.renderer(snk.config, src, event))
+		col := column.ByName[name]
+		format += col.Formatter(src, event)
+		values = append(values, col.Renderer(snk.config, src, event)...)
 	}
 
 	// render
 	line := cfmt.Sprintf(format, values...)
+	wrapped := tty.Wrap(line, snk.terminalWidth)
+	return wrapped
+}
 
-	// print
-	fmt.Println(tty.Wrap(line, snk.terminalWidth))
-	return nil
+func (snk *prettySink) println(s string) {
+	snk.printLock.Lock()
+	termenv.Reset()
+	defer snk.printLock.Unlock()
+	fmt.Println(s)
 }

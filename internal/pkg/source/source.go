@@ -9,6 +9,8 @@ import (
 type (
 	// Source of events. Responsible for ingest and conversion to the standard format.
 	Source interface {
+		// Sigil represents the type of source in a single character.
+		Sigil() rune
 		// ID is the unique id for this source.
 		ID() string
 		// URL is the URL from which the events come.

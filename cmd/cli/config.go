@@ -1,21 +1,21 @@
 package cli
 
 import (
+	"couture/internal/pkg/couture"
 	errors2 "github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
-var (
-	errConfigNotFound = &viper.ConfigFileNotFoundError{}
-)
-
 func loadConfig() error {
-	viper.SetConfigName("." + applicationName)
+	errConfigNotFound := &viper.ConfigFileNotFoundError{}
+
+	viper.SetConfigName("." + couture.Name)
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("$HOME")
 	viper.AddConfigPath(".")
 	viper.AutomaticEnv()
-	if err := viper.ReadInConfig(); err != nil && !errors2.As(err, &errConfigNotFound) {
+	err := viper.ReadInConfig()
+	if err != nil && !errors2.As(err, &errConfigNotFound) {
 		return err
 	}
 	return nil

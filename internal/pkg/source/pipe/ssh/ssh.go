@@ -29,7 +29,7 @@ func Metadata() source.Metadata {
 
 // sshSource ...
 type sshSource struct {
-	source.Pushing
+	*source.Pushing
 	ssh      *goph.Client
 	filename string
 }
@@ -41,6 +41,7 @@ func newSource(sourceURL model.SourceURL) (*source.Pushable, error) {
 		return nil, err
 	}
 	src := sshSource{
+		Pushing:  source.New(' ', sourceURL),
 		ssh:      client,
 		filename: sourceURL.Path,
 	}

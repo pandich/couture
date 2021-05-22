@@ -1,14 +1,15 @@
 package manager
 
 import (
+	"couture/internal/pkg/couture"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/aws/cloudformation"
 	"couture/internal/pkg/source/aws/cloudwatch"
 	"couture/internal/pkg/source/elasticsearch"
 	"couture/internal/pkg/source/fake"
-	local2 "couture/internal/pkg/source/pipe/local"
-	ssh2 "couture/internal/pkg/source/pipe/ssh"
+	"couture/internal/pkg/source/pipe/local"
+	"couture/internal/pkg/source/pipe/ssh"
 	errors2 "github.com/pkg/errors"
 	"sync"
 )
@@ -19,8 +20,8 @@ var AvailableSources = []source.Metadata{
 	cloudwatch.Metadata(),
 	cloudformation.Metadata(),
 	elasticsearch.Metadata(),
-	local2.Metadata(),
-	ssh2.Metadata(),
+	local.Metadata(),
+	ssh.Metadata(),
 }
 
 // GetSource ...
@@ -55,7 +56,12 @@ type internalSource struct{}
 
 // ID ...
 func (i internalSource) ID() string {
-	return "Manager"
+	return couture.Name
+}
+
+// Sigil ...
+func (i internalSource) Sigil() rune {
+	return '❯'
 }
 
 // URL ...

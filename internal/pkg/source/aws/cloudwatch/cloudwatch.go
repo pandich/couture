@@ -76,7 +76,7 @@ type cloudwatchSource struct {
 // newFromURL Cloudwatch source.
 func newFromURL(sourceURL model.SourceURL) (*source.Pollable, error) {
 	normalizeURL(&sourceURL)
-	awsSource, err := aws.New(&sourceURL)
+	awsSource, err := aws.New('☂', &sourceURL)
 	if err != nil {
 		return nil, errors2.Wrapf(err, "bad CloudWatch URL: %+v\n", sourceURL)
 	}

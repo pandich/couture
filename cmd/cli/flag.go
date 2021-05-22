@@ -4,6 +4,8 @@ import (
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/sink/json"
 	"couture/internal/pkg/sink/pretty"
+	"couture/internal/pkg/sink/pretty/config"
+	"couture/internal/pkg/sink/pretty/theme"
 	errors2 "github.com/pkg/errors"
 	"strings"
 	"time"
@@ -27,13 +29,14 @@ func sinkFlag() (interface{}, error) {
 	case "json":
 		return json.New(), nil
 	case "pretty":
-		return pretty.New(pretty.Config{
-			Wrap:       cli.Wrap,
-			Width:      cli.Width,
-			MultiLine:  cli.MultiLine,
-			Theme:      themeFlag(),
-			Columns:    columnNamesFlag(),
-			TimeFormat: timeFormatFlag(),
+		return pretty.New(config.Config{
+			Wrap:        cli.Wrap,
+			Width:       cli.Width,
+			MultiLine:   cli.MultiLine,
+			Theme:       themeFlag(),
+			ClearScreen: cli.ClearScreen,
+			Columns:     cli.Column,
+			TimeFormat:  timeFormatFlag(),
 		}), nil
 	default:
 		return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
@@ -77,14 +80,6 @@ func timeFormatFlag() string {
 	return timeFormat
 }
 
-func themeFlag() pretty.Theme {
-	return pretty.ThemeByName[cli.Theme]
-}
-
-func columnNamesFlag() []pretty.ColumnName {
-	var columnNames []pretty.ColumnName
-	for _, n := range cli.Column {
-		columnNames = append(columnNames, pretty.ColumnName(n))
-	}
-	return columnNames
+func themeFlag() theme.Theme {
+	return theme.Registry[cli.Theme]
 }

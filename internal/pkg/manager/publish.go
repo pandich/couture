@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"couture/internal/pkg/couture"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
@@ -54,6 +55,6 @@ func newDiagnosticEvent(
 		MethodName: methodName,
 		LineNumber: model.NoLineNumber,
 		ThreadName: &threadName,
-		ClassName:  "Manager",
+		ClassName:  couture.Name,
 	}
 }

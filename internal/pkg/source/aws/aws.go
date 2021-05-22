@@ -27,14 +27,14 @@ type Source struct {
 }
 
 // New parses the baseSource.sourceURL into region, profile, and entity.
-func New(sourceURL *model.SourceURL) (*Source, error) {
+func New(sigil rune, sourceURL *model.SourceURL) (*Source, error) {
 	sourceURL.Normalize()
 	cfg, err := config.LoadDefaultConfig(context.TODO(), configOptions(sourceURL)...)
 	if err != nil {
 		return nil, err
 	}
 	return &Source{
-		Polling: source.NewPollable(*sourceURL, time.Second),
+		Polling: source.NewPollable(sigil, *sourceURL, time.Second),
 		entity:  sourceURL.Path,
 		config:  cfg,
 	}, nil

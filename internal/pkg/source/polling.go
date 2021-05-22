@@ -30,9 +30,9 @@ func (src Polling) PollInterval() time.Duration {
 }
 
 // NewPollable polling Source.
-func NewPollable(sourceURL model.SourceURL, pollInterval time.Duration) *Polling {
+func NewPollable(sigil rune, sourceURL model.SourceURL, pollInterval time.Duration) *Polling {
 	return &Polling{
-		Pushing:      New(sourceURL),
+		Pushing:      New(sigil, sourceURL),
 		pollInterval: pollInterval,
 	}
 }

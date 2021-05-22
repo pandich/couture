@@ -16,18 +16,20 @@ type (
 	Pushing struct {
 		Pushable
 		id        string
+		sigil     rune
 		sourceURL model.SourceURL
 	}
 )
 
 // New base Source.
-func New(sourceURL model.SourceURL) *Pushing {
+func New(sigil rune, sourceURL model.SourceURL) *Pushing {
 	u := url.URL(sourceURL)
 	s := u.String()
 	hasher := sha256.New()
 	hasher.Write([]byte(s))
 	return &Pushing{
 		id:        "Source" + strings.ToUpper(hex.EncodeToString(hasher.Sum(nil))[0:15]),
+		sigil:     sigil,
 		sourceURL: sourceURL,
 	}
 }
@@ -40,4 +42,9 @@ func (source Pushing) URL() model.SourceURL {
 // ID ...
 func (source Pushing) ID() string {
 	return source.id
+}
+
+// Sigil ...
+func (source Pushing) Sigil() rune {
+	return source.sigil
 }

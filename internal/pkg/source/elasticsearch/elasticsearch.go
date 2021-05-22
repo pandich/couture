@@ -80,7 +80,7 @@ func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
 	query := elastic.NewQueryStringQuery(sourceURL.RawQuery)
 
 	var src source.Pollable = &elasticSearch{
-		Polling:   source.NewPollable(sourceURL, time.Second),
+		Polling:   source.NewPollable('፨', sourceURL, time.Second),
 		esClient:  esClient,
 		query:     query,
 		indexName: indexName,

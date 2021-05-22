@@ -34,7 +34,7 @@ type fileSource struct {
 func newSource(sourceURL model.SourceURL) *source.Pushable {
 	sourceURL.Normalize()
 	var src source.Pushable = fileSource{
-		Pushing:  source.New(sourceURL),
+		Pushing:  source.New('⫽', sourceURL),
 		filename: sourceURL.Path,
 	}
 	return &src

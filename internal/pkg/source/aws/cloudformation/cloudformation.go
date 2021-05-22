@@ -111,7 +111,7 @@ type (
 func newSource(sourceURL model.SourceURL) (*cloudFormationSource, error) {
 	normalizeURL(&sourceURL)
 	stackName := sourceURL.Path
-	awsSource, err := aws.New(&sourceURL)
+	awsSource, err := aws.New('☁', &sourceURL)
 	if err != nil {
 		return nil, errors2.Wrapf(err, "bad CloudFormation URL: %+v", sourceURL)
 	}

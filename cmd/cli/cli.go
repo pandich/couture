@@ -1,9 +1,9 @@
 package cli
 
 import (
+	"couture/internal/pkg/couture"
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/sink/pretty"
 	"github.com/alecthomas/kong"
 	"net/url"
 	"reflect"
@@ -13,10 +13,7 @@ import (
 	"time"
 )
 
-const (
-	applicationName = "couture"
-	helpSummary     = "Tails one or more event sourceArgs."
-)
+const helpSummary = "Tails one or more event sourceArgs."
 
 //nolint:lll
 var cli struct {
@@ -25,6 +22,7 @@ var cli struct {
 	Width        uint   `group:"Display Options" help:"Wrap width." placeholder:"width" short:"W" default:"0"`
 	Theme        string `group:"Display Options" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"${defaultTheme}" enum:"${themeNames}"`
 	MultiLine    bool   `group:"Display Options" help:"Display each log event in multi-line format." negatable:"true" default:"false"`
+	ClearScreen  bool   `group:"Display Options" help:"Clear the screen prior to displaying events." negatable:"true" default:"true"`
 
 	Column     []string `group:"Content Options" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}"`
 	TimeFormat string   `group:"Content Options" help:"Go-standard time format string or a named format: ${timeFormatNames}." short:"t" default:"stamp"`
@@ -40,15 +38,15 @@ var cli struct {
 // Run ...
 func Run() {
 	parser := kong.Must(&cli,
-		kong.Name(applicationName),
+		kong.Name(couture.Name),
 		kong.Description(description()),
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{Summary: false, Tree: true}),
 		kong.TypeMapper(reflect.TypeOf(regexp.Regexp{}), regexpDecoder()),
 		kong.TypeMapper(reflect.TypeOf(time.Time{}), timeLikeDecoder()),
-		kong.TypeMapper(reflect.TypeOf(pretty.ColumnName("")), timeLikeDecoder()),
 		parserVars(),
 	)
+
 	if runtime.GOOS == "windows" {
 		parser.Fatalf("unsupported operating system: %s", runtime.GOOS)
 	}
@@ -70,37 +68,9 @@ func Run() {
 	// create the manager and start it
 	mgr, err := manager.New(append(mgrOptions, sources...)...)
 	parser.FatalIfErrorf(err)
+
 	err = (*mgr).Start()
 	parser.FatalIfErrorf(err)
-}
-
-func parserVars() kong.Vars {
-	return kong.Vars{
-		"timeFormatNames": strings.Join([]string{
-			"c",
-			"iso8601",
-			"iso8601-nanos",
-			"kitchen",
-			"rfc1123",
-			"rfc1123-utc",
-			"rfc3339",
-			"rfc3339-nanos",
-			"rfc822",
-			"rfc822-utc",
-			"rfc850",
-			"ruby",
-			"stamp",
-			"stamp-micros",
-			"stamp-millis",
-			"stamp-nanos",
-			"unix",
-		}, ", "),
-		"columnNames":     strings.Join(columnNames(), ","),
-		"themeNames":      strings.Join(themeNames(), ","),
-		"defaultTheme":    pretty.Prince,
-		"logLevels":       strings.Join(logLevelNames(), ","),
-		"defaultLogLevel": strings.ToLower(string(level.Info)),
-	}
 }
 
 func description() string {
@@ -120,28 +90,4 @@ func description() string {
 		}
 	}
 	return strings.Join(lines, "\n")
-}
-
-func columnNames() []string {
-	var columnNames []string
-	for _, name := range pretty.AllColumns {
-		columnNames = append(columnNames, string(name))
-	}
-	return columnNames
-}
-
-func themeNames() []string {
-	var themeNames []string
-	for name := range pretty.ThemeByName {
-		themeNames = append(themeNames, name)
-	}
-	return themeNames
-}
-
-func logLevelNames() []string {
-	var logLevels []string
-	for _, name := range level.Levels {
-		logLevels = append(logLevels, strings.ToLower(string(name)))
-	}
-	return logLevels
 }

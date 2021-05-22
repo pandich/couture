@@ -47,10 +47,7 @@ func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
 		gofakeit.Seed(*seed)
 	}
 	var src source.Pollable = &fakeSource{
-		Polling: source.NewPollable(
-			sourceURL,
-			time.Second,
-		),
+		Polling:         source.NewPollable('🃟', sourceURL, time.Second),
 		applicationName: model.ApplicationName(gofakeit.AppName()),
 	}
 	return &src, nil
