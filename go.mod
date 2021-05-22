@@ -26,7 +26,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	go.uber.org/ratelimit v0.2.0
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9 // indirect
-	golang.org/x/sys v0.0.0-20210507161434-a76c4d0a0096 // indirect
+	golang.org/x/sys v0.0.0-20210507161434-a76c4d0a0096
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/multierror.v1 v1.0.2
 	gopkg.in/olivere/elastic.v3 v3.0.75

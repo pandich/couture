@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"couture/internal/pkg/model"
 	"encoding/json"
-	"fmt"
 	"io"
 	"sync"
 )
@@ -25,13 +24,9 @@ func Start(
 		for running() {
 			for scanner.Scan() {
 				var event model.Event
-				err := json.Unmarshal([]byte(scanner.Text()), &event)
-				if err != nil {
-					// TODO how to deal with un-parsable strings -- this applies to billing info etc.
-					//		this will impact CloudWatch, too. Not all of its events are structured.
-					fmt.Println(err)
-				}
-				if err == nil {
+				// TODO how to deal with un-parsable strings -- this applies to billing info etc.
+				//		this will impact CloudWatch, too. Not all of its events are structured.
+				if err := json.Unmarshal([]byte(scanner.Text()), &event); err != nil {
 					callback(event)
 				}
 			}

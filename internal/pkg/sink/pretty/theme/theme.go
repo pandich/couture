@@ -161,7 +161,7 @@ func (theme Theme) StackTraceColor() string {
 func (theme Theme) TimestampColor() string {
 	const degrees60 = 60 / 360.0
 	var yellow = colorful.Hcl(degrees60, 1, 1)
-	cf, _ := colorful.MakeColor(gamut.Tints(gamut.Complementary(gamut.Hex(theme.BaseColor)), 3)[1])
+	cf, _ := colorful.MakeColor(gamut.Tints(gamut.Complementary(gamut.Hex(theme.BaseColor)), 3)[0])
 	timestampColor := gamut.Blends(yellow, cf, 16)[3]
 	timestampCf, _ := colorful.MakeColor(timestampColor)
 	return tty.SimilarBg(timestampCf.Hex())

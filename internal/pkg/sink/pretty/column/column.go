@@ -19,15 +19,13 @@ const (
 	callerColumn      = "caller"
 	levelColumn       = "level"
 	messageColumn     = "message"
-	// SourceColumn ...
-	SourceColumn     = "source"
-	stackTraceColumn = "stackTrace"
-	threadColumn     = "thread"
-	timestampColumn  = "timestamp"
+	sourceColumn      = "source"
+	stackTraceColumn  = "stackTrace"
+	threadColumn      = "thread"
+	timestampColumn   = "timestamp"
 )
 
-// DefaultOrder ...
-var DefaultOrder = []string{
+var defaultColumns = []string{
 	timestampColumn,
 	applicationColumn,
 	threadColumn,
@@ -54,6 +52,7 @@ type (
 )
 
 // TODO handle config.ShowSigil
+// TODO it is clumsy that the column name has to be specified three times per column
 
 var columns = []column{
 	{
@@ -177,7 +176,7 @@ var columns = []column{
 	},
 
 	{
-		name: SourceColumn,
+		name: sourceColumn,
 		Formatter: func(src source.Source, evt model.Event) string {
 			return "{{" + string(src.Sigil()) + " %-30.30s }}::" + src.ID()
 		},
@@ -249,4 +248,14 @@ var columns = []column{
 			})
 		},
 	},
+}
+
+// EffectiveColumns ...
+func EffectiveColumns(cfg config.Config) []string {
+	var effectiveColumns = defaultColumns
+	if len(cfg.Columns) > 0 {
+		effectiveColumns = cfg.Columns
+	}
+	effectiveColumns = append([]string{sourceColumn}, effectiveColumns...)
+	return effectiveColumns
 }

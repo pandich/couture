@@ -6,6 +6,8 @@ type Manager interface {
 	Start() error
 	// Stop the Manager.
 	Stop()
+	// Wait for the manager to stop.
+	Wait()
 	// RegisterOptions one or more sinks or registry.
 	RegisterOptions(opts ...interface{}) error
 }

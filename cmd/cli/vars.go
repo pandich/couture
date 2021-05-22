@@ -2,6 +2,7 @@ package cli
 
 import (
 	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/sink/pretty"
 	"couture/internal/pkg/sink/pretty/column"
 	"couture/internal/pkg/sink/pretty/theme"
 	"github.com/alecthomas/kong"
@@ -29,10 +30,12 @@ func parserVars() kong.Vars {
 			"stamp-nanos",
 			"unix",
 		}, ", "),
-		"columnNames":     strings.Join(column.Names(), ","),
-		"themeNames":      strings.Join(theme.Names(), ","),
-		"defaultTheme":    theme.Prince,
-		"logLevels":       strings.Join(level.SimpleNames(), ","),
-		"defaultLogLevel": level.Info.SimpleName(),
+		"columnNames":         strings.Join(column.Names(), ","),
+		"themeNames":          strings.Join(theme.Names(), ","),
+		"defaultTheme":        theme.Prince,
+		"logLevels":           strings.Join(level.SimpleNames(), ","),
+		"defaultLogLevel":     level.Info.SimpleName(),
+		"outputFormats":       strings.Join([]string{pretty.Name}, ","),
+		"defaultOutputFormat": pretty.Name,
 	}
 }

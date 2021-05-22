@@ -3,9 +3,13 @@ package tty
 import (
 	"github.com/mattn/go-isatty"
 	"github.com/muesli/reflow/wordwrap"
+	"github.com/muesli/termenv"
 	"github.com/olekukonko/ts"
 	"os"
 )
+
+// ResetSequence ...
+const ResetSequence = termenv.CSI + termenv.ResetSeq + "m"
 
 // IsTTY ...
 func IsTTY() bool {
@@ -23,8 +27,11 @@ func TerminalWidth() int {
 
 // Wrap ...
 func Wrap(s string, width int) string {
+	if width <= 0 {
+		return s
+	}
 	wrapper := wordwrap.NewWriter(width)
-	wrapper.Breakpoints = []rune(" \t")
+	wrapper.Breakpoints = []rune(" ")
 	wrapper.KeepNewlines = true
 	if _, err := wrapper.Write([]byte(s)); err != nil {
 		return s

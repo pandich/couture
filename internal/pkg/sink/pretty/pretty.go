@@ -8,11 +8,14 @@ import (
 	"couture/internal/pkg/sink/pretty/theme"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/tty"
-	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/termenv"
-	"sync"
+	"go.uber.org/ratelimit"
+	"log"
 )
+
+// Name ...
+const Name = "pretty"
 
 // TODO themes need to auto light/dark background adjust
 // FIXME linebreaks messed up in highlighting process?
@@ -22,8 +25,8 @@ type prettySink struct {
 	terminalWidth int
 	palette       chan string
 	columnOrder   []string
-	printLock     sync.Mutex
 	config        config.Config
+	printer       chan string
 }
 
 // New provides a configured prettySink sink.
@@ -32,17 +35,12 @@ func New(cfg config.Config) *sink.Sink {
 		cfmt.DisableColors()
 	}
 	column.ByName.Init(cfg.Theme)
-	var effectiveColumns = column.DefaultOrder
-	if len(cfg.Columns) > 0 {
-		effectiveColumns = cfg.Columns
-	}
-	effectiveColumns = append([]string{column.SourceColumn}, effectiveColumns...)
 	var snk sink.Sink = &prettySink{
 		terminalWidth: cfg.WrapWidth(),
 		palette:       tty.NewColorCycle(cfg.Theme.SourceColors),
-		columnOrder:   effectiveColumns,
-		printLock:     sync.Mutex{},
+		columnOrder:   column.EffectiveColumns(cfg),
 		config:        cfg,
+		printer:       newPrinter(),
 	}
 	return &snk
 }
@@ -59,7 +57,7 @@ func (snk *prettySink) Init(sources []source.Source) {
 
 // Accept ...
 func (snk *prettySink) Accept(src source.Source, event model.Event) error {
-	snk.println(snk.render(src, event))
+	snk.printer <- snk.render(src, event)
 	return nil
 }
 
@@ -70,6 +68,7 @@ func (snk *prettySink) render(src source.Source, event model.Event) string {
 	for _, name := range snk.columnOrder {
 		col := column.ByName[name]
 		format += col.Formatter(src, event)
+		format += tty.ResetSequence
 		values = append(values, col.Renderer(snk.config, src, event)...)
 	}
 
@@ -79,9 +78,22 @@ func (snk *prettySink) render(src source.Source, event model.Event) string {
 	return wrapped
 }
 
-func (snk *prettySink) println(s string) {
-	snk.printLock.Lock()
-	termenv.Reset()
-	defer snk.printLock.Unlock()
-	fmt.Println(s)
+func newPrinter() chan string {
+	// TODO do we want to rate limit?
+	const ttyMaxEventsPerSecond = 200
+	var throttle ratelimit.Limiter
+	if tty.IsTTY() {
+		throttle = ratelimit.New(ttyMaxEventsPerSecond)
+	} else {
+		throttle = ratelimit.NewUnlimited()
+	}
+
+	printer := make(chan string)
+	go func() {
+		for message := range printer {
+			throttle.Take()
+			log.Println(message)
+		}
+	}()
+	return printer
 }

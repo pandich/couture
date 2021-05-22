@@ -47,6 +47,7 @@ func Contrast(hex string) string {
 }
 
 // Lighter ...
+//goland:noinspection GoUnusedExportedFunction,GoUnnecessarilyExportedIdentifiers
 func Lighter(hex string, percent float64) string {
 	cf, _ := colorful.MakeColor(gamut.Lighter(gamut.Hex(hex), percent))
 	return cf.Hex()
@@ -69,6 +70,7 @@ func Fainter(hex string, percent float64) string {
 }
 
 // IsDark ...
+//goland:noinspection GoUnusedExportedFunction,GoUnnecessarilyExportedIdentifiers
 func IsDark(hex string) bool {
 	const gray = 0.5
 	col := hexColorful(hex)

@@ -38,7 +38,7 @@ all: clean build
 clean:
 	@echo cleaning
 	@rm -rf dist/
-build: neat
+build: lint
 	@echo building
 	@$(GO) build -o dist/couture $(COMMAND)
 

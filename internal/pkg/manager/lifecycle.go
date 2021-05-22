@@ -3,8 +3,6 @@ package manager
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"os"
-	"os/signal"
 )
 
 // Start the Manager. This starts all source.PushingSource instances, and begins polling all polling.Pushable instances.
@@ -31,17 +29,6 @@ func (mgr *publishingManager) Start() error {
 			return err
 		}
 	}
-
-	signalChannel := make(chan os.Signal, 1)
-	signal.Notify(signalChannel, os.Interrupt)
-	go func() {
-		for range signalChannel {
-			(*mgr).Stop()
-		}
-	}()
-
-	mgr.wg.Add(1)
-	mgr.wg.Wait()
 	return nil
 }
 
@@ -49,6 +36,9 @@ func (mgr *publishingManager) Start() error {
 func (mgr *publishingManager) Stop() {
 	mgr.publishDiagnostic(level.Info, "Stop", "stopping")
 	mgr.running = false
-	mgr.wg.Done()
+}
+
+// Wait ...
+func (mgr *publishingManager) Wait() {
 	mgr.wg.Wait()
 }

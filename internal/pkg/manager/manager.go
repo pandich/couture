@@ -4,27 +4,15 @@ import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
-	"couture/internal/pkg/tty"
 	"github.com/asaskevich/EventBus"
-	"go.uber.org/ratelimit"
 	"sync"
 )
 
 // New creates an empty Manager.
 func New(opts ...interface{}) (*model.Manager, error) {
-	const ttyMaxEventsPerSecond = 100
-
-	var rl ratelimit.Limiter
-	if tty.IsTTY() {
-		rl = ratelimit.New(ttyMaxEventsPerSecond)
-	} else {
-		rl = ratelimit.NewUnlimited()
-	}
-
 	var mgr model.Manager = &publishingManager{
-		wg:          &sync.WaitGroup{},
-		bus:         EventBus.New(),
-		rateLimiter: rl,
+		wg:  &sync.WaitGroup{},
+		bus: EventBus.New(),
 	}
 	if err := mgr.RegisterOptions(opts...); err != nil {
 		return nil, err
@@ -60,8 +48,5 @@ type (
 
 		// sinks contains all registered sink.Sink instances.
 		sinks []sink.Sink
-
-		// rateLimiter ensures a cap on total events/second to avoid flooding the terminal.
-		rateLimiter ratelimit.Limiter
 	}
 )

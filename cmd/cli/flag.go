@@ -2,7 +2,6 @@ package cli
 
 import (
 	"couture/internal/pkg/manager"
-	"couture/internal/pkg/sink/json"
 	"couture/internal/pkg/sink/pretty"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
@@ -26,8 +25,6 @@ func managerOptionFlags() ([]interface{}, error) {
 
 func sinkFlag() (interface{}, error) {
 	switch cli.OutputFormat {
-	case "json":
-		return json.New(), nil
 	case "pretty":
 		return pretty.New(config.Config{
 			Wrap:        cli.Wrap,

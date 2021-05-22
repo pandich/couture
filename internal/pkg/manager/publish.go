@@ -6,7 +6,6 @@ import (
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"fmt"
-	"os"
 	"time"
 )
 
@@ -20,7 +19,6 @@ func (mgr *publishingManager) publishError(
 	message string,
 	args ...interface{},
 ) {
-	_, _ = fmt.Fprintln(os.Stderr, err)
 	event := newDiagnosticEvent(level, methodName, message, args...)
 	event.Exception = model.NewException(err)
 	mgr.publishEvent(managerSource, event)
@@ -36,7 +34,6 @@ func (mgr *publishingManager) publishEvent(src source.Source, event model.Event)
 		return
 	}
 	if event.Matches(mgr.options.includeFilters, mgr.options.excludeFilters) {
-		mgr.rateLimiter.Take()
 		mgr.bus.Publish(eventTopic, src, event)
 	}
 }

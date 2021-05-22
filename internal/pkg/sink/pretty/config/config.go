@@ -5,9 +5,6 @@ import (
 	"couture/internal/pkg/tty"
 )
 
-// noWrap ...
-const noWrap = 0
-
 // Config ...
 type Config struct {
 	Wrap        bool
@@ -21,12 +18,12 @@ type Config struct {
 }
 
 // WrapWidth ...
-func (c Config) WrapWidth() int {
-	if c.Width > noWrap {
-		return int(c.Width)
+func (cfg Config) WrapWidth() int {
+	if cfg.Width > 0 {
+		return int(cfg.Width)
 	}
-	if c.Wrap {
+	if cfg.Wrap {
 		return tty.TerminalWidth()
 	}
-	return noWrap
+	return 0
 }
