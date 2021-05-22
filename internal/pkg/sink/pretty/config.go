@@ -2,19 +2,10 @@ package pretty
 
 import (
 	"couture/internal/pkg/tty"
-	"github.com/muesli/gamut"
 )
 
 // noWrap ...
 const noWrap = 0
-
-const (
-	errorColor = "#ff0000"
-	traceColor = "#868686"
-	debugColor = "#f6f6f6"
-	infoColor  = "#00ff00"
-	warnColor  = "#ffff00"
-)
 
 // Config ...
 type Config struct {
@@ -35,11 +26,7 @@ func (c Config) effectiveColumns() []ColumnName {
 	return columnOrder
 }
 
-func (c Config) palette() chan string {
-	return tty.NewColorCycle(c.Theme.SourceColors)
-}
-
-func (c Config) terminalWidth() int {
+func (c Config) wrapWidth() int {
 	if c.Width > noWrap {
 		return int(c.Width)
 	}
@@ -47,14 +34,4 @@ func (c Config) terminalWidth() int {
 		return tty.TerminalWidth()
 	}
 	return noWrap
-}
-
-// Theme ...
-type Theme struct {
-	BaseColor    string
-	SourceColors gamut.ColorGenerator
-}
-
-func (t Theme) tinted(hex string) string {
-	return tty.Tinted(t.BaseColor, hex)
 }

@@ -21,6 +21,15 @@ const (
 	errorPriority
 )
 
+// Levels ...
+var Levels = []Level{
+	Trace,
+	Debug,
+	Info,
+	Warn,
+	Error,
+}
+
 var priorities = map[Level]int{
 	Trace: tracePriority,
 	Debug: debugPriority,

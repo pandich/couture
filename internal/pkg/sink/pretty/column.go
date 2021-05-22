@@ -36,11 +36,7 @@ var defaultColumnOrder = []ColumnName{
 	stackTraceColumn,
 }
 
-const degrees60 = 60 / 360.0
-
-var yellow = colorful.Hcl(degrees60, 1, 1)
-
-const highlighted = "H"
+const highlight = "HL"
 
 // ColumnName ...
 type (
@@ -75,11 +71,8 @@ var columns = columnRegistry{
 			return string(event.ApplicationNameOrBlank())
 		},
 		register: func(theme Theme) {
-			cf, _ := colorful.MakeColor(gamut.Quadratic(gamut.Hex(theme.BaseColor))[2])
-			h, _, _ := cf.Hcl()
-			applicationColor := colorful.Hcl(h, 0.9, 0.8).Hex()
 			cfmt.RegisterStyle(string(applicationColumn), func(s string) string {
-				return cfmt.Sprintf("{{ %-20.20s }}::"+tty.SimilarBg(applicationColor), s)
+				return cfmt.Sprintf("{{ %-20.20s }}::"+theme.applicationColor(), s)
 			})
 		},
 	},
@@ -100,35 +93,20 @@ var columns = columnRegistry{
 			return caller
 		},
 		register: func(theme Theme) {
-			const contrastPercent = 0.25
-			col := gamut.Hex(theme.BaseColor)
-			q := gamut.Analogous(col)
-			a, _ := colorful.MakeColor(gamut.Darker(col, 0.4))
-			b, _ := colorful.MakeColor(q[0])
-			c, _ := colorful.MakeColor(q[1])
-			methodColor, classColor, lineNumberColor := a.Hex(), b.Hex(), c.Hex()
-
-			var methodDelimiterColor = tty.Lighter(methodColor, contrastPercent)
-			var lineNumberDelimiterColor = tty.Lighter(lineNumberColor, contrastPercent)
-			if tty.IsDark(methodColor) {
-				methodDelimiterColor = tty.Darker(methodColor, contrastPercent)
-				lineNumberDelimiterColor = tty.Darker(lineNumberColor, contrastPercent)
-			}
-
 			cfmt.RegisterStyle("Class", func(s string) string {
-				return cfmt.Sprintf("{{%.30s}}::"+classColor, s)
+				return cfmt.Sprintf("{{%.30s}}::"+theme.classColor(), s)
 			})
 			cfmt.RegisterStyle("MethodDelimiter", func(s string) string {
-				return cfmt.Sprintf("{{%s}}::"+methodDelimiterColor, s)
+				return cfmt.Sprintf("{{%s}}::"+theme.methodDelimiterColor(), s)
 			})
 			cfmt.RegisterStyle("Method", func(s string) string {
-				return cfmt.Sprintf("{{%.30s}}::"+methodColor, s)
+				return cfmt.Sprintf("{{%.30s}}::"+theme.methodColor(), s)
 			})
 			cfmt.RegisterStyle("LineNumberDelimiter", func(s string) string {
-				return cfmt.Sprintf("{{%s}}::"+lineNumberDelimiterColor, s)
+				return cfmt.Sprintf("{{%s}}::"+theme.lineNumberDelimiterColor(), s)
 			})
 			cfmt.RegisterStyle("LineNumber", func(s string) string {
-				return cfmt.Sprintf("{{%s}}::"+lineNumberColor, s)
+				return cfmt.Sprintf("{{%s}}::"+theme.lineNumberColor(), s)
 			})
 		},
 	},
@@ -141,17 +119,13 @@ var columns = columnRegistry{
 			return string(event.Level)
 		},
 		register: func(theme Theme) {
-			reg := func(lvl level.Level, bgColor string) {
+			for _, lvl := range level.Levels {
+				bgColor := theme.levelColor(lvl)
 				fgColor := tty.Contrast(bgColor)
 				cfmt.RegisterStyle(string(levelColumn)+string(lvl), func(s string) string {
 					return cfmt.Sprintf("{{ %1.1s }}::bg"+bgColor+"|"+fgColor, s)
 				})
 			}
-			reg(level.Trace, theme.tinted(traceColor))
-			reg(level.Debug, theme.tinted(debugColor))
-			reg(level.Info, theme.tinted(infoColor))
-			reg(level.Warn, theme.tinted(warnColor))
-			reg(level.Error, theme.tinted(errorColor))
 		},
 	},
 
@@ -165,7 +139,7 @@ var columns = columnRegistry{
 				}
 				switch chunk.(type) {
 				case model.HighlightedMessage:
-					message += cfmt.Sprintf("{{%s}}::"+highlighted+string(messageColumn)+string(event.Level), chunk)
+					message += cfmt.Sprintf("{{%s}}::"+highlight+string(messageColumn)+string(event.Level), chunk)
 				case model.UnhighlightedMessage:
 					message += cfmt.Sprintf("{{%s}}::"+string(messageColumn)+string(event.Level), chunk)
 				default:
@@ -179,22 +153,16 @@ var columns = columnRegistry{
 			return prefix + message
 		},
 		register: func(theme Theme) {
-			reg := func(lvl level.Level, bgColor string) {
-				cf, _ := colorful.MakeColor(gamut.Tints(gamut.Hex(theme.BaseColor), 64)[60])
-				messageColor := cf.Hex()
-				messageBgColor := tty.Fainter(bgColor, 0.90)
+			for _, lvl := range level.Levels {
+				fgColor := theme.messageColor()
+				bgColor := theme.messageBackgroundColor(lvl)
 				cfmt.RegisterStyle(string(messageColumn)+string(lvl), func(s string) string {
-					return cfmt.Sprintf("{{%s}}::"+messageColor+"|bg"+messageBgColor, s)
+					return cfmt.Sprintf("{{%s}}::"+fgColor+"|bg"+bgColor, s)
 				})
-				cfmt.RegisterStyle(highlighted+string(messageColumn)+string(lvl), func(s string) string {
-					return cfmt.Sprintf("{{%s}}::bg"+messageColor+"|"+messageBgColor, s)
+				cfmt.RegisterStyle(highlight+string(messageColumn)+string(lvl), func(s string) string {
+					return cfmt.Sprintf("{{%s}}::bg"+fgColor+"|"+bgColor, s)
 				})
 			}
-			reg(level.Trace, theme.tinted(traceColor))
-			reg(level.Debug, theme.tinted(debugColor))
-			reg(level.Info, theme.tinted(infoColor))
-			reg(level.Warn, theme.tinted(warnColor))
-			reg(level.Error, theme.tinted(errorColor))
 		},
 	},
 
@@ -220,7 +188,7 @@ var columns = columnRegistry{
 				}
 				switch chunk.(type) {
 				case model.HighlightedStackTrace:
-					stackTrace += cfmt.Sprintf("{{%s}}::"+highlighted+string(stackTraceColumn), chunk)
+					stackTrace += cfmt.Sprintf("{{%s}}::"+highlight+string(stackTraceColumn), chunk)
 				case model.UnhighlightedStackTrace:
 					stackTrace += cfmt.Sprintf("{{%s}}::"+string(stackTraceColumn), chunk)
 				default:
@@ -230,11 +198,12 @@ var columns = columnRegistry{
 			return stackTrace
 		},
 		register: func(theme Theme) {
+			c := theme.stackTraceColor()
 			cfmt.RegisterStyle(string(stackTraceColumn), func(s string) string {
-				return cfmt.Sprintf("{{%s}}::"+tty.SimilarBg(theme.tinted(errorColor)), s)
+				return cfmt.Sprintf("{{%s}}::"+c, s)
 			})
-			cfmt.RegisterStyle(highlighted+string(stackTraceColumn), func(s string) string {
-				return cfmt.Sprintf("{{%s}}::bg"+tty.SimilarBg(theme.tinted(errorColor)), s)
+			cfmt.RegisterStyle(highlight+string(stackTraceColumn), func(s string) string {
+				return cfmt.Sprintf("{{%s}}::bg"+c, s)
 			})
 		},
 	},
@@ -262,6 +231,8 @@ var columns = columnRegistry{
 			return time.Time(event.Timestamp).Format(config.TimeFormat)
 		},
 		register: func(theme Theme) {
+			const degrees60 = 60 / 360.0
+			var yellow = colorful.Hcl(degrees60, 1, 1)
 			cf, _ := colorful.MakeColor(gamut.Tints(gamut.Complementary(gamut.Hex(theme.BaseColor)), 3)[1])
 			timestampColor := gamut.Blends(yellow, cf, 16)[3]
 			timestampCf, _ := colorful.MakeColor(timestampColor)

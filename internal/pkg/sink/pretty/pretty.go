@@ -30,8 +30,8 @@ func New(config Config) *sink.Sink {
 	}
 	columns.init(config.Theme)
 	var snk sink.Sink = &prettySink{
-		terminalWidth: config.terminalWidth(),
-		palette:       config.palette(),
+		terminalWidth: config.wrapWidth(),
+		palette:       tty.NewColorCycle(config.Theme.SourceColors),
 		columnOrder:   config.effectiveColumns(),
 		printLock:     sync.Mutex{},
 		config:        config,
