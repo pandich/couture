@@ -8,10 +8,10 @@ import (
 	"couture/internal/pkg/sink/pretty/theme"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/tty"
+	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/termenv"
 	"go.uber.org/ratelimit"
-	"log"
 )
 
 // Name ...
@@ -93,7 +93,7 @@ func newPrinter() chan string {
 	go func() {
 		for message := range printer {
 			throttle.Take()
-			log.Println(message)
+			fmt.Println(message)
 		}
 	}()
 	return printer
