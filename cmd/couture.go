@@ -3,6 +3,7 @@ package main
 import (
 	"couture/cmd/cli"
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/tty"
 	"golang.org/x/sys/unix"
 	"os"
 	"os/signal"
@@ -23,12 +24,11 @@ func trapSignals(mgr *model.Manager) {
 	go func() {
 		const stopGracePeriod = 2 * time.Second
 		if <-signalChan == unix.SIGINT {
-			(*mgr).Stop()
-			go func() {
-				time.Sleep(stopGracePeriod)
-				os.Exit(0)
-			}()
-			(*mgr).Wait()
+			if tty.IsTTY() {
+				(*mgr).Stop()
+				go func() { time.Sleep(stopGracePeriod); os.Exit(1) }()
+				(*mgr).Wait()
+			}
 		}
 		os.Exit(0)
 	}()
