@@ -16,6 +16,7 @@ type Config struct {
 	TimeFormat  string
 	Theme       theme.Theme
 	ClearScreen bool
+	ShowSigils  bool
 	Columns     []string
 }
 

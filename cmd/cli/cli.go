@@ -22,6 +22,7 @@ var cli struct {
 	Width        uint   `group:"Display Options" help:"Wrap width." placeholder:"width" short:"W" default:"0"`
 	Theme        string `group:"Display Options" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"${defaultTheme}" enum:"${themeNames}"`
 	MultiLine    bool   `group:"Display Options" help:"Display each log event in multi-line format." negatable:"true" default:"false"`
+	Sigil        bool   `group:"Display Options" help:"Display column prefix sigils to help denote them." negatable:"true" default:"true"`
 	ClearScreen  bool   `group:"Display Options" help:"Clear the screen prior to displaying events." negatable:"true" default:"true"`
 
 	Column     []string `group:"Content Options" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}"`

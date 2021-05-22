@@ -53,6 +53,8 @@ type (
 	}
 )
 
+// TODO handle config.ShowSigil
+
 var columns = []column{
 	{
 		name: applicationColumn,
@@ -72,7 +74,7 @@ var columns = []column{
 	{
 		name: callerColumn,
 		Formatter: func(src source.Source, evt model.Event) string {
-			return "{{ %s}}::Class{{/}}::MethodDelimiter{{%s}}::Method{{#}}::LineNumberDelimiter{{%s }}::LineNumber "
+			return "{{ ☎︎ %s}}::Class{{/}}::MethodDelimiter{{%s}}::Method{{#}}::LineNumberDelimiter{{%s }}::LineNumber "
 		},
 		Renderer: func(_ config.Config, src source.Source, event model.Event) []interface{} {
 			const maxClassNameWidth = 30
@@ -236,7 +238,7 @@ var columns = []column{
 	{
 		name: timestampColumn,
 		Formatter: func(src source.Source, evt model.Event) string {
-			return "{{ %s }}::" + string(timestampColumn)
+			return "{{ ⌚ %s }}::" + string(timestampColumn)
 		},
 		Renderer: func(config config.Config, src source.Source, event model.Event) []interface{} {
 			return []interface{}{time.Time(event.Timestamp).Format(config.TimeFormat)}

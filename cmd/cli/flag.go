@@ -35,6 +35,7 @@ func sinkFlag() (interface{}, error) {
 			MultiLine:   cli.MultiLine,
 			Theme:       themeFlag(),
 			ClearScreen: cli.ClearScreen,
+			ShowSigils:  cli.Sigil,
 			Columns:     cli.Column,
 			TimeFormat:  timeFormatFlag(),
 		}), nil
