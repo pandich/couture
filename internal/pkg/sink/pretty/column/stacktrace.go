@@ -8,32 +8,35 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
-type stackTraceColumn struct {
-}
+type stackTraceColumn struct{}
 
 // Name ...
-func (s stackTraceColumn) Name() string {
-	return "error"
-}
+func (col stackTraceColumn) name() string { return "error" }
 
-// Register ...
-func (s stackTraceColumn) Register(theme theme.Theme) {
+// weight ...
+func (col stackTraceColumn) weight() weight { return 0 }
+
+// weightType ...
+func (col stackTraceColumn) weightType() weightType { return filling }
+
+// RegisterStyles ...
+func (col stackTraceColumn) RegisterStyles(theme theme.Theme) {
 	c := theme.StackTraceColor()
-	cfmt.RegisterStyle(s.Name(), func(s string) string {
+	cfmt.RegisterStyle(col.name(), func(s string) string {
 		return cfmt.Sprintf("{{%s}}::"+c, s)
 	})
-	cfmt.RegisterStyle("H"+s.Name(), func(s string) string {
+	cfmt.RegisterStyle("H"+col.name(), func(s string) string {
 		return cfmt.Sprintf("{{%s}}::bg"+c, s)
 	})
 }
 
-// Formatter ...
-func (s stackTraceColumn) Formatter(_ source.Source, _ model.Event) string {
+// Format ...
+func (col stackTraceColumn) Format(_ uint, _ source.Source, _ model.Event) string {
 	return "%s"
 }
 
-// Renderer ...
-func (s stackTraceColumn) Renderer(_ config.Config, _ source.Source, event model.Event) []interface{} {
+// Render ...
+func (col stackTraceColumn) Render(_ config.Config, _ source.Source, event model.Event) []interface{} {
 	var stackTrace = ""
 	for _, chunk := range event.HighlightedStackTrace() {
 		if stackTrace == "" {
@@ -43,11 +46,11 @@ func (s stackTraceColumn) Renderer(_ config.Config, _ source.Source, event model
 		}
 		switch chunk.(type) {
 		case model.HighlightedStackTrace:
-			stackTrace += cfmt.Sprintf("{{%s}}::H"+s.Name(), chunk)
+			stackTrace += cfmt.Sprintf("{{%s}}::H"+col.name(), chunk)
 		case model.UnhighlightedStackTrace:
-			stackTrace += cfmt.Sprintf("{{%s}}::"+s.Name(), chunk)
+			stackTrace += cfmt.Sprintf("{{%s}}::"+col.name(), chunk)
 		default:
-			stackTrace += cfmt.Sprintf("{{%s}}::"+s.Name(), chunk)
+			stackTrace += cfmt.Sprintf("{{%s}}::"+col.name(), chunk)
 		}
 	}
 	return []interface{}{stackTrace}

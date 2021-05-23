@@ -12,23 +12,27 @@ import (
 type timestampColumn struct{}
 
 // Name ...
-func (t timestampColumn) Name() string {
-	return "timestamp"
-}
+func (col timestampColumn) name() string { return "timestamp" }
 
-// Register ...
-func (t timestampColumn) Register(theme theme.Theme) {
-	cfmt.RegisterStyle(t.Name(), func(s string) string {
+// weight ...
+func (col timestampColumn) weight() weight { return 0 }
+
+// weightType ...
+func (col timestampColumn) weightType() weightType { return filling }
+
+// RegisterStyles ...
+func (col timestampColumn) RegisterStyles(theme theme.Theme) {
+	cfmt.RegisterStyle(col.name(), func(s string) string {
 		return cfmt.Sprintf("{{%s}}::"+theme.TimestampColor(), s)
 	})
 }
 
-// Formatter ...
-func (t timestampColumn) Formatter(_ source.Source, _ model.Event) string {
-	return "{{ ⌚ %s }}::" + t.Name()
+// Format ...
+func (col timestampColumn) Format(_ uint, _ source.Source, _ model.Event) string {
+	return "{{ ⌚ %s }}::" + col.name()
 }
 
-// Renderer ...
-func (t timestampColumn) Renderer(config config.Config, _ source.Source, event model.Event) []interface{} {
+// Render ...
+func (col timestampColumn) Render(config config.Config, _ source.Source, event model.Event) []interface{} {
 	return []interface{}{time.Time(event.Timestamp).Format(config.TimeFormat)}
 }

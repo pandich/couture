@@ -12,31 +12,35 @@ import (
 type messageColumn struct{}
 
 // Name ...
-func (m messageColumn) Name() string {
-	return "message"
-}
+func (col messageColumn) name() string { return "message" }
 
-// Register ...
-func (m messageColumn) Register(theme theme.Theme) {
+// weight ...
+func (col messageColumn) weight() weight { return 0 }
+
+// weightType ...
+func (col messageColumn) weightType() weightType { return filling }
+
+// RegisterStyles ...
+func (col messageColumn) RegisterStyles(theme theme.Theme) {
 	for _, lvl := range level.Levels {
 		fgColor := theme.MessageColor()
 		bgColor := theme.MessageBackgroundColor(lvl)
-		cfmt.RegisterStyle(m.Name()+string(lvl), func(s string) string {
+		cfmt.RegisterStyle(col.name()+string(lvl), func(s string) string {
 			return cfmt.Sprintf("{{%s}}::"+fgColor+"|bg"+bgColor, s)
 		})
-		cfmt.RegisterStyle("H"+m.Name()+string(lvl), func(s string) string {
+		cfmt.RegisterStyle("H"+col.name()+string(lvl), func(s string) string {
 			return cfmt.Sprintf("{{%s}}::bg"+fgColor+"|"+bgColor, s)
 		})
 	}
 }
 
-// Formatter ...
-func (m messageColumn) Formatter(_ source.Source, _ model.Event) string {
+// Format ...
+func (col messageColumn) Format(_ uint, _ source.Source, _ model.Event) string {
 	return "%s"
 }
 
-// Renderer ...
-func (m messageColumn) Renderer(config config.Config, _ source.Source, event model.Event) []interface{} {
+// Render ...
+func (col messageColumn) Render(config config.Config, _ source.Source, event model.Event) []interface{} {
 	var message = ""
 	for _, chunk := range event.HighlightedMessage() {
 		if message != "" {
@@ -44,11 +48,11 @@ func (m messageColumn) Renderer(config config.Config, _ source.Source, event mod
 		}
 		switch chunk.(type) {
 		case model.HighlightedMessage:
-			message += cfmt.Sprintf("{{%s}}::H"+m.Name()+string(event.Level), chunk)
+			message += cfmt.Sprintf("{{%s}}::H"+col.name()+string(event.Level), chunk)
 		case model.UnhighlightedMessage:
-			message += cfmt.Sprintf("{{%s}}::"+m.Name()+string(event.Level), chunk)
+			message += cfmt.Sprintf("{{%s}}::"+col.name()+string(event.Level), chunk)
 		default:
-			message += cfmt.Sprintf("{{%s}}::"+m.Name()+string(event.Level), chunk)
+			message += cfmt.Sprintf("{{%s}}::"+col.name()+string(event.Level), chunk)
 		}
 	}
 	var prefix = " "

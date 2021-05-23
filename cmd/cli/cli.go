@@ -26,9 +26,10 @@ var cli struct {
 	Sigil        bool   `group:"Display Options" help:"Display column prefix sigils to help denote them." negatable:"true" default:"true"`
 	ClearScreen  bool   `group:"Display Options" help:"Clear the screen prior to displaying events." negatable:"true" default:"true"`
 	Plain        bool   `group:"Display Options" help:"Clear the screen prior to displaying events."`
+	AutoSize     bool   `group:"Display Options" help:"Dynamically resize column widths based upon available space." negatable:"true" default:"false"`
 
-	Column     []string `group:"Content Options" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}"`
-	TimeFormat string   `group:"Content Options" help:"Go-standard time format string or a named format: ${timeFormatNames}." short:"t" default:"stamp"`
+	Column     []string   `group:"Content Options" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}"`
+	TimeFormat timeFormat `group:"Content Options" help:"Go-standard time format string or a named format: ${timeFormatNames}." short:"t" default:"stamp"`
 
 	Level   level.Level     `group:"Filter Options" help:"The minimum log level to display: ${enum}." default:"${defaultLogLevel}" placeholder:"level" short:"l" enum:"${logLevels}" env:"COUTURE_DEFAULT_LEVEL"`
 	Since   time.Time       `group:"Filter Options" help:"How far back to look for events. Parses most time and duration formats including human friendly." placeholder:"(time|duration)" short:"s" default:"15m" env:"COUTURE_DEFAULT_SINCE"`

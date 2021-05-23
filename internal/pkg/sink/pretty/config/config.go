@@ -7,23 +7,24 @@ import (
 
 // Config ...
 type Config struct {
-	Wrap        bool
-	Width       uint
-	MultiLine   bool
-	TimeFormat  string
-	Theme       theme.Theme
+	AutoSize    bool
 	ClearScreen bool
-	ShowSigils  bool
 	Columns     []string
+	MultiLine   bool
+	ShowSigils  bool
+	Theme       theme.Theme
+	TimeFormat  string
+	Width       uint
+	Wrap        bool
 }
 
-// WrapWidth ...
-func (cfg Config) WrapWidth() int {
+// EffectiveTerminalWidth ...
+func (cfg Config) EffectiveTerminalWidth() uint {
 	if cfg.Width > 0 {
-		return int(cfg.Width)
+		return cfg.Width
 	}
 	if cfg.Wrap {
-		return tty.TerminalWidth()
+		return uint(tty.TerminalWidth())
 	}
 	return 0
 }

@@ -11,23 +11,30 @@ import (
 type applicationColumn struct{}
 
 // Name ...
-func (a applicationColumn) Name() string {
-	return "application"
+func (col applicationColumn) name() string { return "application" }
+
+// weight ...
+func (col applicationColumn) weight() weight {
+	const columnWeight = 25
+	return columnWeight
 }
 
-// Register ...
-func (a applicationColumn) Register(theme theme.Theme) {
-	cfmt.RegisterStyle(a.Name(), func(s string) string {
+// weightType ...
+func (col applicationColumn) weightType() weightType { return weighted }
+
+// RegisterStyles ...
+func (col applicationColumn) RegisterStyles(theme theme.Theme) {
+	cfmt.RegisterStyle(col.name(), func(s string) string {
 		return cfmt.Sprintf("{{%s}}::"+theme.ApplicationColor(), s)
 	})
 }
 
-// Formatter ...
-func (a applicationColumn) Formatter(_ source.Source, _ model.Event) string {
-	return "{{ § %-20.20s }}::" + a.Name()
+// Format ...
+func (col applicationColumn) Format(width uint, _ source.Source, _ model.Event) string {
+	return "{{ § " + formatStringOfWidth(width) + " }}::" + col.name()
 }
 
-// Renderer ...
-func (a applicationColumn) Renderer(_ config.Config, _ source.Source, event model.Event) []interface{} {
+// Render ...
+func (col applicationColumn) Render(_ config.Config, _ source.Source, event model.Event) []interface{} {
 	return []interface{}{string(event.ApplicationNameOrBlank())}
 }

@@ -12,12 +12,19 @@ import (
 type callerColumn struct{}
 
 // Name ...
-func (c callerColumn) Name() string {
-	return "caller"
+func (col callerColumn) name() string { return "caller" }
+
+// weight ...
+func (col callerColumn) weight() weight {
+	const columnWidth = 65
+	return columnWidth
 }
 
-// Register ...
-func (c callerColumn) Register(theme theme.Theme) {
+// weightType ...
+func (col callerColumn) weightType() weightType { return fixed }
+
+// RegisterStyles ...
+func (col callerColumn) RegisterStyles(theme theme.Theme) {
 	cfmt.RegisterStyle("Class", func(s string) string {
 		return cfmt.Sprintf("{{%s}}::bg"+theme.CallerBgColor()+"|"+theme.ClassColor(), s)
 	})
@@ -35,13 +42,13 @@ func (c callerColumn) Register(theme theme.Theme) {
 	})
 }
 
-// Formatter ...
-func (c callerColumn) Formatter(_ source.Source, _ model.Event) string {
-	return "{{ ☎︎ %s}}::Class{{/}}::MethodDelimiter{{%s}}::Method{{#}}::LineNumberDelimiter{{%s }}::LineNumber "
+// Format ...
+func (col callerColumn) Format(_ uint, _ source.Source, _ model.Event) string {
+	return "{{ ☎︎ %s}}::Class{{∕}}::MethodDelimiter{{%s}}::Method{{#}}::LineNumberDelimiter{{%s }}::LineNumber "
 }
 
-// Renderer ...
-func (c callerColumn) Renderer(_ config.Config, _ source.Source, event model.Event) []interface{} {
+// Render ...
+func (col callerColumn) Render(_ config.Config, _ source.Source, event model.Event) []interface{} {
 	const maxClassNameWidth = 30
 	const maxWidth = 60
 

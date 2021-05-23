@@ -13,27 +13,34 @@ import (
 type levelColumn struct{}
 
 // Name ...
-func (l levelColumn) Name() string {
-	return "level"
+func (col levelColumn) name() string { return "level" }
+
+// weight ...
+func (col levelColumn) weight() weight {
+	const columnWidth = 4
+	return columnWidth
 }
 
-// Register ...
-func (l levelColumn) Register(theme theme.Theme) {
+// weightType ...
+func (col levelColumn) weightType() weightType { return fixed }
+
+// RegisterStyles ...
+func (col levelColumn) RegisterStyles(theme theme.Theme) {
 	for _, lvl := range level.Levels {
 		bgColor := theme.LevelColor(lvl)
 		fgColor := tty.Contrast(bgColor)
-		cfmt.RegisterStyle(l.Name()+string(lvl), func(s string) string {
+		cfmt.RegisterStyle(col.name()+string(lvl), func(s string) string {
 			return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+fgColor, s)
 		})
 	}
 }
 
-// Formatter ...
-func (l levelColumn) Formatter(_ source.Source, event model.Event) string {
-	return "{{ %1.1s }}::" + l.Name() + string(event.Level)
+// Format ...
+func (col levelColumn) Format(_ uint, _ source.Source, event model.Event) string {
+	return "{{ %1.1s }}::" + col.name() + string(event.Level)
 }
 
-// Renderer ...
-func (l levelColumn) Renderer(_ config.Config, _ source.Source, event model.Event) []interface{} {
+// Render ...
+func (col levelColumn) Render(_ config.Config, _ source.Source, event model.Event) []interface{} {
 	return []interface{}{string(event.Level)}
 }

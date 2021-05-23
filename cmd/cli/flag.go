@@ -39,57 +39,57 @@ func sinkFlag() (interface{}, error) {
 	switch cli.OutputFormat {
 	case "pretty":
 		return pretty.New(config.Config{
-			Wrap:        cli.Wrap,
-			Width:       cli.Width,
-			MultiLine:   cli.MultiLine,
-			Theme:       themeFlag(),
+			AutoSize:    cli.AutoSize,
 			ClearScreen: cli.ClearScreen,
-			ShowSigils:  cli.Sigil,
 			Columns:     columns,
-			TimeFormat:  timeFormatFlag(),
+			MultiLine:   cli.MultiLine,
+			ShowSigils:  cli.Sigil,
+			Theme:       theme.Registry[cli.Theme],
+			TimeFormat:  string(cli.TimeFormat),
+			Width:       cli.Width,
+			Wrap:        cli.Wrap,
 		}), nil
 	default:
 		return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
 	}
 }
 
-func timeFormatFlag() string {
-	var timeFormat = cli.TimeFormat
-	switch strings.ToLower(timeFormat) {
-	case "c":
-		timeFormat = time.ANSIC
-	case "unix":
-		timeFormat = time.UnixDate
-	case "ruby":
-		timeFormat = time.RubyDate
-	case "rfc822":
-		timeFormat = time.RFC822
-	case "rfc822-utc":
-		timeFormat = time.RFC822Z
-	case "rfc850":
-		timeFormat = time.RFC850
-	case "rfc1123":
-		timeFormat = time.RFC1123
-	case "rfc1123-utc":
-		timeFormat = time.RFC1123Z
-	case "rfc3339", "iso8601":
-		timeFormat = time.RFC3339
-	case "rfc3339-nanos", "iso8601-nanos":
-		timeFormat = time.RFC3339Nano
-	case "kitchen":
-		timeFormat = time.Kitchen
-	case "stamp":
-		timeFormat = time.Stamp
-	case "stamp-millis":
-		timeFormat = time.StampMilli
-	case "stamp-micros":
-		timeFormat = time.StampMicro
-	case "stamp-nanos":
-		timeFormat = time.StampNano
-	}
-	return timeFormat
-}
+type timeFormat string
 
-func themeFlag() theme.Theme {
-	return theme.Registry[cli.Theme]
+// BeforeApply ...
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (t *timeFormat) BeforeApply() error {
+	switch strings.ToLower(string(*t)) {
+	case "c":
+		*t = time.ANSIC
+	case "unix":
+		*t = time.UnixDate
+	case "ruby":
+		*t = time.RubyDate
+	case "rfc822":
+		*t = time.RFC822
+	case "rfc822-utc":
+		*t = time.RFC822Z
+	case "rfc850":
+		*t = time.RFC850
+	case "rfc1123":
+		*t = time.RFC1123
+	case "rfc1123-utc":
+		*t = time.RFC1123Z
+	case "rfc3339", "iso8601":
+		*t = time.RFC3339
+	case "rfc3339-nanos", "iso8601-nanos":
+		*t = time.RFC3339Nano
+	case "kitchen":
+		*t = time.Kitchen
+	case "stamp":
+		*t = time.Stamp
+	case "stamp-millis":
+		*t = time.StampMilli
+	case "stamp-micros":
+		*t = time.StampMicro
+	case "stamp-nanos":
+		*t = time.StampNano
+	}
+	return nil
 }

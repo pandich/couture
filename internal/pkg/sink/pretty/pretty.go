@@ -10,8 +10,10 @@ import (
 	"couture/internal/pkg/tty"
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
-	"github.com/muesli/termenv"
 	"go.uber.org/ratelimit"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // Name ...
@@ -22,11 +24,12 @@ const Name = "pretty"
 
 // prettySink provides render output.
 type prettySink struct {
-	terminalWidth int
+	terminalWidth uint
 	palette       chan string
 	columnOrder   []string
 	config        config.Config
 	printer       chan string
+	columnWidths  map[string]uint
 }
 
 // New provides a configured prettySink sink.
@@ -36,14 +39,20 @@ func New(cfg config.Config) *sink.Sink {
 	}
 	column.ByName.Init(cfg.Theme)
 	cols := append([]string{"source"}, cfg.Columns...)
-	var snk sink.Sink = &prettySink{
-		terminalWidth: cfg.WrapWidth(),
+	pretty := &prettySink{
+		terminalWidth: cfg.EffectiveTerminalWidth(),
 		palette:       tty.NewColorCycle(cfg.Theme.SourceColors),
 		columnOrder:   cols,
 		config:        cfg,
 		printer:       newPrinter(),
 	}
+	pretty.updateColumnWidths()
+	var snk sink.Sink = pretty
 	return &snk
+}
+
+func (snk *prettySink) updateColumnWidths() {
+	snk.columnWidths = column.Widths(uint(tty.TerminalWidth()), snk.columnOrder)
 }
 
 // Init ...
@@ -51,9 +60,21 @@ func (snk *prettySink) Init(sources []source.Source) {
 	for _, src := range sources {
 		column.RegisterSourceStyle(src, <-snk.palette)
 	}
-	if snk.config.ClearScreen {
-		termenv.ClearScreen()
+	if snk.config.AutoSize {
+		resizeChan := make(chan os.Signal, 1)
+		signal.Notify(resizeChan, syscall.SIGWINCH)
+		go func() {
+			for {
+				<-resizeChan
+				snk.updateColumnWidths()
+			}
+		}()
 	}
+	snk.updateColumnWidths()
+	if snk.config.ClearScreen {
+		snk.printer <- tty.ClearScreenSequence
+	}
+	snk.printer <- tty.HomeCursorSequence
 }
 
 // Accept ...
@@ -68,15 +89,17 @@ func (snk *prettySink) render(src source.Source, event model.Event) string {
 	var values []interface{}
 	for _, name := range snk.columnOrder {
 		col := column.ByName[name]
-		format += col.Formatter(src, event)
-		format += tty.ResetSequence
-		values = append(values, col.Renderer(snk.config, src, event)...)
+		format += col.Format(snk.columnWidths[name], src, event)
+		values = append(values, col.Render(snk.config, src, event)...)
 	}
+	format += tty.ResetSequence
 
 	// render
-	line := cfmt.Sprintf(format, values...)
-	wrapped := tty.Wrap(line, snk.terminalWidth)
-	return wrapped
+	var line = cfmt.Sprintf(format, values...)
+	if snk.config.Wrap {
+		line = tty.Wrap(line, snk.config.EffectiveTerminalWidth())
+	}
+	return line
 }
 
 func newPrinter() chan string {

@@ -11,23 +11,30 @@ import (
 type threadColumn struct{}
 
 // Name ...
-func (t threadColumn) Name() string {
-	return "thread"
+func (col threadColumn) name() string { return "thread" }
+
+// weight ...
+func (col threadColumn) weight() weight {
+	const columnWeight = 20
+	return columnWeight
 }
 
-// Register ...
-func (t threadColumn) Register(theme theme.Theme) {
-	cfmt.RegisterStyle(t.Name(), func(s string) string {
+// weightType ...
+func (col threadColumn) weightType() weightType { return weighted }
+
+// RegisterStyles ...
+func (col threadColumn) RegisterStyles(theme theme.Theme) {
+	cfmt.RegisterStyle(col.name(), func(s string) string {
 		return cfmt.Sprintf("{{%s}}::"+theme.ThreadColor(), s)
 	})
 }
 
-// Formatter ...
-func (t threadColumn) Formatter(_ source.Source, _ model.Event) string {
-	return "{{ ⇶ %-15.15s }}::" + t.Name()
+// Format ...
+func (col threadColumn) Format(width uint, _ source.Source, _ model.Event) string {
+	return "{{ ⇶ " + formatStringOfWidth(width) + " }}::" + col.name()
 }
 
-// Renderer ...
-func (t threadColumn) Renderer(_ config.Config, _ source.Source, event model.Event) []interface{} {
+// Render ...
+func (col threadColumn) Render(_ config.Config, _ source.Source, event model.Event) []interface{} {
 	return []interface{}{string(event.ThreadNameOrBlank())}
 }
