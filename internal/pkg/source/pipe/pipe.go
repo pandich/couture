@@ -24,11 +24,9 @@ func Start(
 		for running() {
 			for scanner.Scan() {
 				var event model.Event
-				// TODO how to deal with un-parsable strings -- this applies to billing info etc.
-				//		this will impact CloudWatch, too. Not all of its events are structured.
-				if err := json.Unmarshal([]byte(scanner.Text()), &event); err != nil {
-					callback(event)
-				}
+				// TODO we should be pushing raw strings to the callback and do event JSON parsing centrally
+				_ = json.Unmarshal([]byte(scanner.Text()), &event)
+				callback(event)
 			}
 		}
 	}

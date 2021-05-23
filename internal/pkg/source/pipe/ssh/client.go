@@ -12,7 +12,6 @@ import (
 
 // TODO rsa key configurable
 // TODO ability to use PEM key
-// TODO figure out how this works (if at all) with ssh-agent
 
 func getClient(sourceURL model.SourceURL) (*goph.Client, error) {
 	auth, err := getAuth(sourceURL)
