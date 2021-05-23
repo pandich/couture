@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.1.6
 	github.com/aws/aws-sdk-go-v2/service/cloudformation v1.3.2
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.2.2
+	github.com/bnkamalesh/errors v0.3.5
 	github.com/brianvoe/gofakeit/v6 v6.4.1
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect

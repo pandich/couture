@@ -5,7 +5,7 @@ import (
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"encoding/json"
-	"errors"
+	"github.com/bnkamalesh/errors"
 	errors2 "github.com/pkg/errors"
 	"gopkg.in/olivere/elastic.v3"
 	"io"

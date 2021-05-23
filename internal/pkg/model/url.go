@@ -1,9 +1,9 @@
 package model
 
 import (
-	"errors"
 	"fmt"
 	"github.com/araddon/dateparse"
+	"github.com/bnkamalesh/errors"
 	errors2 "github.com/pkg/errors"
 	"net"
 	"net/url"

@@ -5,7 +5,7 @@ import (
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
-	"errors"
+	"github.com/bnkamalesh/errors"
 	errors2 "github.com/pkg/errors"
 	"io"
 	"sync"
