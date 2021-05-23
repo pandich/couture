@@ -8,30 +8,29 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
-type applicationColumn struct{}
-
-// Name ...
-func (col applicationColumn) name() string { return "application" }
-
-// weight ...
-func (col applicationColumn) weight() weight {
-	const columnWeight = 25
-	return columnWeight
+type applicationColumn struct {
+	baseColumn
 }
 
-// weightType ...
-func (col applicationColumn) weightType() weightType { return weighted }
+func newApplicationColumn() applicationColumn {
+	const weight = 25
+	return applicationColumn{baseColumn{
+		columnName:  "application",
+		weightType:  weighted,
+		widthWeight: weight,
+	}}
+}
 
 // RegisterStyles ...
 func (col applicationColumn) RegisterStyles(theme theme.Theme) {
 	cfmt.RegisterStyle(col.name(), func(s string) string {
-		return cfmt.Sprintf("{{%s}}::"+theme.ApplicationColor(), s)
+		return cfmt.Sprintf("{{ § %s }}::"+theme.ApplicationColor(), s)
 	})
 }
 
 // Format ...
 func (col applicationColumn) Format(width uint, _ source.Source, _ model.Event) string {
-	return "{{ § " + formatStringOfWidth(width) + " }}::" + col.name()
+	return formatColumn(col, width)
 }
 
 // Render ...

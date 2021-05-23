@@ -7,26 +7,25 @@ import (
 	"couture/internal/pkg/source"
 )
 
-type sourceColumn struct{}
-
-// Name ...
-func (col sourceColumn) name() string { return "source" }
-
-// weight ...
-func (col sourceColumn) weight() weight {
-	const columnWeight = 40
-	return columnWeight
+type sourceColumn struct {
+	baseColumn
 }
 
-// weightType ...
-func (col sourceColumn) weightType() weightType { return weighted }
+func newSourceColumn() sourceColumn {
+	const weight = 40
+	return sourceColumn{baseColumn{
+		columnName:  "source",
+		weightType:  weighted,
+		widthWeight: weight,
+	}}
+}
 
 // RegisterStyles ...
 func (col sourceColumn) RegisterStyles(_ theme.Theme) {}
 
 // Format ...
 func (col sourceColumn) Format(width uint, src source.Source, _ model.Event) string {
-	return "{{ " + string(src.Sigil()) + " " + formatStringOfWidth(width) + " }}::" + src.ID()
+	return formatStyleOfWidth(src.ID(), width)
 }
 
 // Render ...

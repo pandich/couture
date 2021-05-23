@@ -9,19 +9,18 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
-type callerColumn struct{}
-
-// Name ...
-func (col callerColumn) name() string { return "caller" }
-
-// weight ...
-func (col callerColumn) weight() weight {
-	const columnWidth = 65
-	return columnWidth
+type callerColumn struct {
+	baseColumn
 }
 
-// weightType ...
-func (col callerColumn) weightType() weightType { return fixed }
+func newCallerColumn() callerColumn {
+	const width = 65
+	return callerColumn{baseColumn{
+		columnName:  "caller",
+		weightType:  fixed,
+		widthWeight: width,
+	}}
+}
 
 // RegisterStyles ...
 func (col callerColumn) RegisterStyles(theme theme.Theme) {

@@ -9,27 +9,28 @@ import (
 	"time"
 )
 
-type timestampColumn struct{}
+type timestampColumn struct {
+	baseColumn
+}
 
-// Name ...
-func (col timestampColumn) name() string { return "timestamp" }
-
-// weight ...
-func (col timestampColumn) weight() weight { return 0 }
-
-// weightType ...
-func (col timestampColumn) weightType() weightType { return filling }
+func newTimestampColumn() timestampColumn {
+	return timestampColumn{baseColumn{
+		columnName:  "timestamp",
+		weightType:  filling,
+		widthWeight: 0,
+	}}
+}
 
 // RegisterStyles ...
 func (col timestampColumn) RegisterStyles(theme theme.Theme) {
 	cfmt.RegisterStyle(col.name(), func(s string) string {
-		return cfmt.Sprintf("{{%s}}::"+theme.TimestampColor(), s)
+		return cfmt.Sprintf("{{ ⌚ %s }}::"+theme.TimestampColor(), s)
 	})
 }
 
 // Format ...
-func (col timestampColumn) Format(_ uint, _ source.Source, _ model.Event) string {
-	return "{{ ⌚ %s }}::" + col.name()
+func (col timestampColumn) Format(width uint, _ source.Source, _ model.Event) string {
+	return formatColumn(col, width)
 }
 
 // Render ...

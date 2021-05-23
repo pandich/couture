@@ -56,9 +56,9 @@ func sinkFlag() (interface{}, error) {
 
 type timeFormat string
 
-// BeforeApply ...
+// AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (t *timeFormat) BeforeApply() error {
+func (t *timeFormat) AfterApply() error {
 	switch strings.ToLower(string(*t)) {
 	case "c":
 		*t = time.ANSIC

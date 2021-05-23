@@ -38,5 +38,7 @@ func (registry registry) Init(theme theme.Theme) {
 func RegisterSourceStyle(src source.Source, styleColor string) {
 	bgColor := styleColor
 	fgColor := tty.Contrast(bgColor)
-	cfmt.RegisterStyle(src.ID(), func(s string) string { return cfmt.Sprintf("{{%s}}::"+fgColor+"|bg"+bgColor, s) })
+	cfmt.RegisterStyle(src.ID(), func(s string) string {
+		return cfmt.Sprintf("{{"+string(src.Sigil())+" %s }}::"+fgColor+"|bg"+bgColor, s)
+	})
 }

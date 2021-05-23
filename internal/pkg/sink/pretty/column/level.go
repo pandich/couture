@@ -10,19 +10,18 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
-type levelColumn struct{}
-
-// Name ...
-func (col levelColumn) name() string { return "level" }
-
-// weight ...
-func (col levelColumn) weight() weight {
-	const columnWidth = 4
-	return columnWidth
+type levelColumn struct {
+	baseColumn
 }
 
-// weightType ...
-func (col levelColumn) weightType() weightType { return fixed }
+func newLevelColumn() levelColumn {
+	const width = 4
+	return levelColumn{baseColumn{
+		columnName:  "level",
+		weightType:  fixed,
+		widthWeight: width,
+	}}
+}
 
 // RegisterStyles ...
 func (col levelColumn) RegisterStyles(theme theme.Theme) {
@@ -30,17 +29,17 @@ func (col levelColumn) RegisterStyles(theme theme.Theme) {
 		bgColor := theme.LevelColor(lvl)
 		fgColor := tty.Contrast(bgColor)
 		cfmt.RegisterStyle(col.name()+string(lvl), func(s string) string {
-			return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+fgColor, s)
+			return cfmt.Sprintf("{{ %1.1s }}::bg"+bgColor+"|"+fgColor, s)
 		})
 	}
 }
 
 // Format ...
 func (col levelColumn) Format(_ uint, _ source.Source, event model.Event) string {
-	return "{{ %1.1s }}::" + col.name() + string(event.Level)
+	return formatStyleOfWidth(col.name()+string(event.Level), uint(col.weight()))
 }
 
 // Render ...
 func (col levelColumn) Render(_ config.Config, _ source.Source, event model.Event) []interface{} {
-	return []interface{}{string(event.Level)}
+	return []interface{}{string(event.Level[0])}
 }

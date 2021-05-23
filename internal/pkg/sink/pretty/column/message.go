@@ -9,16 +9,17 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
-type messageColumn struct{}
+type messageColumn struct {
+	baseColumn
+}
 
-// Name ...
-func (col messageColumn) name() string { return "message" }
-
-// weight ...
-func (col messageColumn) weight() weight { return 0 }
-
-// weightType ...
-func (col messageColumn) weightType() weightType { return filling }
+func newMessageColumn() messageColumn {
+	return messageColumn{baseColumn{
+		columnName:  "message",
+		weightType:  filling,
+		widthWeight: 0,
+	}}
+}
 
 // RegisterStyles ...
 func (col messageColumn) RegisterStyles(theme theme.Theme) {

@@ -8,16 +8,17 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
-type stackTraceColumn struct{}
+type stackTraceColumn struct {
+	baseColumn
+}
 
-// Name ...
-func (col stackTraceColumn) name() string { return "error" }
-
-// weight ...
-func (col stackTraceColumn) weight() weight { return 0 }
-
-// weightType ...
-func (col stackTraceColumn) weightType() weightType { return filling }
+func newStackTraceColumn() stackTraceColumn {
+	return stackTraceColumn{baseColumn{
+		columnName:  "error",
+		weightType:  filling,
+		widthWeight: 0,
+	}}
+}
 
 // RegisterStyles ...
 func (col stackTraceColumn) RegisterStyles(theme theme.Theme) {

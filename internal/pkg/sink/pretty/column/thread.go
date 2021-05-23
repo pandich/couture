@@ -8,30 +8,29 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
-type threadColumn struct{}
-
-// Name ...
-func (col threadColumn) name() string { return "thread" }
-
-// weight ...
-func (col threadColumn) weight() weight {
-	const columnWeight = 20
-	return columnWeight
+type threadColumn struct {
+	baseColumn
 }
 
-// weightType ...
-func (col threadColumn) weightType() weightType { return weighted }
+func newThreadColumn() threadColumn {
+	const weight = 20
+	return threadColumn{baseColumn{
+		columnName:  "thread",
+		weightType:  weighted,
+		widthWeight: weight,
+	}}
+}
 
 // RegisterStyles ...
 func (col threadColumn) RegisterStyles(theme theme.Theme) {
 	cfmt.RegisterStyle(col.name(), func(s string) string {
-		return cfmt.Sprintf("{{%s}}::"+theme.ThreadColor(), s)
+		return cfmt.Sprintf("{{ ⇶ %s }}::"+theme.ThreadColor(), s)
 	})
 }
 
 // Format ...
 func (col threadColumn) Format(width uint, _ source.Source, _ model.Event) string {
-	return "{{ ⇶ " + formatStringOfWidth(width) + " }}::" + col.name()
+	return formatColumn(col, width)
 }
 
 // Render ...
