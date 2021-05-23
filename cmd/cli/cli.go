@@ -59,7 +59,10 @@ func Run() *model.Manager {
 	parser.FatalIfErrorf(err)
 
 	// expand aliases, etc.
-	_, err = parser.Parse(evaluatedOsArgs())
+	args, err := evaluatedArgs()
+	parser.FatalIfErrorf(err)
+
+	_, err = parser.Parse(args)
 	parser.FatalIfErrorf(err)
 
 	// get cli managerOptionFlags and args
