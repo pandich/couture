@@ -26,7 +26,6 @@ var cli struct {
 	Sigil        bool   `group:"Display Options" help:"Display column prefix sigils to help denote them." negatable:"true" default:"true"`
 	ClearScreen  bool   `group:"Display Options" help:"Clear the screen prior to displaying events." negatable:"true" default:"true"`
 	Plain        bool   `group:"Display Options" help:"Clear the screen prior to displaying events."`
-	AutoSize     bool   `group:"Display Options" help:"Dynamically resize column widths based upon available space." negatable:"true" default:"false"`
 
 	Column     []string   `group:"Content Options" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}"`
 	TimeFormat timeFormat `group:"Content Options" help:"Go-standard time format string or a named format: ${timeFormatNames}." short:"t" default:"stamp"`

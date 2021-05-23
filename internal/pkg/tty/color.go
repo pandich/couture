@@ -11,24 +11,11 @@ import (
 
 // NewColorCycle ...
 func NewColorCycle(generator gamut.ColorGenerator) chan string {
-	const cycleLength = 50
-	rawColors, err := gamut.Generate(cycleLength, generator)
-	if err != nil {
-		panic(errors2.Wrap(err, "could not generate source color gamut"))
-	}
-	var colors []string
-	for _, rawColor := range rawColors {
-		c, _ := colorful.MakeColor(rawColor)
-		colors = append(colors, c.Hex())
-	}
-
-	rand.Seed(time.Now().Unix())
-	rand.Shuffle(len(colors), func(i, j int) { colors[i], colors[j] = colors[j], colors[i] })
-
+	colors := newColorPool(generator)
 	cycle := make(chan string)
 	go func() {
-		var i = 0
 		defer close(cycle)
+		var i = 0
 		for {
 			cycle <- colors[i]
 			i++
@@ -92,4 +79,21 @@ func Tinted(baseHex string, hex string) string {
 func hexColorful(hex string) colorful.Color {
 	cl, _ := colorful.MakeColor(gamut.Hex(hex))
 	return cl
+}
+
+func newColorPool(generator gamut.ColorGenerator) []string {
+	const cycleLength = 50
+	rawColors, err := gamut.Generate(cycleLength, generator)
+	if err != nil {
+		panic(errors2.Wrap(err, "could not generate source color gamut"))
+	}
+	var colors []string
+	for _, rawColor := range rawColors {
+		c, _ := colorful.MakeColor(rawColor)
+		colors = append(colors, c.Hex())
+	}
+
+	rand.Seed(time.Now().Unix())
+	rand.Shuffle(len(colors), func(i, j int) { colors[i], colors[j] = colors[j], colors[i] })
+	return colors
 }

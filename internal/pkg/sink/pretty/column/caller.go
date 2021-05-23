@@ -25,7 +25,7 @@ func newCallerColumn() callerColumn {
 // RegisterStyles ...
 func (col callerColumn) RegisterStyles(theme theme.Theme) {
 	cfmt.RegisterStyle("Class", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+theme.CallerBgColor()+"|"+theme.ClassColor(), s)
+		return cfmt.Sprintf("{{ ☎︎ %s}}::bg"+theme.CallerBgColor()+"|"+theme.ClassColor(), s)
 	})
 	cfmt.RegisterStyle("MethodDelimiter", func(s string) string {
 		return cfmt.Sprintf("{{%s}}::bg"+theme.CallerBgColor()+"|"+theme.MethodDelimiterColor(), s)
@@ -37,13 +37,15 @@ func (col callerColumn) RegisterStyles(theme theme.Theme) {
 		return cfmt.Sprintf("{{%s}}::bg"+theme.CallerBgColor()+"|"+theme.LineNumberDelimiterColor(), s)
 	})
 	cfmt.RegisterStyle("LineNumber", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+theme.CallerBgColor()+"|"+theme.LineNumberColor(), s)
+		return cfmt.Sprintf("{{%s }}::bg"+theme.CallerBgColor()+"|"+theme.LineNumberColor(), s)
 	})
 }
 
 // Format ...
 func (col callerColumn) Format(_ uint, _ source.Source, _ model.Event) string {
-	return "{{ ☎︎ %s}}::Class{{∕}}::MethodDelimiter{{%s}}::Method{{#}}::LineNumberDelimiter{{%s }}::LineNumber "
+	return "{{%s}}::Class" +
+		"{{∕}}::MethodDelimiter" + "{{%s}}::Method" +
+		"{{#}}::LineNumberDelimiter" + "{{%s}}::LineNumber"
 }
 
 // Render ...

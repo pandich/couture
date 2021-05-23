@@ -2,9 +2,6 @@ package column
 
 import (
 	"couture/internal/pkg/sink/pretty/theme"
-	"couture/internal/pkg/source"
-	"couture/internal/pkg/tty"
-	"github.com/i582/cfmt/cmd/cfmt"
 )
 
 type registry map[string]column
@@ -32,13 +29,4 @@ func (registry registry) Init(theme theme.Theme) {
 	for _, col := range registry {
 		col.RegisterStyles(theme)
 	}
-}
-
-// RegisterSourceStyle ...
-func RegisterSourceStyle(src source.Source, styleColor string) {
-	bgColor := styleColor
-	fgColor := tty.Contrast(bgColor)
-	cfmt.RegisterStyle(src.ID(), func(s string) string {
-		return cfmt.Sprintf("{{"+string(src.Sigil())+" %s }}::"+fgColor+"|bg"+bgColor, s)
-	})
 }

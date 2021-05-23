@@ -66,6 +66,7 @@ func formatStringOfWidth(width uint) string {
 func formatStyleOfWidth(style string, width uint) string {
 	return "{{" + formatStringOfWidth(width) + "}}::" + style
 }
+
 func formatColumn(col column, width uint) string {
 	return formatStyleOfWidth(col.name(), width)
 }

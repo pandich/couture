@@ -7,7 +7,6 @@ import (
 
 // Config ...
 type Config struct {
-	AutoSize    bool
 	ClearScreen bool
 	Columns     []string
 	MultiLine   bool

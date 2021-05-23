@@ -39,7 +39,6 @@ func sinkFlag() (interface{}, error) {
 	switch cli.OutputFormat {
 	case "pretty":
 		return pretty.New(config.Config{
-			AutoSize:    cli.AutoSize,
 			ClearScreen: cli.ClearScreen,
 			Columns:     columns,
 			MultiLine:   cli.MultiLine,

@@ -29,10 +29,10 @@ const (
 
 // Registry ...
 var Registry = map[string]Theme{
-	BlackAndWhite: {BaseColor: White, SourceColors: gamut.PastelGenerator{}},
-	Prince:        {BaseColor: purpleRain, SourceColors: gamut.PastelGenerator{}},
-	Brougham:      {BaseColor: merlot, SourceColors: gamut.WarmGenerator{}},
-	Ocean:         {BaseColor: ocean, SourceColors: gamut.HappyGenerator{}},
+	BlackAndWhite: {BaseColor: White, SourceColors: tty.NewColorCycle(gamut.PastelGenerator{})},
+	Prince:        {BaseColor: purpleRain, SourceColors: tty.NewColorCycle(gamut.PastelGenerator{})},
+	Brougham:      {BaseColor: merlot, SourceColors: tty.NewColorCycle(gamut.WarmGenerator{})},
+	Ocean:         {BaseColor: ocean, SourceColors: tty.NewColorCycle(gamut.HappyGenerator{})},
 }
 
 // Names ...
@@ -47,7 +47,7 @@ func Names() []string {
 // Theme ...
 type Theme struct {
 	BaseColor    string
-	SourceColors gamut.ColorGenerator
+	SourceColors chan string
 }
 
 func (theme Theme) tinted(hex string) string {

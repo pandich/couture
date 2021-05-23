@@ -11,9 +11,6 @@ import (
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"go.uber.org/ratelimit"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 // Name ...
@@ -25,7 +22,6 @@ const Name = "pretty"
 // prettySink provides render output.
 type prettySink struct {
 	terminalWidth uint
-	palette       chan string
 	columnOrder   []string
 	config        config.Config
 	printer       chan string
@@ -41,7 +37,6 @@ func New(cfg config.Config) *sink.Sink {
 	cols := append([]string{"source"}, cfg.Columns...)
 	pretty := &prettySink{
 		terminalWidth: cfg.EffectiveTerminalWidth(),
-		palette:       tty.NewColorCycle(cfg.Theme.SourceColors),
 		columnOrder:   cols,
 		config:        cfg,
 		printer:       newPrinter(),
@@ -58,17 +53,7 @@ func (snk *prettySink) updateColumnWidths() {
 // Init ...
 func (snk *prettySink) Init(sources []source.Source) {
 	for _, src := range sources {
-		column.RegisterSourceStyle(src, <-snk.palette)
-	}
-	if snk.config.AutoSize {
-		resizeChan := make(chan os.Signal, 1)
-		signal.Notify(resizeChan, syscall.SIGWINCH)
-		go func() {
-			for {
-				<-resizeChan
-				snk.updateColumnWidths()
-			}
-		}()
+		column.RegisterSource(snk.config.Theme, src)
 	}
 	snk.updateColumnWidths()
 	if snk.config.ClearScreen {
