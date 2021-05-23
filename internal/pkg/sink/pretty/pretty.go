@@ -10,7 +10,6 @@ import (
 	"couture/internal/pkg/tty"
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
-	"go.uber.org/ratelimit"
 )
 
 // Name ...
@@ -88,19 +87,9 @@ func (snk *prettySink) render(src source.Source, event model.Event) string {
 }
 
 func newPrinter() chan string {
-	// TODO do we want to rate limit?
-	const ttyMaxEventsPerSecond = 200
-	var throttle ratelimit.Limiter
-	if tty.IsTTY() {
-		throttle = ratelimit.New(ttyMaxEventsPerSecond)
-	} else {
-		throttle = ratelimit.NewUnlimited()
-	}
-
 	printer := make(chan string)
 	go func() {
 		for message := range printer {
-			throttle.Take()
 			fmt.Println(message)
 		}
 	}()
