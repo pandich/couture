@@ -59,7 +59,7 @@ func Run() *model.Manager {
 	parser.FatalIfErrorf(err)
 
 	// expand aliases, etc.
-	args, err := evaluatedArgs()
+	args, err := expandAliases()
 	parser.FatalIfErrorf(err)
 
 	_, err = parser.Parse(args)
