@@ -98,3 +98,16 @@ func description() string {
 	}
 	return strings.Join(lines, "\n")
 }
+
+func managerOptionFlags() ([]interface{}, error) {
+	snk, err := sinkFlag()
+	if err != nil {
+		return nil, err
+	}
+	return []interface{}{
+		manager.LogLevelOption(cli.Level),
+		manager.FilterOption(cli.Include, cli.Exclude),
+		manager.SinceOption(cli.Since),
+		snk,
+	}, nil
+}
