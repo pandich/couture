@@ -68,3 +68,7 @@ lint: golangci-lint neat
 	@golangci-lint run
 metrics: scc
 	@scc --wide --by-file --no-gen --sort lines $(SOURCE_DIRS)
+
+# Utility
+setup-env: golangci-lint goreleaser scc gocmt
+	@git config --local core.hooksPath .githooks
