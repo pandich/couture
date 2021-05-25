@@ -8,16 +8,18 @@ import (
 	"regexp"
 )
 
+// TODO make it not lame https://handlebarsjs.com/
+
 var simpleArgs = regexp.MustCompile(`@(?P<name>\w+)`)
 
 func expandAliases() ([]string, error) {
 	args := os.Args[1:]
 	for i := range args {
 		var arg = args[i]
-		arg = expandSchemeShortcut(arg)
-		aliasURL, err := url.Parse(arg)
-		if err == nil && aliasURL.Scheme == "alias" {
-			value, err := expandAlias(aliasURL)
+		arg = expandSchemeShortForm(arg)
+		u, err := url.Parse(arg)
+		if err == nil && u.Scheme == "alias" {
+			value, err := expandAlias(u)
 			if err != nil {
 				return nil, err
 			}
@@ -27,13 +29,6 @@ func expandAliases() ([]string, error) {
 		}
 	}
 	return args, nil
-}
-
-func expandSchemeShortcut(arg string) string {
-	if len(arg) > 0 && arg[0] == '@' {
-		arg = "alias://" + arg[1:]
-	}
-	return arg
 }
 
 func expandAlias(aliasURL *url.URL) (string, error) {
@@ -51,4 +46,11 @@ func expandAlias(aliasURL *url.URL) (string, error) {
 	)
 
 	return raymond.Render(alias, aliasURL.Query())
+}
+
+func expandSchemeShortForm(arg string) string {
+	if len(arg) > 0 && arg[0] == '@' {
+		arg = "alias://" + arg[1:]
+	}
+	return arg
 }
