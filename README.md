@@ -28,10 +28,7 @@ file which is consulted prior to consulting the one in `$HOME`.
 
 Available settings:
 
-| Field | Description | Example |
-| ----: | :---------- | :------ |
-| `aliases` | Maps short alias names to full source URLs | `aliases:{work: 'es+http://your-server:9200/some_index/_search'}` |
-| `paginator` | The paginator use. Can also be set via the `COUTURE_PAGER` environment variable. | `paginator: less` |
+_describe alias template behavior_
 
 ---
 
