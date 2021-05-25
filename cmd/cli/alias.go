@@ -8,10 +8,6 @@ import (
 	"regexp"
 )
 
-// TODO make it not lame https://handlebarsjs.com/
-
-var simpleArgs = regexp.MustCompile(`@(?P<name>\w+)`)
-
 func expandAliases() ([]string, error) {
 	args := os.Args[1:]
 	for i := range args {
@@ -32,6 +28,8 @@ func expandAliases() ([]string, error) {
 }
 
 func expandAlias(aliasURL *url.URL) (string, error) {
+	simpleArgs := regexp.MustCompile(`@(?P<name>\w+)`)
+
 	aliases := aliasConfig()
 	alias, ok := aliases[aliasURL.Host]
 	if !ok {

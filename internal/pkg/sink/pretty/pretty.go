@@ -32,6 +32,9 @@ func New(cfg config.Config) *sink.Sink {
 	if !tty.IsTTY() || cfg.Theme.BaseColor == theme.White {
 		cfmt.DisableColors()
 	}
+	if len(cfg.Columns) == 0 {
+		cfg.Columns = column.DefaultColumns
+	}
 	column.ByName.Init(cfg.Theme)
 	cols := append([]string{"source"}, cfg.Columns...)
 	pretty := &prettySink{

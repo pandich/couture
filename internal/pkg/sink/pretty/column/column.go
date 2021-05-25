@@ -8,6 +8,17 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
+// DefaultColumns ...
+var DefaultColumns = []string{
+	"timestamp",
+	"application",
+	"thread",
+	"caller",
+	"level",
+	"message",
+	"error",
+}
+
 var columns = []column{
 	newSourceColumn(),
 	newTimestampColumn(),

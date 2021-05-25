@@ -3,13 +3,14 @@ package cli
 import (
 	"couture/internal/pkg/couture"
 	"couture/internal/pkg/manager"
-	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/sink/pretty"
+	"couture/internal/pkg/sink/pretty/column"
+	"couture/internal/pkg/sink/pretty/theme"
 	"github.com/alecthomas/kong"
 	"net/url"
 	"reflect"
 	"regexp"
-	"runtime"
 	"strings"
 	"time"
 )
@@ -38,47 +39,42 @@ var cli struct {
 	Source []url.URL `arg:"true" help:"Log event source URLs." name:"source_url" required:"true"`
 }
 
-// Run ...
-func Run() *model.Manager {
-	parser := kong.Must(&cli,
-		kong.Name(couture.Name),
-		kong.Description(description()),
-		kong.UsageOnError(),
-		kong.ConfigureHelp(kong.HelpOptions{Summary: false, Tree: true}),
-		kong.TypeMapper(reflect.TypeOf(regexp.Regexp{}), regexpDecoder()),
-		kong.TypeMapper(reflect.TypeOf(time.Time{}), timeLikeDecoder()),
-		parserVars(),
-	)
-
-	if runtime.GOOS == "windows" {
-		parser.Fatalf("unsupported operating system: %s", runtime.GOOS)
-	}
-
-	// load config
-	err := loadConfig()
-	parser.FatalIfErrorf(err)
-
-	// expand aliases, etc.
-	args, err := expandAliases()
-	parser.FatalIfErrorf(err)
-
-	_, err = parser.Parse(args)
-	parser.FatalIfErrorf(err)
-
-	// get cli managerOptionFlags and args
-	mgrOptions, err := managerOptionFlags()
-	parser.FatalIfErrorf(err)
-	sources, err := sourceArgs()
-	parser.FatalIfErrorf(err)
-
-	// create the manager and start it
-	mgr, err := manager.New(append(mgrOptions, sources...)...)
-	parser.FatalIfErrorf(err)
-
-	err = (*mgr).Start()
-	parser.FatalIfErrorf(err)
-	return mgr
-}
+var parser = kong.Must(&cli,
+	kong.Name(couture.Name),
+	kong.Description(description()),
+	kong.UsageOnError(),
+	kong.ConfigureHelp(kong.HelpOptions{Summary: false, Tree: true}),
+	kong.TypeMapper(reflect.TypeOf(regexp.Regexp{}), regexpDecoder()),
+	kong.TypeMapper(reflect.TypeOf(time.Time{}), timeLikeDecoder()),
+	kong.Vars{
+		"timeFormatNames": strings.Join([]string{
+			"c",
+			"iso8601",
+			"iso8601-nanos",
+			"kitchen",
+			"rfc1123",
+			"rfc1123-utc",
+			"rfc3339",
+			"rfc3339-nanos",
+			"rfc822",
+			"rfc822-utc",
+			"rfc850",
+			"ruby",
+			"stamp",
+			"stamp-micros",
+			"stamp-millis",
+			"stamp-nanos",
+			"unix",
+		}, ","),
+		"columnNames":         strings.Join(column.Names(), ","),
+		"themeNames":          strings.Join(theme.Names(), ","),
+		"defaultTheme":        theme.Prince,
+		"logLevels":           strings.Join(level.SimpleNames(), ","),
+		"defaultLogLevel":     level.Info.SimpleName(),
+		"outputFormats":       strings.Join([]string{pretty.Name}, ","),
+		"defaultOutputFormat": pretty.Name,
+	},
+)
 
 func description() string {
 	var lines = []string{
@@ -97,17 +93,4 @@ func description() string {
 		}
 	}
 	return strings.Join(lines, "\n")
-}
-
-func managerOptionFlags() ([]interface{}, error) {
-	snk, err := sinkFlag()
-	if err != nil {
-		return nil, err
-	}
-	return []interface{}{
-		manager.LogLevelOption(cli.Level),
-		manager.FilterOption(cli.Include, cli.Exclude),
-		manager.SinceOption(cli.Since),
-		snk,
-	}, nil
 }
