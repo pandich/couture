@@ -5,24 +5,24 @@
 class Couture < Formula
   desc "Allows for tailing multiple event sources."
   homepage ""
-  version "0.0.6"
+  version "0.0.7"
   bottle :unneeded
 
   if OS.mac? && Hardware::CPU.intel?
-    url "https://github.com/gaggle-net/couture/releases/download/v0.0.6/couture_0.0.6_Darwin_x86_64.tar.gz", :using => GitHubPrivateRepositoryReleaseDownloadStrategy
-    sha256 "dee619ac15903eab55952d921be9f830d3702ff2640fbbbdb3d7032c5f3b280a"
+    url "https://github.com/gaggle-net/couture/releases/download/v0.0.7/couture_0.0.7_Darwin_x86_64.tar.gz", :using => GitHubPrivateRepositoryReleaseDownloadStrategy
+    sha256 "6dd2aeff594834574e7bcc5bd2210af900b69530862e3c66b621e96f0b174dad"
   end
   if OS.mac? && Hardware::CPU.arm?
-    url "https://github.com/gaggle-net/couture/releases/download/v0.0.6/couture_0.0.6_Darwin_arm64.tar.gz", :using => GitHubPrivateRepositoryReleaseDownloadStrategy
-    sha256 "e4a797e78477a169015eb053c9d42b1d69f0a3e0b6a9ba8f01755f6fbf2e7e8f"
+    url "https://github.com/gaggle-net/couture/releases/download/v0.0.7/couture_0.0.7_Darwin_arm64.tar.gz", :using => GitHubPrivateRepositoryReleaseDownloadStrategy
+    sha256 "065353d29562bb563e0ca1bb2ad55d8bafc6bf213333b61c86ab154cb6173371"
   end
   if OS.linux? && Hardware::CPU.intel?
-    url "https://github.com/gaggle-net/couture/releases/download/v0.0.6/couture_0.0.6_Linux_x86_64.tar.gz", :using => GitHubPrivateRepositoryReleaseDownloadStrategy
-    sha256 "c707940b5ee2309da86f26b3a467ba342224e368dea4c44b1cb7d046fb17ba34"
+    url "https://github.com/gaggle-net/couture/releases/download/v0.0.7/couture_0.0.7_Linux_x86_64.tar.gz", :using => GitHubPrivateRepositoryReleaseDownloadStrategy
+    sha256 "ee5909f3fb4f3a5ea810a0e52681dba3b24037d5ba39ac1eb62d8a8384411514"
   end
   if OS.linux? && Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-    url "https://github.com/gaggle-net/couture/releases/download/v0.0.6/couture_0.0.6_Linux_arm64.tar.gz", :using => GitHubPrivateRepositoryReleaseDownloadStrategy
-    sha256 "0a339f2e0677f0e0cff83f21711d0878582788c87ed83b93a44b11e9e7731736"
+    url "https://github.com/gaggle-net/couture/releases/download/v0.0.7/couture_0.0.7_Linux_arm64.tar.gz", :using => GitHubPrivateRepositoryReleaseDownloadStrategy
+    sha256 "ca122f05592fd798380de7fbb037523fed9df08ccfe8d0cb8eb6848306b3d2aa"
   end
 
   def install
