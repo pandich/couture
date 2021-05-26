@@ -5,11 +5,16 @@ import (
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	"github.com/asaskevich/EventBus"
+	errors2 "github.com/pkg/errors"
+	"runtime"
 	"sync"
 )
 
 // New creates an empty Manager.
 func New(opts ...interface{}) (*model.Manager, error) {
+	if runtime.GOOS == "windows" {
+		return nil, errors2.Errorf("unsupported operating system: %s", runtime.GOOS)
+	}
 	var mgr model.Manager = &publishingManager{
 		wg:  &sync.WaitGroup{},
 		bus: EventBus.New(),

@@ -2,7 +2,6 @@ package manager
 
 import (
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	"github.com/bnkamalesh/errors"
@@ -61,26 +60,7 @@ func (mgr *publishingManager) registerPollingSource(src source.Pollable) error {
 				}
 			}
 			if err != nil && !errors.Is(err, io.EOF) {
-				if len(events) > 0 {
-					for _, event := range events {
-						mgr.publishError(
-							"poll",
-							level.Warn,
-							err,
-							"could not parse source %s record: %+v",
-							src.URL(),
-							event,
-						)
-					}
-				} else {
-					mgr.publishError(
-						"poll",
-						level.Error,
-						err,
-						"could not poll source %s",
-						src.URL(),
-					)
-				}
+				panic(err)
 			}
 			time.Sleep(src.PollInterval())
 		}

@@ -5,6 +5,5 @@ import (
 )
 
 func main() {
-	mgr := cli.Start()
-	(*mgr).Wait()
+	cli.Run()
 }

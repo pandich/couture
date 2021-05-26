@@ -1,7 +1,7 @@
 package column
 
 import (
-	"couture/internal/pkg/model"
+	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
 	"couture/internal/pkg/source"
@@ -17,7 +17,7 @@ func newSourceColumn() sourceColumn {
 	const weight = 40
 	return sourceColumn{baseColumn{
 		columnName:  "source",
-		weightType:  weighted,
+		widthMode:   weighted,
 		widthWeight: weight,
 	}}
 }
@@ -35,11 +35,11 @@ func RegisterSource(theme theme.Theme, src source.Source) {
 }
 
 // Format ...
-func (col sourceColumn) Format(width uint, src source.Source, _ model.Event) string {
+func (col sourceColumn) Format(width uint, src source.Source, _ sink.Event) string {
 	return formatStyleOfWidth(src.ID(), width)
 }
 
 // Render ...
-func (col sourceColumn) Render(_ config.Config, src source.Source, _ model.Event) []interface{} {
+func (col sourceColumn) Render(_ config.Config, src source.Source, _ sink.Event) []interface{} {
 	return []interface{}{src.URL().ShortForm()}
 }

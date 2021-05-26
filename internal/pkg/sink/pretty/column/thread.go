@@ -1,7 +1,7 @@
 package column
 
 import (
-	"couture/internal/pkg/model"
+	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/theme"
 )
 
@@ -17,6 +17,6 @@ func newThreadColumn() threadColumn {
 		&sigil,
 		weight,
 		func(th theme.Theme) string { return th.ThreadColor() },
-		func(event model.Event) []interface{} { return []interface{}{string(event.ThreadNameOrBlank())} },
+		func(event sink.Event) []interface{} { return []interface{}{string(event.Event.ThreadNameOrBlank())} },
 	)}
 }

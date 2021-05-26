@@ -1,15 +1,18 @@
 package pretty
 
 import (
-	"couture/internal/pkg/model"
+	"bufio"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/column"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/tty"
-	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
+	"go.uber.org/ratelimit"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // Name ...
@@ -36,10 +39,9 @@ func New(cfg config.Config) *sink.Sink {
 		cfg.Columns = column.DefaultColumns
 	}
 	column.ByName.Init(cfg.Theme)
-	cols := append([]string{"source"}, cfg.Columns...)
 	pretty := &prettySink{
 		terminalWidth: cfg.EffectiveTerminalWidth(),
-		columnOrder:   cols,
+		columnOrder:   cfg.Columns,
 		config:        cfg,
 		printer:       newPrinter(),
 	}
@@ -58,19 +60,22 @@ func (snk *prettySink) Init(sources []source.Source) {
 		column.RegisterSource(snk.config.Theme, src)
 	}
 	snk.updateColumnWidths()
-	if snk.config.ClearScreen {
-		snk.printer <- tty.ClearScreenSequence
-	}
-	snk.printer <- tty.HomeCursorSequence
+	resizeChan := make(chan os.Signal)
+	signal.Notify(resizeChan, os.Interrupt, syscall.SIGWINCH)
+	go func() {
+		for range resizeChan {
+			snk.updateColumnWidths()
+		}
+	}()
 }
 
 // Accept ...
-func (snk *prettySink) Accept(src source.Source, event model.Event) error {
+func (snk *prettySink) Accept(src source.Source, event sink.Event) error {
 	snk.printer <- snk.render(src, event)
 	return nil
 }
 
-func (snk *prettySink) render(src source.Source, event model.Event) string {
+func (snk *prettySink) render(src source.Source, event sink.Event) string {
 	// get format string and arguments
 	var format = ""
 	var values []interface{}
@@ -90,10 +95,30 @@ func (snk *prettySink) render(src source.Source, event model.Event) string {
 }
 
 func newPrinter() chan string {
+	const maxTTYLinesPerSecond = 250
+
+	var limiter = ratelimit.NewUnlimited()
+	if tty.IsTTY() {
+		limiter = ratelimit.New(maxTTYLinesPerSecond)
+	}
+
+	writer := bufio.NewWriter(os.Stdout)
+
 	printer := make(chan string)
 	go func() {
-		for message := range printer {
-			fmt.Println(message)
+		var i = 0
+		limiter.Take()
+		for {
+			message := <-printer
+			_, err := writer.WriteString(message + "\n")
+			if err != nil {
+				panic(err)
+			}
+			i++
+			if i%10 == 0 {
+				writer.Flush()
+				i = 0
+			}
 		}
 	}()
 	return printer

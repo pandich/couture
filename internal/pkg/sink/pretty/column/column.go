@@ -1,7 +1,7 @@
 package column
 
 import (
-	"couture/internal/pkg/model"
+	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
 	"couture/internal/pkg/source"
@@ -10,13 +10,13 @@ import (
 
 // DefaultColumns ...
 var DefaultColumns = []string{
+	"source",
 	"timestamp",
 	"application",
 	"thread",
 	"caller",
 	"level",
 	"message",
-	"error",
 }
 
 var columns = []column{
@@ -27,14 +27,13 @@ var columns = []column{
 	newCallerColumn(),
 	newLevelColumn(),
 	newMessageColumn(),
-	newStackTraceColumn(),
 }
 
 type (
 	column interface {
 		RegisterStyles(th theme.Theme)
-		Format(width uint, src source.Source, event model.Event) string
-		Render(cfg config.Config, src source.Source, event model.Event) []interface{}
+		Format(width uint, src source.Source, event sink.Event) string
+		Render(cfg config.Config, src source.Source, event sink.Event) []interface{}
 		name() string
 		mode() widthMode
 		weight() widthWeight
@@ -42,8 +41,9 @@ type (
 
 	baseColumn struct {
 		columnName  string
-		weightType  widthMode
+		widthMode   widthMode
 		widthWeight widthWeight
+		sigil       *rune
 	}
 )
 
@@ -54,7 +54,7 @@ func (col baseColumn) name() string {
 
 // WeightType ...
 func (col baseColumn) mode() widthMode {
-	return col.weightType
+	return col.widthMode
 }
 
 // Weight ...
@@ -64,9 +64,8 @@ func (col baseColumn) weight() widthWeight {
 
 type weightedColumn struct {
 	baseColumn
-	sigil *rune
 	color func(theme.Theme) string
-	value func(model.Event) []interface{}
+	value func(event sink.Event) []interface{}
 }
 
 func newWeightedColumn(
@@ -74,15 +73,15 @@ func newWeightedColumn(
 	sigil *rune,
 	widthWeight widthWeight,
 	color func(theme.Theme) string,
-	value func(model.Event) []interface{},
+	value func(event sink.Event) []interface{},
 ) weightedColumn {
 	return weightedColumn{
 		baseColumn: baseColumn{
 			columnName:  columnName,
-			weightType:  weighted,
+			widthMode:   weighted,
 			widthWeight: widthWeight,
+			sigil:       sigil,
 		},
-		sigil: sigil,
 		color: color,
 		value: value,
 	}
@@ -100,11 +99,11 @@ func (col weightedColumn) RegisterStyles(theme theme.Theme) {
 }
 
 // Format ...
-func (col weightedColumn) Format(width uint, _ source.Source, _ model.Event) string {
+func (col weightedColumn) Format(width uint, _ source.Source, _ sink.Event) string {
 	return formatColumn(col, width)
 }
 
 // Render ...
-func (col weightedColumn) Render(_ config.Config, _ source.Source, event model.Event) []interface{} {
+func (col weightedColumn) Render(_ config.Config, _ source.Source, event sink.Event) []interface{} {
 	return col.value(event)
 }

@@ -1,7 +1,7 @@
 package column
 
 import (
-	"couture/internal/pkg/model"
+	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/theme"
 )
 
@@ -17,6 +17,8 @@ func newApplicationColumn() applicationColumn {
 		&sigil,
 		weight,
 		func(th theme.Theme) string { return th.ApplicationColor() },
-		func(event model.Event) []interface{} { return []interface{}{string(event.ApplicationNameOrBlank())} },
+		func(event sink.Event) []interface{} {
+			return []interface{}{string(event.Event.ApplicationNameOrBlank())}
+		},
 	)}
 }

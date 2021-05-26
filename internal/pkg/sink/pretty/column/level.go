@@ -1,8 +1,8 @@
 package column
 
 import (
-	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
 	"couture/internal/pkg/source"
@@ -18,7 +18,7 @@ func newLevelColumn() levelColumn {
 	const width = 4
 	return levelColumn{baseColumn{
 		columnName:  "level",
-		weightType:  fixed,
+		widthMode:   fixed,
 		widthWeight: width,
 	}}
 }
@@ -35,11 +35,11 @@ func (col levelColumn) RegisterStyles(theme theme.Theme) {
 }
 
 // Format ...
-func (col levelColumn) Format(_ uint, _ source.Source, event model.Event) string {
-	return formatStyleOfWidth(col.name()+string(event.Level), uint(col.weight()))
+func (col levelColumn) Format(_ uint, _ source.Source, event sink.Event) string {
+	return formatStyleOfWidth(col.name()+string(event.Event.Level), uint(col.weight()))
 }
 
 // Render ...
-func (col levelColumn) Render(_ config.Config, _ source.Source, event model.Event) []interface{} {
-	return []interface{}{string(event.Level[0])}
+func (col levelColumn) Render(_ config.Config, _ source.Source, event sink.Event) []interface{} {
+	return []interface{}{string(event.Event.Level[0])}
 }

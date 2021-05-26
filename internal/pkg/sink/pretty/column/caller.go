@@ -1,7 +1,7 @@
 package column
 
 import (
-	"couture/internal/pkg/model"
+	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
 	"couture/internal/pkg/source"
@@ -17,7 +17,7 @@ func newCallerColumn() callerColumn {
 	const width = 65
 	return callerColumn{baseColumn{
 		columnName:  "caller",
-		weightType:  fixed,
+		widthMode:   fixed,
 		widthWeight: width,
 	}}
 }
@@ -42,21 +42,21 @@ func (col callerColumn) RegisterStyles(theme theme.Theme) {
 }
 
 // Format ...
-func (col callerColumn) Format(_ uint, _ source.Source, _ model.Event) string {
+func (col callerColumn) Format(_ uint, _ source.Source, _ sink.Event) string {
 	return "{{%s}}::Class" +
 		"{{∕}}::MethodDelimiter" + "{{%s}}::Method" +
 		"{{#}}::LineNumberDelimiter" + "{{%s}}::LineNumber"
 }
 
 // Render ...
-func (col callerColumn) Render(_ config.Config, _ source.Source, event model.Event) []interface{} {
+func (col callerColumn) Render(_ config.Config, _ source.Source, event sink.Event) []interface{} {
 	const maxClassNameWidth = 30
 	const maxWidth = 60
 
 	var padding = ""
-	className := string(event.ClassName.Abbreviate(maxClassNameWidth))
-	var methodName = string(event.MethodName)
-	lineNumber := fmt.Sprintf("%4d", event.LineNumber)
+	className := string(event.Event.ClassName.Abbreviate(maxClassNameWidth))
+	var methodName = string(event.Event.MethodName)
+	lineNumber := fmt.Sprintf("%4d", event.Event.LineNumber)
 	totalLength := len(className) + len(methodName) + len(lineNumber)
 	for i := totalLength; i < maxWidth; i++ {
 		padding += " "

@@ -7,14 +7,12 @@ import (
 
 // Config ...
 type Config struct {
-	ClearScreen bool
-	Columns     []string
-	MultiLine   bool
-	ShowSigils  bool
-	Theme       theme.Theme
-	TimeFormat  string
-	Width       uint
-	Wrap        bool
+	Columns    []string
+	Multiline  bool
+	Theme      theme.Theme
+	TimeFormat string
+	Width      uint
+	Wrap       bool
 }
 
 // EffectiveTerminalWidth ...

@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const helpSummary = "Tails one or more event sourceArgs."
+const helpSummary = "Tails one or more event sources."
 
 //nolint:lll
 var cli struct {
@@ -23,10 +23,7 @@ var cli struct {
 	Wrap         bool   `group:"Display Options" help:"Wrap the output tp the terminal width, or that specified by --width." short:"w" default:"true" negatable:"true"`
 	Width        uint   `group:"Display Options" help:"Wrap width." placeholder:"width" short:"W"`
 	Theme        string `group:"Display Options" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"${defaultTheme}" enum:"${themeNames}"`
-	MultiLine    bool   `group:"Display Options" help:"Display each log event in multi-line format." negatable:"true" default:"false"`
-	Sigil        bool   `group:"Display Options" help:"Display column prefix sigils to help denote them." negatable:"true" default:"true"`
-	ClearScreen  bool   `group:"Display Options" help:"Clear the screen prior to displaying events." negatable:"true" default:"true"`
-	Plain        bool   `group:"Display Options" help:"Clear the screen prior to displaying events."`
+	Multiline    bool   `group:"Display Options" help:"Display each log event in multiline format." negatable:"true" default:"false"`
 
 	Column     []string   `group:"Content Options" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}"`
 	TimeFormat timeFormat `group:"Content Options" help:"Go-standard time format string or a named format: ${timeFormatNames}." short:"t" default:"stamp"`
@@ -41,7 +38,7 @@ var cli struct {
 
 var parser = kong.Must(&cli,
 	kong.Name(couture.Name),
-	kong.Description(description()),
+	kong.Description(helpDescription()),
 	kong.UsageOnError(),
 	kong.ConfigureHelp(kong.HelpOptions{Summary: false, Tree: true}),
 	kong.TypeMapper(reflect.TypeOf(regexp.Regexp{}), regexpDecoder()),
@@ -76,7 +73,7 @@ var parser = kong.Must(&cli,
 	},
 )
 
-func description() string {
+func helpDescription() string {
 	var lines = []string{
 		helpSummary,
 		"",

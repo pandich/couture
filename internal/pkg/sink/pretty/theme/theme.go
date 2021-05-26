@@ -184,3 +184,8 @@ func (theme Theme) ThreadColor() string {
 func (theme Theme) CallerBgColor() string {
 	return "#202020"
 }
+
+// HighlightBackgroundColor ...
+func (theme Theme) HighlightBackgroundColor(lvl level.Level) string {
+	return tty.Fainter(theme.LevelColor(lvl), 0.60)
+}

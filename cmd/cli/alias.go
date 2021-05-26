@@ -1,12 +1,34 @@
 package cli
 
 import (
+	"couture/internal/pkg/couture"
+	"fmt"
 	"github.com/aymerick/raymond"
 	errors2 "github.com/pkg/errors"
+	"github.com/spf13/viper"
 	"net/url"
 	"os"
 	"regexp"
+	"time"
 )
+
+func loadAliasConfig() error {
+	errConfigNotFound := &viper.ConfigFileNotFoundError{}
+	viper.SetConfigName("aliases")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("$HOME/.config/" + couture.Name)
+	viper.AutomaticEnv()
+	err := viper.ReadInConfig()
+	if err != nil && !errors2.As(err, errConfigNotFound) {
+		return err
+	}
+	return nil
+}
+
+func aliasConfig() map[string]string {
+	const aliasesConfigKey = "aliases"
+	return viper.GetStringMapString(aliasesConfigKey)
+}
 
 func expandAliases() ([]string, error) {
 	args := os.Args[1:]
@@ -43,7 +65,14 @@ func expandAlias(aliasURL *url.URL) (string, error) {
 			"{{/if}}",
 	)
 
-	return raymond.Render(alias, aliasURL.Query())
+	return raymond.Render(alias, aliasContext(aliasURL))
+}
+
+func aliasContext(aliasURL *url.URL) map[string][]string {
+	context := map[string][]string{}
+	addURLFields(context, aliasURL)
+	addDateFields(context)
+	return context
 }
 
 func expandSchemeShortForm(arg string) string {
@@ -51,4 +80,40 @@ func expandSchemeShortForm(arg string) string {
 		arg = "alias://" + arg[1:]
 	}
 	return arg
+}
+
+func addURLFields(context map[string][]string, aliasURL *url.URL) {
+	context["_name"] = []string{aliasURL.Host}
+	context["_path"] = []string{aliasURL.Path}
+	if aliasURL.User != nil {
+		context["_user"] = []string{aliasURL.User.Username()}
+		if password, ok := aliasURL.User.Password(); ok {
+			context["_password"] = []string{password}
+		}
+	}
+	for k, v := range aliasURL.Query() {
+		context[k] = v
+	}
+}
+
+func addDateFields(context map[string][]string) {
+	const century = 100
+
+	now := time.Now()
+
+	context["epoch"] = []string{fmt.Sprintf("%d", now.Unix())}
+
+	context["yyyy"] = []string{fmt.Sprintf("%04d", now.Year())}
+	context["yy"] = []string{fmt.Sprintf("%02d", now.Year()%century)}
+	context["mm"] = []string{fmt.Sprintf("%02d", now.Month())}
+	context["m"] = []string{fmt.Sprintf("%d", now.Month())}
+	context["dd"] = []string{fmt.Sprintf("%02d", now.Day())}
+	context["d"] = []string{fmt.Sprintf("%d", now.Day())}
+
+	context["hh"] = []string{fmt.Sprintf("%02d", now.Hour())}
+	context["h"] = []string{fmt.Sprintf("%d", now.Hour())}
+	context["MM"] = []string{fmt.Sprintf("%02d", now.Minute())}
+	context["M"] = []string{fmt.Sprintf("%d", now.Minute())}
+	context["ss"] = []string{fmt.Sprintf("%02d", now.Second())}
+	context["s"] = []string{fmt.Sprintf("%d", now.Second())}
 }
