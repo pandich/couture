@@ -28,7 +28,7 @@ func (col levelColumn) RegisterStyles(theme theme.Theme) {
 		bgColor := theme.LevelColor(lvl)
 		fgColor := tty.Contrast(bgColor)
 		cfmt.RegisterStyle(col.name()+string(lvl), func(s string) string {
-			return cfmt.Sprintf("{{≣%1.1s≣}}::bg"+bgColor+"|"+fgColor, s)
+			return cfmt.Sprintf("{{ %1.1s }}::bg"+bgColor+"|"+fgColor, s)
 		})
 	}
 }
