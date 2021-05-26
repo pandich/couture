@@ -4,7 +4,6 @@ import (
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
-	"couture/internal/pkg/source"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
@@ -32,8 +31,8 @@ var columns = []column{
 type (
 	column interface {
 		RegisterStyles(th theme.Theme)
-		Format(width uint, src source.Source, event sink.Event) string
-		Render(cfg config.Config, src source.Source, event sink.Event) []interface{}
+		Format(width uint, event sink.Event) string
+		Render(cfg config.Config, event sink.Event) []interface{}
 		name() string
 		mode() widthMode
 		weight() widthWeight
@@ -99,11 +98,11 @@ func (col weightedColumn) RegisterStyles(theme theme.Theme) {
 }
 
 // Format ...
-func (col weightedColumn) Format(width uint, _ source.Source, _ sink.Event) string {
+func (col weightedColumn) Format(width uint, _ sink.Event) string {
 	return formatColumn(col, width)
 }
 
 // Render ...
-func (col weightedColumn) Render(_ config.Config, _ source.Source, event sink.Event) []interface{} {
+func (col weightedColumn) Render(_ config.Config, event sink.Event) []interface{} {
 	return col.value(event)
 }

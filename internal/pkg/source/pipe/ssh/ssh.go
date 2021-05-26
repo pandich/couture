@@ -29,28 +29,28 @@ func Metadata() source.Metadata {
 
 // sshSource ...
 type sshSource struct {
-	*source.Pushing
+	source.BaseSource
 	ssh      *goph.Client
 	filename string
 }
 
 // newSource ...
-func newSource(sourceURL model.SourceURL) (*source.Pushable, error) {
+func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	client, err := getClient(sourceURL)
 	if err != nil {
 		return nil, err
 	}
 	src := sshSource{
-		Pushing:  source.New(' ', sourceURL),
-		ssh:      client,
-		filename: sourceURL.Path,
+		BaseSource: source.New(' ', sourceURL),
+		ssh:        client,
+		filename:   sourceURL.Path,
 	}
-	var p source.Pushable = src
+	var p source.Source = src
 	return &p, nil
 }
 
 // Start ...
-func (src sshSource) Start(wg *sync.WaitGroup, running func() bool, callback func(event model.Event)) error {
+func (src sshSource) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
 	// create the command
 	cmd, err := src.ssh.Command("tail", "-F", src.filename)
 	if err != nil {
@@ -58,7 +58,7 @@ func (src sshSource) Start(wg *sync.WaitGroup, running func() bool, callback fun
 	}
 
 	// capture its output
-	out, err := cmd.StdoutPipe()
+	in, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
 	}
@@ -67,5 +67,5 @@ func (src sshSource) Start(wg *sync.WaitGroup, running func() bool, callback fun
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	return pipe.Start(wg, running, callback, func() { _ = cmd.Close() }, out)
+	return pipe.Start(wg, running, src, out, func() { _ = cmd.Close() }, in)
 }

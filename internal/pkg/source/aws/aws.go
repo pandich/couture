@@ -6,7 +6,6 @@ import (
 	"couture/internal/pkg/source"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"time"
 )
 
 const (
@@ -16,10 +15,9 @@ const (
 	profileQueryFlag = "profile"
 )
 
-// Source ...
 // Source represents an AWS entity in a specific region and profile.
 type Source struct {
-	*source.Polling
+	source.BaseSource
 	// entity an arbitrary name whose meaning is implementation specific.
 	entity string
 	// config is the config for AWS clients.
@@ -34,9 +32,9 @@ func New(sigil rune, sourceURL *model.SourceURL) (*Source, error) {
 		return nil, err
 	}
 	return &Source{
-		Polling: source.NewPollable(sigil, *sourceURL, time.Second),
-		entity:  sourceURL.Path,
-		config:  cfg,
+		BaseSource: source.New(sigil, *sourceURL),
+		entity:     sourceURL.Path,
+		config:     cfg,
 	}, nil
 }
 

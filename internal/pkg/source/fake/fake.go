@@ -6,11 +6,17 @@ import (
 	"couture/internal/pkg/source"
 	"github.com/brianvoe/gofakeit/v6"
 	errors2 "github.com/pkg/errors"
-	"io"
 	"math/rand"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
+)
+
+const (
+	hipsterStyle = "hipster"
+	loremStyle   = "lorem"
+	defaultStyle = "default"
 )
 
 // Metadata ...
@@ -33,12 +39,14 @@ func Metadata() source.Metadata {
 
 // fakeSource provides fake test data.
 type fakeSource struct {
-	*source.Polling
-	applicationName model.ApplicationName
+	source.BaseSource
+	applicationName  model.ApplicationName
+	messageGenerator string
 }
 
 // newSource ...
-func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
+func newSource(sourceURL model.SourceURL) (*source.Source, error) {
+	// seed
 	seed, err := sourceURL.QueryInt64("seed")
 	if err != nil {
 		return nil, errors2.Wrapf(err, "could not parse seed\n")
@@ -46,48 +54,71 @@ func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
 	if seed != nil {
 		gofakeit.Seed(*seed)
 	}
-	var src source.Pollable = &fakeSource{
-		Polling:         source.NewPollable('🃟', sourceURL, time.Second),
-		applicationName: model.ApplicationName(gofakeit.AppName()),
+
+	// source
+	var messageGenerator, ok = sourceURL.QueryKey("style")
+	if !ok {
+		messageGenerator = defaultStyle
+	}
+
+	var src source.Source = fakeSource{
+		BaseSource:       source.New('🃟', sourceURL),
+		applicationName:  model.ApplicationName(gofakeit.AppName()),
+		messageGenerator: messageGenerator,
 	}
 	return &src, nil
 }
 
-// Poll ...
+// Start ...
 //nolint:gosec,gomnd
-func (src *fakeSource) Poll() ([]model.Event, error) {
-	if rand.Intn(100) >= 90 {
-		return []model.Event{}, io.EOF
-	}
-	var exception *model.Exception
-	var lvl = []level.Level{
-		level.Trace,
-		level.Debug,
-		level.Info,
-		level.Warn,
-	}[rand.Intn(4)]
-	const count = 10
-	if rand.Intn(100) > 90 {
-		stackTrace := strings.Join([]string{
-			gofakeit.Sentence(count),
-			gofakeit.Sentence(count),
-			gofakeit.Sentence(count),
-			gofakeit.Sentence(count),
-		}, "\n")
-		exception = &model.Exception{StackTrace: model.StackTrace(stackTrace)}
-		lvl = level.Error
-	}
+func (src fakeSource) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
+	go func() {
+		defer wg.Done()
+		for running() {
+			if rand.Intn(100) >= 90 {
+				continue
+			}
+			var exception *model.Exception
+			var lvl = []level.Level{level.Trace, level.Debug, level.Info, level.Warn}[rand.Intn(4)]
+			const count = 10
+			if rand.Intn(100) > 90 {
+				stackTrace := strings.Join([]string{
+					gofakeit.Sentence(count),
+					gofakeit.Sentence(count),
+					gofakeit.Sentence(count),
+					gofakeit.Sentence(count),
+				}, "\n")
+				exception = &model.Exception{StackTrace: model.StackTrace(stackTrace)}
+				lvl = level.Error
+			}
 
-	threadName := model.ThreadName(gofakeit.Username())
-	return []model.Event{{
-		ApplicationName: &src.applicationName,
-		Timestamp:       model.Timestamp(time.Now()),
-		Level:           lvl,
-		Message:         model.Message(gofakeit.HipsterParagraph(1, 4, count, "\n")),
-		MethodName:      model.MethodName(gofakeit.Animal()),
-		LineNumber:      model.LineNumber(uint64(rand.Intn(200))),
-		ThreadName:      &threadName,
-		ClassName:       model.ClassName(gofakeit.AppName()),
-		Exception:       exception,
-	}}, nil
+			threadName := model.ThreadName(gofakeit.Username())
+			var message string
+			switch src.messageGenerator {
+			case hipsterStyle:
+				message = gofakeit.HipsterParagraph(1, 4, count, "\n")
+			case loremStyle:
+				message = gofakeit.LoremIpsumParagraph(1, 4, count, "\n")
+			case defaultStyle:
+				fallthrough
+			default:
+				message = gofakeit.Paragraph(1, 4, count, "\n")
+			}
+			out <- source.Event{
+				Source: src,
+				Event: model.Event{
+					ApplicationName: &src.applicationName,
+					Timestamp:       model.Timestamp(time.Now()),
+					Level:           lvl,
+					Message:         model.Message(message),
+					MethodName:      model.MethodName(gofakeit.Animal()),
+					LineNumber:      model.LineNumber(uint64(rand.Intn(200))),
+					ThreadName:      &threadName,
+					ClassName:       model.ClassName(gofakeit.AppName()),
+					Exception:       exception,
+				},
+			}
+		}
+	}()
+	return nil
 }

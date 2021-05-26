@@ -8,6 +8,7 @@ import (
 // Config ...
 type Config struct {
 	Columns    []string
+	Highlight  bool
 	Multiline  bool
 	Theme      theme.Theme
 	TimeFormat string

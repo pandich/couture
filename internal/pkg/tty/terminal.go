@@ -1,14 +1,12 @@
 package tty
 
 import (
+	"bufio"
 	"github.com/mattn/go-isatty"
-	"github.com/muesli/reflow/wordwrap"
 	"github.com/olekukonko/ts"
+	"io"
 	"os"
 )
-
-// ResetSequence ...
-const ResetSequence = "\x1b[2m"
 
 // IsTTY ...
 func IsTTY() bool {
@@ -24,16 +22,23 @@ func TerminalWidth() int {
 	return terminalWidth
 }
 
-// Wrap ...
-func Wrap(s string, width uint) string {
-	if width <= 0 {
-		return s
-	}
-	wrapper := wordwrap.NewWriter(int(width))
-	wrapper.Breakpoints = []rune(" ")
-	wrapper.KeepNewlines = true
-	if _, err := wrapper.Write([]byte(s)); err != nil {
-		return s
-	}
-	return wrapper.String()
+// NewTTYWriter ...
+func NewTTYWriter(target io.Writer) chan string {
+	delegate := make(chan string)
+	go func() {
+		defer close(delegate)
+		writer := bufio.NewWriter(target)
+		for {
+			message := <-delegate
+			_, err := writer.WriteString(message + "\n")
+			if err != nil {
+				panic(err)
+			}
+			err = writer.Flush()
+			if err != nil {
+				panic(err)
+			}
+		}
+	}()
+	return delegate
 }

@@ -51,6 +51,9 @@ linters-settings:
   forbidigo:
     forbid:
       - fmt.Errorf
+  gocritic:
+    disabled-checks:
+      - singleCaseSwitch
 
 run:
   skip-files:

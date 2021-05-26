@@ -1,7 +1,8 @@
 package manager
 
 import (
-	"couture/internal/pkg/model"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/source"
 )
 
 // Start the Manager. This starts all source.PushingSource instances, and begins polling all polling.Pushable instances.
@@ -9,23 +10,26 @@ import (
 func (mgr *publishingManager) Start() error {
 	mgr.running = true
 
-	for _, poller := range mgr.pollingSourcePollers {
-		mgr.wg.Add(1)
-		go poller(mgr.wg)
-	}
-
-	allSources := append(mgr.allSources, managerSource)
 	for _, snk := range mgr.sinks {
-		snk.Init(allSources)
+		(*snk).Init(mgr.sources)
 	}
 
-	for _, pusher := range mgr.pushingSources {
-		if err := pusher.Start(mgr.wg, func() bool { return mgr.running }, func(event model.Event) {
-			mgr.publishEvent(pusher, event)
-		}); err != nil {
-			panic(err)
+	out := make(chan source.Event)
+	go func() {
+		defer close(out)
+		for {
+			mgr.publishEvent(<-out)
+		}
+	}()
+
+	for _, src := range mgr.sources {
+		mgr.wg.Add(1)
+		err := (*src).Start(mgr.wg, func() bool { return mgr.running }, out)
+		if err != nil {
+			return err
 		}
 	}
+
 	return nil
 }
 
@@ -37,4 +41,16 @@ func (mgr *publishingManager) Stop() {
 // Wait ...
 func (mgr *publishingManager) Wait() {
 	mgr.wg.Wait()
+}
+
+func (mgr *publishingManager) publishEvent(evt source.Event) {
+	if !evt.Level.IsAtLeast(mgr.options.level) {
+		return
+	}
+	if evt.Message.Matches(mgr.options.includeFilters, mgr.options.excludeFilters) {
+		mgr.out <- sink.Event{
+			Event:   evt,
+			Filters: mgr.options.includeFilters,
+		}
+	}
 }

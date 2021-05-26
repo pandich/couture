@@ -4,8 +4,6 @@ import (
 	"regexp"
 )
 
-// TODO cleaner message/stacktrace approach
-
 // Message ...
 type (
 	// Message a message.

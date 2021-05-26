@@ -11,6 +11,7 @@ import (
 	"io"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -60,7 +61,7 @@ type eventHolder struct {
 
 // elasticSearch provides elasticsearch test data.
 type elasticSearch struct {
-	*source.Polling
+	source.BaseSource
 	query     elastic.Query
 	scrollID  string
 	indexName string
@@ -68,7 +69,7 @@ type elasticSearch struct {
 }
 
 // newSource ...
-func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
+func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	normalizeURL(&sourceURL)
 
 	esClient, err := newElasticsearchClient(sourceURL)
@@ -79,11 +80,11 @@ func newSource(sourceURL model.SourceURL) (*source.Pollable, error) {
 	indexName := strings.Trim(sourceURL.Path, "/")
 	query := elastic.NewQueryStringQuery(sourceURL.RawQuery)
 
-	var src source.Pollable = &elasticSearch{
-		Polling:   source.NewPollable('፨', sourceURL, time.Second),
-		esClient:  esClient,
-		query:     query,
-		indexName: indexName,
+	var src source.Source = elasticSearch{
+		BaseSource: source.New('፨', sourceURL),
+		esClient:   esClient,
+		query:      query,
+		indexName:  indexName,
 	}
 	return &src, nil
 }
@@ -101,49 +102,53 @@ func normalizeURL(sourceURL *model.SourceURL) {
 	sourceURL.Scheme = strings.Replace(sourceURL.Scheme, schemeAliasShort+"+", "", 1)
 }
 
-// Poll ...
-func (source *elasticSearch) Poll() ([]model.Event, error) {
-	result, err := source.esClient.Scroll(source.indexName).
-		KeepAlive(keepAliveOneMinute).
-		ScrollId(source.scrollID).
-		Size(eventsPerFetch).
-		Query(source.query).
-		SortBy(elastic.NewFieldSort(model.TimestampField)).
-		Pretty(true).
-		Do()
-	if err != nil {
-		if errors.Is(err, io.EOF) {
-			return []model.Event{}, nil
+// Start ...
+func (src elasticSearch) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
+	go func() {
+		defer wg.Done()
+		for running() {
+			result, err := src.esClient.Scroll(src.indexName).
+				KeepAlive(keepAliveOneMinute).
+				ScrollId(src.scrollID).
+				Size(eventsPerFetch).
+				Query(src.query).
+				SortBy(elastic.NewFieldSort(model.TimestampField)).
+				Pretty(true).
+				Do()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					continue
+				}
+				panic(errors2.Wrapf(err, "name=%s\n", src.indexName))
+			}
+			if result == nil || result.Hits == nil || result.Hits.Hits == nil {
+				continue
+			}
+			for _, hit := range result.Hits.Hits {
+				holder := eventHolder{}
+				err = json.Unmarshal(*hit.Source, &holder)
+				if err != nil {
+					panic(err)
+				}
+				var evt = model.Event{}
+				err = json.Unmarshal([]byte(holder.Event), &evt)
+				if err != nil {
+					evt = model.Event{
+						Timestamp:       model.Timestamp(time.Now()),
+						Level:           level.Info,
+						Message:         model.Message(holder.Event),
+						ApplicationName: nil,
+						MethodName:      "-",
+						LineNumber:      model.NoLineNumber,
+						ThreadName:      nil,
+						ClassName:       "-",
+						Exception:       nil,
+					}
+				}
+				out <- source.Event{Source: src, Event: evt}
+			}
+			src.scrollID = result.ScrollId
 		}
-		return nil, errors2.Wrapf(err, "name=%s\n", source.indexName)
-	}
-
-	var events []model.Event
-	for _, hit := range result.Hits.Hits {
-		holder := eventHolder{}
-		err = json.Unmarshal(*hit.Source, &holder)
-		if err != nil {
-			return nil, err
-		}
-		evt := model.Event{}
-		err = json.Unmarshal([]byte(holder.Event), &evt)
-		if err != nil {
-			return []model.Event{
-				{
-					Timestamp:       model.Timestamp(time.Now()),
-					Level:           level.Info,
-					Message:         model.Message(holder.Event),
-					ApplicationName: nil,
-					MethodName:      "-",
-					LineNumber:      model.NoLineNumber,
-					ThreadName:      nil,
-					ClassName:       "-",
-					Exception:       nil,
-				},
-			}, err
-		}
-		events = append(events, evt)
-	}
-	source.scrollID = result.ScrollId
-	return events, nil
+	}()
+	return nil
 }

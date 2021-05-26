@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	errors2 "github.com/pkg/errors"
 	"reflect"
+	"sync"
 	"time"
 )
 
@@ -98,7 +99,7 @@ type (
 		includeStackEvents bool
 		// children represents all child sources added during stack-resource discovery.
 		// For example: a lambda's log group's cloudwatch.cloudwatchSource.
-		children []source.Pollable
+		children []*source.Source
 		// cf represents the clo
 		cf        *cloudformation.Client
 		stackName string
@@ -123,7 +124,7 @@ func newSource(sourceURL model.SourceURL) (*cloudFormationSource, error) {
 
 	cf := cloudformation.NewFromConfig(awsSource.Config())
 
-	var children []source.Pollable
+	var children []*source.Source
 	// add lambda functions
 	lambdaResources, err := discoverLambdaResources(cf, stackName)
 	if err != nil {
@@ -131,7 +132,7 @@ func newSource(sourceURL model.SourceURL) (*cloudFormationSource, error) {
 	}
 	for _, lambdaResource := range lambdaResources {
 		logGroupName := fmt.Sprintf("/log/lambda/%s", *lambdaResource.PhysicalResourceId)
-		children = append(children, *cloudwatch.New(awsSource, lookbackTime, logGroupName))
+		children = append(children, cloudwatch.New(awsSource, lookbackTime, logGroupName))
 	}
 
 	return &cloudFormationSource{
@@ -155,55 +156,44 @@ func normalizeURL(sourceURL *model.SourceURL) {
 	}
 }
 
-// Poll for more events.
-func (source *cloudFormationSource) Poll() ([]model.Event, error) {
-	var events []model.Event
-
-	childEvents, err := source.getChildEvents()
-	if err != nil {
-		return nil, err
-	}
-	events = append(events, childEvents...)
-
-	if source.includeStackEvents {
-		stackEvents, err := source.getStackEvents()
+// Start ...
+func (src *cloudFormationSource) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
+	for _, child := range src.children {
+		err := (*child).Start(wg, running, out)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		events = append(events, stackEvents...)
 	}
-
-	return events, nil
-}
-
-// getChildEvents returns all CloudWatch log events for resources under this stack.
-func (source cloudFormationSource) getChildEvents() ([]model.Event, error) {
-	var events []model.Event
-
-	for _, child := range source.children {
-		results, err := child.Poll()
-		if err != nil {
-			return nil, err
-		}
-		events = append(events, results...)
+	if src.includeStackEvents {
+		go func() {
+			for running() {
+				stackEvents, err := src.getStackEvents()
+				if err != nil {
+					panic(err)
+				}
+				for _, stackEvent := range stackEvents {
+					out <- source.Event{Source: src, Event: stackEvent}
+				}
+			}
+		}()
 	}
-	return events, nil
+	return nil
 }
 
 // getChildEvents retrieves CloudFormation events for this stack.
-func (source cloudFormationSource) getStackEvents() ([]model.Event, error) {
-	stackEvents, err := source.cf.DescribeStackEvents(context.TODO(), &cloudformation.DescribeStackEventsInput{
-		NextToken: source.stackEventsNextToken,
-		StackName: &source.stackName,
+func (src cloudFormationSource) getStackEvents() ([]model.Event, error) {
+	stackEvents, err := src.cf.DescribeStackEvents(context.TODO(), &cloudformation.DescribeStackEventsInput{
+		NextToken: src.stackEventsNextToken,
+		StackName: &src.stackName,
 	})
 	if err != nil {
 		return nil, err
 	}
-	source.stackEventsNextToken = stackEvents.NextToken
+	src.stackEventsNextToken = stackEvents.NextToken
 
 	var events []model.Event
 	for _, stackEvent := range stackEvents.StackEvents {
-		if source.lookbackTime == nil || source.lookbackTime.Before(*stackEvent.Timestamp) {
+		if src.lookbackTime == nil || src.lookbackTime.Before(*stackEvent.Timestamp) {
 			lvl := logLevelByResourceStatus[stackEvent.ResourceStatus]
 
 			var exception *model.Exception

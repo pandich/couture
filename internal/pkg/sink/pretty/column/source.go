@@ -35,11 +35,11 @@ func RegisterSource(theme theme.Theme, src source.Source) {
 }
 
 // Format ...
-func (col sourceColumn) Format(width uint, src source.Source, _ sink.Event) string {
-	return formatStyleOfWidth(src.ID(), width)
+func (col sourceColumn) Format(width uint, event sink.Event) string {
+	return formatStyleOfWidth(event.Source.ID(), width)
 }
 
 // Render ...
-func (col sourceColumn) Render(_ config.Config, src source.Source, _ sink.Event) []interface{} {
-	return []interface{}{src.URL().ShortForm()}
+func (col sourceColumn) Render(_ config.Config, event sink.Event) []interface{} {
+	return []interface{}{event.Source.URL().ShortForm()}
 }

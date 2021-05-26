@@ -5,7 +5,6 @@ import (
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
-	"couture/internal/pkg/source"
 	"couture/internal/pkg/tty"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
@@ -29,17 +28,17 @@ func (col levelColumn) RegisterStyles(theme theme.Theme) {
 		bgColor := theme.LevelColor(lvl)
 		fgColor := tty.Contrast(bgColor)
 		cfmt.RegisterStyle(col.name()+string(lvl), func(s string) string {
-			return cfmt.Sprintf("{{ %1.1s }}::bg"+bgColor+"|"+fgColor, s)
+			return cfmt.Sprintf("{{≣%1.1s≣}}::bg"+bgColor+"|"+fgColor, s)
 		})
 	}
 }
 
 // Format ...
-func (col levelColumn) Format(_ uint, _ source.Source, event sink.Event) string {
-	return formatStyleOfWidth(col.name()+string(event.Event.Level), uint(col.weight()))
+func (col levelColumn) Format(_ uint, event sink.Event) string {
+	return formatStyleOfWidth(col.name()+string(event.Level), uint(col.weight()))
 }
 
 // Render ...
-func (col levelColumn) Render(_ config.Config, _ source.Source, event sink.Event) []interface{} {
-	return []interface{}{string(event.Event.Level[0])}
+func (col levelColumn) Render(_ config.Config, event sink.Event) []interface{} {
+	return []interface{}{string(event.Level[0])}
 }

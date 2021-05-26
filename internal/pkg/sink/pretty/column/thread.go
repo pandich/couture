@@ -16,7 +16,9 @@ func newThreadColumn() threadColumn {
 		"thread",
 		&sigil,
 		weight,
-		func(th theme.Theme) string { return th.ThreadColor() },
-		func(event sink.Event) []interface{} { return []interface{}{string(event.Event.ThreadNameOrBlank())} },
+		func(th theme.Theme) string { return th.ThreadFg() },
+		func(event sink.Event) []interface{} {
+			return []interface{}{string(event.ThreadNameOrBlank())}
+		},
 	)}
 }

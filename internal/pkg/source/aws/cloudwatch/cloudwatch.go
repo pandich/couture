@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	errors2 "github.com/pkg/errors"
 	"reflect"
+	"sync"
 	"time"
 )
 
@@ -74,7 +75,7 @@ type cloudwatchSource struct {
 }
 
 // newFromURL Cloudwatch source.
-func newFromURL(sourceURL model.SourceURL) (*source.Pollable, error) {
+func newFromURL(sourceURL model.SourceURL) (*source.Source, error) {
 	normalizeURL(&sourceURL)
 	awsSource, err := aws.New('☂', &sourceURL)
 	if err != nil {
@@ -92,14 +93,14 @@ func New(
 	awsSource *aws.Source,
 	lookbackTime *time.Time,
 	logGroupName string,
-) *source.Pollable {
+) *source.Source {
 	src := cloudwatchSource{
 		Source:       awsSource,
 		lookbackTime: lookbackTime,
 		logGroupName: logGroupName,
 		logs:         cloudwatchlogs.NewFromConfig(awsSource.Config()),
 	}
-	var p source.Pollable = &src
+	var p source.Source = &src
 	return &p
 }
 
@@ -116,45 +117,53 @@ func normalizeURL(sourceURL *model.SourceURL) {
 	}
 }
 
-// Poll for more events.
-func (src *cloudwatchSource) Poll() ([]model.Event, error) {
-	var events []model.Event
+// Start ...
+func (src *cloudwatchSource) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
 	var startTime *int64
 	if src.lookbackTime != nil {
 		i := src.lookbackTime.Unix()
 		startTime = &i
 	}
-	logEvents, err := src.logs.FilterLogEvents(context.TODO(), &cloudwatchlogs.FilterLogEventsInput{
-		LogGroupName: &src.logGroupName,
-		NextToken:    src.nextToken,
-		StartTime:    startTime,
-	})
-	if err != nil {
-		return nil, errors2.Unwrap(err)
-	}
-	src.nextToken = logEvents.NextToken
-	for _, logEvent := range logEvents.Events {
-		if logEvent.Message != nil {
-			var event = model.Event{}
-			err := json.Unmarshal([]byte(*logEvent.Message), &event)
+
+	go func() {
+		defer wg.Done()
+		for running() {
+			logEvents, err := src.logs.FilterLogEvents(context.TODO(), &cloudwatchlogs.FilterLogEventsInput{
+				LogGroupName: &src.logGroupName,
+				NextToken:    src.nextToken,
+				StartTime:    startTime,
+			})
 			if err != nil {
-				var message model.Message
+				panic(err)
+			}
+			src.nextToken = logEvents.NextToken
+			for _, logEvent := range logEvents.Events {
 				if logEvent.Message != nil {
-					message = model.Message(*logEvent.Message)
+					var event = model.Event{}
+					err := json.Unmarshal([]byte(*logEvent.Message), &event)
+					if err != nil {
+						var message model.Message
+						if logEvent.Message != nil {
+							message = model.Message(*logEvent.Message)
+						}
+						threadName := model.ThreadName(*logEvent.LogStreamName)
+						out <- source.Event{
+							Source: src,
+							Event: model.Event{
+								Timestamp:  model.Timestamp(time.Unix(*logEvent.Timestamp, 0)),
+								Level:      level.Info,
+								Message:    message,
+								ThreadName: &threadName,
+								ClassName:  model.ClassName(*logEvent.EventId),
+								Exception:  nil,
+							},
+						}
+					} else {
+						out <- source.Event{Source: src, Event: event}
+					}
 				}
-				threadName := model.ThreadName(*logEvent.LogStreamName)
-				events = append(events, model.Event{
-					Timestamp:  model.Timestamp(time.Unix(*logEvent.Timestamp, 0)),
-					Level:      level.Info,
-					Message:    message,
-					ThreadName: &threadName,
-					ClassName:  model.ClassName(*logEvent.EventId),
-					Exception:  nil,
-				})
-			} else {
-				events = append(events, event)
 			}
 		}
-	}
-	return events, nil
+	}()
+	return nil
 }

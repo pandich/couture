@@ -39,8 +39,22 @@ func Run() {
 	err = (*mgr).Start()
 	parser.FatalIfErrorf(err)
 
-	trapSignals(mgr)
+	interrupt := make(chan os.Signal)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		defer close(interrupt)
 
+		const stopGracePeriod = 250 * time.Millisecond
+
+		cleanup := func() { termenv.Reset(); os.Exit(0) }
+
+		<-interrupt
+		(*mgr).Stop()
+
+		go func() { time.Sleep(stopGracePeriod); cleanup() }()
+		(*mgr).Wait()
+		cleanup()
+	}()
 	(*mgr).Wait()
 }
 
@@ -68,6 +82,7 @@ func managerOptions() ([]interface{}, error) {
 		case "pretty":
 			return pretty.New(config.Config{
 				Columns:    cli.Column,
+				Highlight:  cli.Highlight,
 				Multiline:  cli.Multiline,
 				Theme:      theme.Registry[cli.Theme],
 				TimeFormat: string(cli.TimeFormat),
@@ -98,24 +113,4 @@ func managerOptions() ([]interface{}, error) {
 	options = append(options, sources...)
 
 	return options, nil
-}
-
-func trapSignals(mgr *model.Manager) {
-	const stopGracePeriod = 2 * time.Second
-
-	die := func() {
-		println()
-		termenv.Reset()
-		os.Exit(0)
-	}
-
-	interruption := make(chan os.Signal)
-	signal.Notify(interruption, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-interruption
-		(*mgr).Stop()
-		go func() { time.Sleep(stopGracePeriod); die() }()
-		(*mgr).Wait()
-		die()
-	}()
 }

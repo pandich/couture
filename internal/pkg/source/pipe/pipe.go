@@ -3,6 +3,7 @@ package pipe
 import (
 	"bufio"
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/source"
 	"encoding/json"
 	"io"
 	"sync"
@@ -12,11 +13,12 @@ import (
 func Start(
 	wg *sync.WaitGroup,
 	running func() bool,
-	callback func(event model.Event),
+	src source.Source,
+	out chan source.Event,
 	closer func(),
-	out io.Reader,
+	in io.Reader,
 ) error {
-	scanner := bufio.NewScanner(out)
+	scanner := bufio.NewScanner(in)
 	scanner.Split(bufio.ScanLines)
 	f := func() {
 		defer wg.Done()
@@ -24,9 +26,9 @@ func Start(
 		for running() {
 			for scanner.Scan() {
 				var event model.Event
-				// TODO we should be pushing raw strings to the callback and do event JSON parsing centrally
+				// TODO we should be pushing raw strings to the out and do event JSON parsing centrally
 				_ = json.Unmarshal([]byte(scanner.Text()), &event)
-				callback(event)
+				out <- source.Event{Source: src, Event: event}
 			}
 		}
 	}

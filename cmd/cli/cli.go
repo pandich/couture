@@ -24,6 +24,7 @@ var cli struct {
 	Width        uint   `group:"Display Options" help:"Wrap width." placeholder:"width" short:"W"`
 	Theme        string `group:"Display Options" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"${defaultTheme}" enum:"${themeNames}"`
 	Multiline    bool   `group:"Display Options" help:"Display each log event in multiline format." negatable:"true" default:"false"`
+	Highlight    bool   `group:"Display Options" help:"Highlight matches from the patterns specified in --include." negatable:"true" default:"true"`
 
 	Column     []string   `group:"Content Options" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}"`
 	TimeFormat timeFormat `group:"Content Options" help:"Go-standard time format string or a named format: ${timeFormatNames}." short:"t" default:"stamp"`

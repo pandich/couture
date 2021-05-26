@@ -2,8 +2,13 @@ package source
 
 import (
 	"couture/internal/pkg/model"
+	"crypto/sha256"
+	"encoding/hex"
+	"net/url"
+	"reflect"
+	"strings"
 	"sync"
-)
+) // Source ...
 
 // Source ...
 type (
@@ -16,6 +21,57 @@ type (
 		// URL is the URL from which the events come.
 		URL() model.SourceURL
 		// Start collecting events.
-		Start(wg *sync.WaitGroup, running func() bool, callback func(event model.Event)) error
+		Start(wg *sync.WaitGroup, running func() bool, out chan Event) error
+	}
+	// BaseSource ...
+	BaseSource struct {
+		id        string
+		sigil     rune
+		sourceURL model.SourceURL
+	}
+
+	// Event ...
+	Event struct {
+		model.Event
+		Source Source
+	}
+
+	// Metadata ...
+	Metadata struct {
+		Name        string
+		Type        reflect.Type
+		CanHandle   func(url model.SourceURL) bool
+		Creator     func(sourceURL model.SourceURL) (*interface{}, error)
+		ExampleURLs []string
 	}
 )
+
+// New base Source.
+func New(sigil rune, sourceURL model.SourceURL) BaseSource {
+	u := url.URL(sourceURL)
+	s := u.String()
+	hasher := sha256.New()
+	hasher.Write([]byte(s))
+	return BaseSource{
+		id:        "Source" + strings.ToUpper(hex.EncodeToString(hasher.Sum(nil))[0:15]),
+		sigil:     sigil,
+		sourceURL: sourceURL,
+	}
+}
+
+// ID ...
+func (b BaseSource) ID() string {
+	return b.id
+}
+
+// Sigil ...
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (b BaseSource) Sigil() rune {
+	return b.sigil
+}
+
+// URL ...
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (b BaseSource) URL() model.SourceURL {
+	return b.sourceURL
+}

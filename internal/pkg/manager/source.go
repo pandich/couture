@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"couture/internal/pkg/couture"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/aws/cloudformation"
@@ -11,7 +10,6 @@ import (
 	"couture/internal/pkg/source/pipe/local"
 	"couture/internal/pkg/source/pipe/ssh"
 	errors2 "github.com/pkg/errors"
-	"sync"
 )
 
 // AvailableSources is a list of sourceMetadata sourceMetadata.
@@ -51,27 +49,3 @@ func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
 	}
 	return nil
 }
-
-type internalSource struct{}
-
-// ID ...
-func (i internalSource) ID() string {
-	return couture.Name
-}
-
-// Sigil ...
-func (i internalSource) Sigil() rune {
-	return '❯'
-}
-
-// URL ...
-func (i internalSource) URL() model.SourceURL {
-	return model.SourceURL{}
-}
-
-// Start ...
-func (i internalSource) Start(_ *sync.WaitGroup, _ func() bool, _ func(event model.Event)) error {
-	return nil
-}
-
-var managerSource = internalSource{}

@@ -26,22 +26,22 @@ func Metadata() source.Metadata {
 
 // fileSource ...
 type fileSource struct {
-	*source.Pushing
+	source.BaseSource
 	filename string
 }
 
 // newSource ...
-func newSource(sourceURL model.SourceURL) *source.Pushable {
+func newSource(sourceURL model.SourceURL) *source.Source {
 	sourceURL.Normalize()
-	var src source.Pushable = fileSource{
-		Pushing:  source.New('⫽', sourceURL),
-		filename: sourceURL.Path,
+	var src source.Source = fileSource{
+		BaseSource: source.New('⫽', sourceURL),
+		filename:   sourceURL.Path,
 	}
 	return &src
 }
 
 // Start ...
-func (src fileSource) Start(wg *sync.WaitGroup, running func() bool, callback func(event model.Event)) error {
+func (src fileSource) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
 	// get the safe path to the file
 	path, err := filepath.Abs(src.filename)
 	if err != nil {
@@ -52,7 +52,7 @@ func (src fileSource) Start(wg *sync.WaitGroup, running func() bool, callback fu
 	tail := exec.Command("tail", "-F", path)
 
 	// capture its output
-	out, err := tail.StdoutPipe()
+	in, err := tail.StdoutPipe()
 	if err != nil {
 		return err
 	}
@@ -61,5 +61,5 @@ func (src fileSource) Start(wg *sync.WaitGroup, running func() bool, callback fu
 	if err = tail.Start(); err != nil {
 		return err
 	}
-	return pipe.Start(wg, running, callback, func() {}, out)
+	return pipe.Start(wg, running, src, out, func() {}, in)
 }
