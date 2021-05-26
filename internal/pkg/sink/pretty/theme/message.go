@@ -9,7 +9,15 @@ import (
 
 // MessageFg ...
 func (theme Theme) MessageFg() string {
-	cf, _ := colorful.MakeColor(gamut.Tints(gamut.Hex(theme.BaseColor), 64)[60])
+	const shadeCount = 64
+	var index = 3
+	if tty.IsDarkMode() {
+		index = shadeCount - index
+	}
+	var cf, _ = colorful.MakeColor(gamut.Tints(gamut.Hex(theme.BaseColor), shadeCount)[index])
+	if !tty.IsDarkMode() {
+		cf, _ = colorful.MakeColor(gamut.Darker(cf, 0.2))
+	}
 	return cf.Hex()
 }
 

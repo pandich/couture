@@ -81,6 +81,7 @@ func managerOptions() ([]interface{}, error) {
 		switch cli.OutputFormat {
 		case "pretty":
 			return pretty.New(config.Config{
+				AutoResize: cli.AutoResize,
 				Columns:    cli.Column,
 				Highlight:  cli.Highlight,
 				Multiline:  cli.Multiline,

@@ -23,7 +23,7 @@ func newTimestampColumn() timestampColumn {
 // RegisterStyles ...
 func (col timestampColumn) RegisterStyles(theme theme.Theme) {
 	cfmt.RegisterStyle(col.name(), func(s string) string {
-		return cfmt.Sprintf("{{ ☀︎ %s }}::"+theme.TimestampFg(), s)
+		return cfmt.Sprintf("{{ ☀︎ %s }}::bg"+theme.TimestampBg()+"|"+theme.TimestampFg(), s)
 	})
 }
 

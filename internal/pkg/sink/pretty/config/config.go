@@ -7,6 +7,7 @@ import (
 
 // Config ...
 type Config struct {
+	AutoResize bool
 	Columns    []string
 	Highlight  bool
 	Multiline  bool

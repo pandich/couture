@@ -17,8 +17,6 @@ import (
 // Name ...
 const Name = "pretty"
 
-// TODO themes need to auto light/dark background adjust
-
 // prettySink provides render output.
 type prettySink struct {
 	terminalWidth uint
@@ -30,25 +28,17 @@ type prettySink struct {
 
 // New provides a configured prettySink sink.
 func New(cfg config.Config) *sink.Sink {
-	if !tty.IsTTY() || cfg.Theme.BaseColor == theme.White {
-		cfmt.DisableColors()
-	}
 	if len(cfg.Columns) == 0 {
 		cfg.Columns = column.DefaultColumns
 	}
 	column.ByName.Init(cfg.Theme)
-	pretty := &prettySink{
+	var snk sink.Sink = &prettySink{
 		terminalWidth: cfg.EffectiveTerminalWidth(),
 		columnOrder:   cfg.Columns,
 		config:        cfg,
 		printer:       tty.NewTTYWriter(os.Stdout),
 	}
-	var snk sink.Sink = pretty
 	return &snk
-}
-
-func (snk *prettySink) updateColumnWidths() {
-	snk.columnWidths = column.Widths(uint(tty.TerminalWidth()), snk.columnOrder)
 }
 
 // Init ...
@@ -56,14 +46,11 @@ func (snk *prettySink) Init(sources []*source.Source) {
 	for _, src := range sources {
 		column.RegisterSource(snk.config.Theme, *src)
 	}
+	snk.handleColorState()
 	snk.updateColumnWidths()
-	resizeChan := make(chan os.Signal)
-	signal.Notify(resizeChan, os.Interrupt, syscall.SIGWINCH)
-	go func() {
-		for range resizeChan {
-			snk.updateColumnWidths()
-		}
-	}()
+	if snk.config.AutoResize {
+		snk.handleAutoResizeState()
+	}
 }
 
 // Accept ...
@@ -90,4 +77,26 @@ func (snk *prettySink) columnFormat(event sink.Event) (string, []interface{}) {
 	}
 	format += resetSequence
 	return format, values
+}
+
+func (snk *prettySink) updateColumnWidths() {
+	snk.columnWidths = column.Widths(uint(tty.TerminalWidth()), snk.columnOrder)
+}
+
+func (snk *prettySink) handleAutoResizeState() {
+	resize := make(chan os.Signal)
+	signal.Notify(resize, os.Interrupt, syscall.SIGWINCH)
+	go func() {
+		defer close(resize)
+		for range resize {
+			snk.updateColumnWidths()
+		}
+	}()
+}
+
+func (snk *prettySink) handleColorState() {
+	isBlackOrWhite := snk.config.Theme.BaseColor == theme.White || snk.config.Theme.BaseColor == theme.Black
+	if !tty.IsTTY() || isBlackOrWhite {
+		cfmt.DisableColors()
+	}
 }

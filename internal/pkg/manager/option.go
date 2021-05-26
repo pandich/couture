@@ -31,7 +31,8 @@ func LogLevelOption(level level.Level) interface{} {
 type (
 	// managerOptions
 	managerOptions struct {
-		level          level.Level
+		level level.Level
+		// TODO  since is largely (completely) unused?
 		since          *time.Time
 		includeFilters []regexp.Regexp
 		excludeFilters []regexp.Regexp

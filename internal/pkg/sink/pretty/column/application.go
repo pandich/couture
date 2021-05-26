@@ -16,7 +16,7 @@ func newApplicationColumn() applicationColumn {
 		"application",
 		&sigil,
 		weight,
-		func(th theme.Theme) string { return th.ApplicationFg() },
+		func(th theme.Theme) string { return th.ApplicationFg() + "|bg" + th.ApplicationBg() },
 		func(event sink.Event) []interface{} {
 			return []interface{}{string(event.ApplicationNameOrBlank())}
 		},

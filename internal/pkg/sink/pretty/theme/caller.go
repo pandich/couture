@@ -7,12 +7,19 @@ import (
 )
 
 func (theme Theme) callerColors() (string, string, string) {
-	const darkness = 0.4
+	var aContrast = 0.4
+	var bContrast = 0.8
+	var cContrast = 0.4
+	if tty.IsDarkMode() {
+		aContrast = 0.6
+		bContrast = 0.0
+		cContrast = 0.0
+	}
 	col := gamut.Hex(theme.BaseColor)
 	q := gamut.Analogous(col)
-	a, _ := colorful.MakeColor(gamut.Darker(col, darkness))
-	b, _ := colorful.MakeColor(q[0])
-	c, _ := colorful.MakeColor(q[1])
+	a, _ := colorful.MakeColor(gamut.Darker(col, aContrast))
+	b, _ := colorful.MakeColor(gamut.Darker(q[0], bContrast))
+	c, _ := colorful.MakeColor(gamut.Darker(q[1], cContrast))
 	return a.Hex(), b.Hex(), c.Hex()
 }
 
@@ -37,7 +44,10 @@ func (theme Theme) MethodFg() string {
 // LineNumberDelimiterFg ...
 func (theme Theme) LineNumberDelimiterFg() string {
 	const contrast = 0.25
-	return tty.Darker(theme.LineNumberFg(), contrast)
+	if tty.IsDarkMode() {
+		return tty.Darker(theme.LineNumberFg(), contrast)
+	}
+	return tty.Lighter(theme.LineNumberFg(), contrast)
 }
 
 // LineNumberFg ...
@@ -48,10 +58,16 @@ func (theme Theme) LineNumberFg() string {
 
 // ThreadFg ...
 func (theme Theme) ThreadFg() string {
-	return tty.SimilarBg(tty.Darker(theme.BaseColor, 0.5))
+	if tty.IsDarkMode() {
+		return tty.SimilarBg(tty.Darker(theme.BaseColor, 0.5))
+	}
+	return tty.SimilarBg(tty.Lighter(theme.BaseColor, 0.5))
 }
 
 // CallerBg ...
 func (theme Theme) CallerBg() string {
-	return "#202020"
+	if tty.IsDarkMode() {
+		return "#202020"
+	}
+	return "#f0f0f0"
 }

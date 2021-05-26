@@ -3,6 +3,7 @@ package tty
 import (
 	"bufio"
 	"github.com/mattn/go-isatty"
+	"github.com/muesli/termenv"
 	"github.com/olekukonko/ts"
 	"io"
 	"os"
@@ -11,6 +12,11 @@ import (
 // IsTTY ...
 func IsTTY() bool {
 	return isatty.IsTerminal(os.Stdout.Fd())
+}
+
+// IsDarkMode ...
+func IsDarkMode() bool {
+	return termenv.HasDarkBackground()
 }
 
 // TerminalWidth ...

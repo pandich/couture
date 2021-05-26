@@ -7,7 +7,9 @@ import (
 
 const (
 	// White ...
-	White      = "#ffffff"
+	White = "#ffffff"
+	// Black ....\
+	Black      = "#000000"
 	purpleRain = "#ae99bf"
 	merlot     = "#a01010"
 	ocean      = "#5198eb"

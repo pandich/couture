@@ -14,6 +14,11 @@ func (theme Theme) ApplicationFg() string {
 	return tty.SimilarBg(applicationColor)
 }
 
+// ApplicationBg ...
+func (theme Theme) ApplicationBg() string {
+	return tty.Contrast(theme.ApplicationFg())
+}
+
 // TimestampFg ...
 func (theme Theme) TimestampFg() string {
 	const degrees60 = 60 / 360.0
@@ -22,4 +27,9 @@ func (theme Theme) TimestampFg() string {
 	timestampColor := gamut.Blends(yellow, cf, 16)[3]
 	timestampCf, _ := colorful.MakeColor(timestampColor)
 	return tty.SimilarBg(timestampCf.Hex())
+}
+
+// TimestampBg ...
+func (theme Theme) TimestampBg() string {
+	return tty.Contrast(theme.TimestampFg())
 }
