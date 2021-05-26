@@ -33,5 +33,8 @@ func (theme Theme) StackTraceFg() string {
 
 // HighlightBg ...
 func (theme Theme) HighlightBg(lvl level.Level) string {
-	return tty.Fainter(theme.LevelColor(lvl), 0.60)
+	if tty.IsDarkMode() {
+		return tty.Fainter(theme.LevelColor(lvl), 0.60)
+	}
+	return tty.Lighter(theme.LevelColor(lvl), 0.10)
 }
