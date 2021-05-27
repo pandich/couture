@@ -1,6 +1,7 @@
 package elasticsearch
 
 import (
+	"bytes"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
@@ -109,52 +110,74 @@ func (src elasticSearch) Start(
 	errChan chan source.Error,
 ) error {
 	go func() {
+		const eofSleepTime = 100 * time.Millisecond
+
 		defer wg.Done()
 		for running() {
-			result, err := src.esClient.Scroll(src.indexName).
-				KeepAlive(keepAliveOneMinute).
-				ScrollId(src.scrollID).
-				Size(eventsPerFetch).
-				Query(src.query).
-				SortBy(elastic.NewFieldSort(model.TimestampField)).
-				Pretty(true).
-				Do()
+			result, err := src.scroll()
 			if err != nil {
 				if errors.Is(err, io.EOF) {
-					continue
-				}
-				errChan <- source.Error{Source: src, Error: err}
-				continue
-			}
-			if result == nil || result.Hits == nil || result.Hits.Hits == nil {
-				continue
-			}
-			for _, hit := range result.Hits.Hits {
-				holder := eventHolder{}
-				err = json.Unmarshal(*hit.Source, &holder)
-				if err != nil {
+					time.Sleep(eofSleepTime)
+				} else {
 					errChan <- source.Error{Source: src, Error: err}
-					continue
 				}
-				var evt = model.Event{}
-				err = json.Unmarshal([]byte(holder.Event), &evt)
-				if err != nil {
-					evt = model.Event{
-						Timestamp:       model.Timestamp(time.Now()),
-						Level:           level.Info,
-						Message:         model.Message(holder.Event),
-						ApplicationName: nil,
-						MethodName:      "-",
-						LineNumber:      model.NoLineNumber,
-						ThreadName:      nil,
-						ClassName:       "-",
-						Exception:       nil,
-					}
+			} else if result != nil || result.Hits != nil || result.Hits.Hits != nil {
+				for _, hit := range result.Hits.Hits {
+					src.processEvent(srcChan, errChan, *hit.Source)
 				}
-				srcChan <- source.Event{Source: src, Event: evt}
 			}
-			src.scrollID = result.ScrollId
 		}
 	}()
 	return nil
+}
+
+func (src *elasticSearch) scroll() (*elastic.SearchResult, error) {
+	result, err := src.esClient.Scroll(src.indexName).
+		KeepAlive(keepAliveOneMinute).
+		ScrollId(src.scrollID).
+		Size(eventsPerFetch).
+		Query(src.query).
+		SortBy(elastic.NewFieldSort(model.TimestampField)).
+		Pretty(true).
+		Do()
+	if err == nil {
+		src.scrollID = result.ScrollId
+	}
+	return result, err
+}
+
+func (src *elasticSearch) processEvent(
+	srcChan chan source.Event,
+	errChan chan source.Error,
+	hit json.RawMessage,
+) {
+	holder := eventHolder{}
+	err := json.Unmarshal(hit, &holder)
+	if err != nil {
+		errChan <- source.Error{Source: src, Error: err}
+		return
+	}
+	var evt = model.Event{}
+	err = json.Unmarshal([]byte(holder.Event), &evt)
+	if err != nil || evt.Timestamp == model.Timestamp(time.Time{}) {
+		applicationName := model.ApplicationName(src.indexName)
+		var formatted bytes.Buffer
+		err := json.Indent(&formatted, []byte(holder.Event), "", "   ")
+		var message = holder.Event
+		if err == nil {
+			message = formatted.String()
+		}
+		evt = model.Event{
+			Timestamp:       model.Timestamp(time.Now()),
+			Level:           level.Info,
+			Message:         model.Message(message),
+			ApplicationName: &applicationName,
+			MethodName:      "search",
+			LineNumber:      model.NoLineNumber,
+			ThreadName:      nil,
+			ClassName:       "-",
+			Exception:       nil,
+		}
+	}
+	srcChan <- source.Event{Source: src, Event: evt}
 }

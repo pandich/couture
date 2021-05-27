@@ -3,6 +3,8 @@ package theme
 import (
 	"couture/internal/pkg/source"
 	"crypto/sha256"
+	"github.com/alecthomas/chroma"
+	"github.com/alecthomas/chroma/styles"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
 	"github.com/muesli/gamut/palette"
@@ -10,10 +12,13 @@ import (
 	"strings"
 )
 
+// TODO change themes to be predefined colors
+//		have the definitions use color names from gamut.Palette?
+
 const (
 	// White ...
 	White = "#ffffff"
-	// Black ....\
+	// Black ....
 	Black      = "#000000"
 	purpleRain = "#ae99bf"
 	merlot     = "#a01010"
@@ -34,16 +39,17 @@ const (
 
 // Registry ...
 var Registry = map[string]Theme{
-	BlackAndWhite: newTheme(White, palette.Wikipedia),
-	Prince:        newTheme(purpleRain, palette.Crayola),
-	Brougham:      newTheme(merlot, palette.RAL),
-	Ocean:         newTheme(ocean, palette.CSS),
+	BlackAndWhite: newTheme(White, palette.Wikipedia, styles.BlackWhite),
+	Prince:        newTheme(purpleRain, palette.Crayola, styles.Monokai),
+	Brougham:      newTheme(merlot, palette.RAL, styles.Autumn),
+	Ocean:         newTheme(ocean, palette.CSS, styles.Tango),
 }
 
-func newTheme(baseColor string, sourceColors gamut.Palette) Theme {
+func newTheme(baseColor string, sourceColors gamut.Palette, jsonColorScheme *chroma.Style) Theme {
 	return Theme{
-		BaseColor:    baseColor,
-		sourceColors: sourceColors,
+		BaseColor:      baseColor,
+		sourceColors:   sourceColors,
+		JSONColorTheme: jsonColorScheme,
 	}
 }
 
@@ -58,8 +64,9 @@ func Names() []string {
 
 // Theme ...
 type Theme struct {
-	BaseColor    string
-	sourceColors gamut.Palette
+	BaseColor      string
+	sourceColors   gamut.Palette
+	JSONColorTheme *chroma.Style
 }
 
 // SourceColor ,,,

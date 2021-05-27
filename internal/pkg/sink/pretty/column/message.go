@@ -1,11 +1,15 @@
 package column
 
 import (
+	"bytes"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
+	"github.com/alecthomas/chroma"
+	"github.com/alecthomas/chroma/formatters"
+	"github.com/alecthomas/chroma/lexers"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/indent"
 )
@@ -17,36 +21,40 @@ const (
 
 type messageColumn struct {
 	baseColumn
+	lexer     chroma.Lexer
+	formatter chroma.Formatter
 }
 
 func newMessageColumn() messageColumn {
 	sigil := '▸'
-	return messageColumn{baseColumn{
-		columnName:  "message",
-		widthMode:   filling,
-		widthWeight: 0,
-		sigil:       &sigil,
-	}}
+	return messageColumn{
+		baseColumn: baseColumn{
+			columnName:  "message",
+			widthMode:   filling,
+			widthWeight: 0,
+			sigil:       &sigil,
+		},
+		lexer:     chroma.Coalesce(lexers.Get("json")),
+		formatter: formatters.Get("terminal16m"),
+	}
 }
 
 // RegisterStyles ...
 func (col messageColumn) RegisterStyles(theme theme.Theme) {
 	for _, lvl := range level.Levels {
+		fg := theme.MessageFg()
+		bg := theme.MessageBg(lvl)
 		cfmt.RegisterStyle(
 			col.levelStyleName("", lvl),
-			colorFormat(theme.MessageFg(), theme.MessageBg(lvl)),
+			colorFormat(fg, bg),
 		)
-	}
-	for _, lvl := range level.Levels {
 		cfmt.RegisterStyle(
 			col.levelStyleName(highlightSuffix, lvl),
-			colorFormat(theme.MessageFg(), theme.HighlightBg(lvl)),
+			colorFormat(fg, theme.HighlightBg(lvl)),
 		)
-	}
-	for _, lvl := range level.Levels {
 		cfmt.RegisterStyle(
 			col.levelStyleName(errorSuffix, lvl),
-			colorFormat(theme.StackTraceFg(), theme.MessageBg(lvl)),
+			colorFormat(theme.StackTraceFg(), bg),
 		)
 	}
 }
@@ -61,7 +69,22 @@ func (col messageColumn) Render(cfg config.Config, event sink.Event) []interface
 	lvl := event.Level
 	stackTrace := event.StackTrace()
 
-	var msg = col.levelSprintf(col.prefix(cfg), "", lvl, event.Message)
+	var message = string(event.Message)
+	if cfg.ExpandJSON {
+		iterator, err := col.lexer.Tokenise(nil, message)
+		if err == nil {
+			var buf bytes.Buffer
+			err := col.formatter.Format(&buf, cfg.Theme.JSONColorTheme, iterator)
+			if err == nil {
+				message = buf.String()
+				if !cfg.Multiline {
+					message = "\n" + message
+				}
+			}
+		}
+	}
+
+	var msg = col.levelSprintf(col.prefix(cfg), "", lvl, message)
 	msg += col.stackTrace(lvl, stackTrace)
 
 	if cfg.Highlight {

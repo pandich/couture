@@ -85,10 +85,12 @@ func managerOptions() ([]interface{}, error) {
 	sinkFlag := func() (interface{}, error) {
 		switch cli.OutputFormat {
 		case "pretty":
+			// TODO replace with kong bind?
 			return pretty.New(config.Config{
 				AutoResize:       cli.AutoResize,
 				Columns:          cli.Column,
 				ConsistentColors: cli.ConsistentColors,
+				ExpandJSON:       cli.ExpandJSON,
 				Highlight:        cli.Highlight,
 				Multiline:        cli.Multiline,
 				Theme:            theme.Registry[cli.Theme],
