@@ -15,6 +15,8 @@ import (
 	"time"
 )
 
+// FEATURE shell completion
+
 const helpSummary = "Tails one or more event sources."
 
 //nolint:lll
