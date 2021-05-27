@@ -49,3 +49,10 @@ func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
 	}
 	return nil
 }
+
+func (mgr publishingManager) shouldInclude(evt source.Event) bool {
+	if !evt.Level.IsAtLeast(mgr.options.level) {
+		return false
+	}
+	return evt.Message.Matches(mgr.options.includeFilters, mgr.options.excludeFilters)
+}

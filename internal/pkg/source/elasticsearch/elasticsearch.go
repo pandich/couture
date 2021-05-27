@@ -6,7 +6,6 @@ import (
 	"couture/internal/pkg/source"
 	"encoding/json"
 	"github.com/bnkamalesh/errors"
-	errors2 "github.com/pkg/errors"
 	"gopkg.in/olivere/elastic.v3"
 	"io"
 	"reflect"
@@ -103,7 +102,12 @@ func normalizeURL(sourceURL *model.SourceURL) {
 }
 
 // Start ...
-func (src elasticSearch) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
+func (src elasticSearch) Start(
+	wg *sync.WaitGroup,
+	running func() bool,
+	srcChan chan source.Event,
+	errChan chan source.Error,
+) error {
 	go func() {
 		defer wg.Done()
 		for running() {
@@ -119,7 +123,8 @@ func (src elasticSearch) Start(wg *sync.WaitGroup, running func() bool, out chan
 				if errors.Is(err, io.EOF) {
 					continue
 				}
-				panic(errors2.Wrapf(err, "name=%s\n", src.indexName))
+				errChan <- source.Error{Source: src, Error: err}
+				continue
 			}
 			if result == nil || result.Hits == nil || result.Hits.Hits == nil {
 				continue
@@ -128,7 +133,8 @@ func (src elasticSearch) Start(wg *sync.WaitGroup, running func() bool, out chan
 				holder := eventHolder{}
 				err = json.Unmarshal(*hit.Source, &holder)
 				if err != nil {
-					panic(err)
+					errChan <- source.Error{Source: src, Error: err}
+					continue
 				}
 				var evt = model.Event{}
 				err = json.Unmarshal([]byte(holder.Event), &evt)
@@ -145,7 +151,7 @@ func (src elasticSearch) Start(wg *sync.WaitGroup, running func() bool, out chan
 						Exception:       nil,
 					}
 				}
-				out <- source.Event{Source: src, Event: evt}
+				srcChan <- source.Event{Source: src, Event: evt}
 			}
 			src.scrollID = result.ScrollId
 		}

@@ -3,7 +3,6 @@ package pipe
 import (
 	"bufio"
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"encoding/json"
 	"io"
@@ -15,7 +14,8 @@ func Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	src source.Source,
-	out chan source.Event,
+	srcChan chan source.Event,
+	errChan chan source.Error,
 	closer func(),
 	in io.Reader,
 ) error {
@@ -30,13 +30,9 @@ func Start(
 				line := scanner.Text()
 				err := json.Unmarshal([]byte(line), &event)
 				if err != nil {
-					out <- source.Event{Source: src, Event: model.Event{
-						Timestamp: model.Timestamp{},
-						Level:     level.Info,
-						Message:   model.Message(line),
-					}}
+					errChan <- source.Error{Source: src, Error: err}
 				} else {
-					out <- source.Event{Source: src, Event: event}
+					srcChan <- source.Event{Source: src, Event: event}
 				}
 			}
 		}

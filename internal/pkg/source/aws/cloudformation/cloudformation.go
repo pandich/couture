@@ -92,7 +92,7 @@ type (
 	// Currently Supported Resources:
 	//		Lambda Functions
 	cloudFormationSource struct {
-		*aws.Source
+		aws.Source
 		// lookbackTime is how far back to look for log events.
 		lookbackTime *time.Time
 		// includeStackEvents specifies whether or not to include stack events in the log.
@@ -157,9 +157,14 @@ func normalizeURL(sourceURL *model.SourceURL) {
 }
 
 // Start ...
-func (src *cloudFormationSource) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
+func (src *cloudFormationSource) Start(
+	wg *sync.WaitGroup,
+	running func() bool,
+	srcChan chan source.Event,
+	errChan chan source.Error,
+) error {
 	for _, child := range src.children {
-		err := (*child).Start(wg, running, out)
+		err := (*child).Start(wg, running, srcChan, errChan)
 		if err != nil {
 			return err
 		}
@@ -169,10 +174,10 @@ func (src *cloudFormationSource) Start(wg *sync.WaitGroup, running func() bool, 
 			for running() {
 				stackEvents, err := src.getStackEvents()
 				if err != nil {
-					panic(err)
+					errChan <- source.Error{Source: src, Error: err}
 				}
 				for _, stackEvent := range stackEvents {
-					out <- source.Event{Source: src, Event: stackEvent}
+					srcChan <- source.Event{Source: src, Event: stackEvent}
 				}
 			}
 		}()

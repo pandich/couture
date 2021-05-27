@@ -63,7 +63,7 @@ const (
 
 // cloudwatchSource a Cloudwatch log poller.
 type cloudwatchSource struct {
-	*aws.Source
+	aws.Source
 	// lookbackTime is how far back to look for log events.
 	lookbackTime *time.Time
 	// logs is the CloudWatch logs client.
@@ -90,7 +90,7 @@ func newFromURL(sourceURL model.SourceURL) (*source.Source, error) {
 
 // New ...
 func New(
-	awsSource *aws.Source,
+	awsSource aws.Source,
 	lookbackTime *time.Time,
 	logGroupName string,
 ) *source.Source {
@@ -118,7 +118,12 @@ func normalizeURL(sourceURL *model.SourceURL) {
 }
 
 // Start ...
-func (src *cloudwatchSource) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
+func (src *cloudwatchSource) Start(
+	wg *sync.WaitGroup,
+	running func() bool,
+	srcChan chan source.Event,
+	errChan chan source.Error,
+) error {
 	var startTime *int64
 	if src.lookbackTime != nil {
 		i := src.lookbackTime.Unix()
@@ -134,8 +139,10 @@ func (src *cloudwatchSource) Start(wg *sync.WaitGroup, running func() bool, out 
 				StartTime:    startTime,
 			})
 			if err != nil {
-				panic(err)
+				errChan <- source.Error{Source: src, Error: err}
+				continue
 			}
+
 			src.nextToken = logEvents.NextToken
 			for _, logEvent := range logEvents.Events {
 				if logEvent.Message != nil {
@@ -147,7 +154,7 @@ func (src *cloudwatchSource) Start(wg *sync.WaitGroup, running func() bool, out 
 							message = model.Message(*logEvent.Message)
 						}
 						threadName := model.ThreadName(*logEvent.LogStreamName)
-						out <- source.Event{
+						srcChan <- source.Event{
 							Source: src,
 							Event: model.Event{
 								Timestamp:  model.Timestamp(time.Unix(*logEvent.Timestamp, 0)),
@@ -159,7 +166,7 @@ func (src *cloudwatchSource) Start(wg *sync.WaitGroup, running func() bool, out 
 							},
 						}
 					} else {
-						out <- source.Event{Source: src, Event: event}
+						srcChan <- source.Event{Source: src, Event: event}
 					}
 				}
 			}

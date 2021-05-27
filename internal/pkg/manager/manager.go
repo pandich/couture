@@ -18,7 +18,6 @@ func New(opts ...interface{}) (*model.Manager, error) {
 	if err := publisher.RegisterOptions(opts...); err != nil {
 		return nil, err
 	}
-	publisher.out = sinkWriter(publisher.sinks)
 	var mgr model.Manager = &publisher
 	return &mgr, nil
 }
@@ -34,9 +33,6 @@ type (
 
 		// options contains general settings and toggles.
 		options managerOptions
-
-		// out is the event out used to route events between pollingSourcePollers and sinks
-		out chan sink.Event
 
 		// sources contains all source.Pushable and source.Pollable instances.
 		sources []*source.Source

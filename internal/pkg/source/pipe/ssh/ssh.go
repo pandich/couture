@@ -50,7 +50,7 @@ func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 }
 
 // Start ...
-func (src sshSource) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
+func (src sshSource) Start(wg *sync.WaitGroup, running func() bool, srcChan chan source.Event, errChan chan source.Error) error {
 	// create the command
 	cmd, err := src.ssh.Command("tail", "-F", src.filename)
 	if err != nil {
@@ -67,5 +67,5 @@ func (src sshSource) Start(wg *sync.WaitGroup, running func() bool, out chan sou
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	return pipe.Start(wg, running, src, out, func() { _ = cmd.Close() }, in)
+	return pipe.Start(wg, running, src, srcChan, errChan, func() { _ = cmd.Close() }, in)
 }

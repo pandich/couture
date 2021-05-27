@@ -14,14 +14,14 @@ import (
 type (
 	// Source of events. Responsible for ingest and conversion to the standard format.
 	Source interface {
-		// Sigil represents the type of source in a single character.
-		Sigil() rune
 		// ID is the unique id for this source.
 		ID() string
+		// Sigil represents the type of source in a single character.
+		Sigil() rune
 		// URL is the URL from which the events come.
 		URL() model.SourceURL
 		// Start collecting events.
-		Start(wg *sync.WaitGroup, running func() bool, out chan Event) error
+		Start(wg *sync.WaitGroup, running func() bool, srcChan chan Event, errChan chan Error) error
 	}
 	// BaseSource ...
 	BaseSource struct {
@@ -34,6 +34,12 @@ type (
 	Event struct {
 		model.Event
 		Source Source
+	}
+
+	// Error ...
+	Error struct {
+		Source Source
+		Error  error
 	}
 
 	// Metadata ...

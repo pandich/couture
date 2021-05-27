@@ -71,7 +71,7 @@ func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 
 // Start ...
 //nolint:gosec,gomnd
-func (src fakeSource) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
+func (src fakeSource) Start(wg *sync.WaitGroup, running func() bool, srcChan chan source.Event, _ chan source.Error) error {
 	go func() {
 		defer wg.Done()
 		for running() {
@@ -104,7 +104,7 @@ func (src fakeSource) Start(wg *sync.WaitGroup, running func() bool, out chan so
 			default:
 				message = gofakeit.Paragraph(1, 4, count, "\n")
 			}
-			out <- source.Event{
+			srcChan <- source.Event{
 				Source: src,
 				Event: model.Event{
 					ApplicationName: &src.applicationName,

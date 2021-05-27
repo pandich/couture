@@ -41,7 +41,7 @@ func newSource(sourceURL model.SourceURL) *source.Source {
 }
 
 // Start ...
-func (src fileSource) Start(wg *sync.WaitGroup, running func() bool, out chan source.Event) error {
+func (src fileSource) Start(wg *sync.WaitGroup, running func() bool, srcChan chan source.Event, errChan chan source.Error) error {
 	// get the safe path to the file
 	path, err := filepath.Abs(src.filename)
 	if err != nil {
@@ -61,5 +61,5 @@ func (src fileSource) Start(wg *sync.WaitGroup, running func() bool, out chan so
 	if err = tail.Start(); err != nil {
 		return err
 	}
-	return pipe.Start(wg, running, src, out, func() {}, in)
+	return pipe.Start(wg, running, src, srcChan, errChan, func() {}, in)
 }
