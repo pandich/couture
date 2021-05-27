@@ -40,5 +40,5 @@ func (col levelColumn) Format(_ uint, event sink.Event) string {
 
 // Render ...
 func (col levelColumn) Render(_ config.Config, event sink.Event) []interface{} {
-	return []interface{}{string(event.Level[0])}
+	return []interface{}{string(event.Level)}
 }

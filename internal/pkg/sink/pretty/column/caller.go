@@ -14,17 +14,24 @@ type callerColumn struct {
 
 func newCallerColumn() callerColumn {
 	const width = 50
+	sigil := '☎'
 	return callerColumn{baseColumn{
 		columnName:  "caller",
 		widthMode:   fixed,
 		widthWeight: width,
+		sigil:       &sigil,
 	}}
 }
 
 // RegisterStyles ...
 func (col callerColumn) RegisterStyles(theme theme.Theme) {
+	var prefix = ""
+	if col.sigil != nil {
+		prefix = " " + string(*col.sigil) + " "
+	}
+
 	cfmt.RegisterStyle("Class", func(s string) string {
-		return cfmt.Sprintf("{{ ☎︎ %s}}::bg"+theme.CallerBg()+"|"+theme.ClassFg(), s)
+		return cfmt.Sprintf("{{"+prefix+"︎%s}}::bg"+theme.CallerBg()+"|"+theme.ClassFg(), s)
 	})
 	cfmt.RegisterStyle("MethodDelimiter", func(s string) string {
 		return cfmt.Sprintf("{{%s}}::bg"+theme.CallerBg()+"|"+theme.MethodDelimiterFg(), s)

@@ -29,6 +29,7 @@ func (col sourceColumn) RegisterStyles(_ theme.Theme) {}
 func RegisterSource(theme theme.Theme, consistentColors bool, src source.Source) {
 	bgColor := theme.SourceColor(consistentColors, src)
 	fgColor := tty.Contrast(bgColor)
+	// TODO sigil should stand out
 	cfmt.RegisterStyle(src.ID(), func(s string) string {
 		return cfmt.Sprintf("{{"+string(src.Sigil())+" %s }}::"+fgColor+"|bg"+bgColor, s)
 	})
