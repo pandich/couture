@@ -12,6 +12,7 @@ import (
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/indent"
+	"github.com/muesli/termenv"
 )
 
 const (
@@ -21,12 +22,28 @@ const (
 
 type messageColumn struct {
 	baseColumn
-	lexer     chroma.Lexer
-	formatter chroma.Formatter
+	lexer      chroma.Lexer
+	formatter  chroma.Formatter
+	bgColorSeq map[level.Level]string
 }
 
 func newMessageColumn() messageColumn {
 	sigil := '▸'
+
+	var formatter chroma.Formatter
+	switch termenv.EnvColorProfile() {
+	case termenv.ANSI:
+		formatter = formatters.Get("terminal8")
+	case termenv.ANSI256:
+		formatter = formatters.Get("terminal256")
+	case termenv.TrueColor:
+		formatter = formatters.Get("terminal16m")
+	case termenv.Ascii:
+		fallthrough
+	default:
+		formatter = formatters.Get("noop")
+	}
+
 	return messageColumn{
 		baseColumn: baseColumn{
 			columnName:  "message",
@@ -34,8 +51,9 @@ func newMessageColumn() messageColumn {
 			widthWeight: 0,
 			sigil:       &sigil,
 		},
-		lexer:     chroma.Coalesce(lexers.Get("json")),
-		formatter: formatters.Get("terminal16m"),
+		lexer:      chroma.Coalesce(lexers.Get("json")),
+		formatter:  formatter,
+		bgColorSeq: map[level.Level]string{},
 	}
 }
 
@@ -44,13 +62,14 @@ func (col messageColumn) RegisterStyles(theme theme.Theme) {
 	for _, lvl := range level.Levels {
 		fg := theme.MessageFg()
 		bg := theme.MessageBg(lvl)
+		col.bgColorSeq[lvl] = termenv.CSI + termenv.EnvColorProfile().Color(bg).Sequence(true) + "m"
 		cfmt.RegisterStyle(
 			col.levelStyleName("", lvl),
 			colorFormat(fg, bg),
 		)
 		cfmt.RegisterStyle(
 			col.levelStyleName(highlightSuffix, lvl),
-			colorFormat(fg, theme.HighlightBg(lvl)),
+			colorFormat(theme.HighlightFg(), bg),
 		)
 		cfmt.RegisterStyle(
 			col.levelStyleName(errorSuffix, lvl),
@@ -68,7 +87,6 @@ func (col messageColumn) Format(_ uint, _ sink.Event) string {
 func (col messageColumn) Render(cfg config.Config, event sink.Event) []interface{} {
 	lvl := event.Level
 	stackTrace := event.StackTrace()
-
 	var message = string(event.Message)
 	if cfg.ExpandJSON {
 		iterator, err := col.lexer.Tokenise(nil, message)
@@ -90,7 +108,7 @@ func (col messageColumn) Render(cfg config.Config, event sink.Event) []interface
 	if cfg.Highlight {
 		for _, filter := range event.Filters {
 			msg = filter.ReplaceAllStringFunc(msg, func(s string) string {
-				return col.levelSprintf("", highlightSuffix, lvl, s)
+				return col.levelSprintf("", highlightSuffix, lvl, s) + col.bgColorSeq[lvl]
 			})
 		}
 	}

@@ -22,7 +22,7 @@ var AvailableSources = []source.Metadata{
 	ssh.Metadata(),
 }
 
-// GetSource ...
+// GetSource gets a source, if possible, for the specified sourceURL.
 func GetSource(sourceURL model.SourceURL) ([]interface{}, []error) {
 	var sources []interface{}
 	var violations []error
@@ -40,7 +40,6 @@ func GetSource(sourceURL model.SourceURL) ([]interface{}, []error) {
 	return sources, violations
 }
 
-// getSourceMetadata ...
 func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
 	for _, metadata := range AvailableSources {
 		if metadata.CanHandle(sourceURL) {
@@ -51,8 +50,8 @@ func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
 }
 
 func (mgr publishingManager) shouldInclude(evt source.Event) bool {
-	if !evt.Level.IsAtLeast(mgr.options.level) {
+	if !evt.Level.IsAtLeast(mgr.config.Level) {
 		return false
 	}
-	return evt.Message.Matches(mgr.options.includeFilters, mgr.options.excludeFilters)
+	return evt.Message.Matches(mgr.config.IncludeFilters, mgr.config.ExcludeFilters)
 }

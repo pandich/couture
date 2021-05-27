@@ -2,7 +2,7 @@ package config
 
 import (
 	"couture/internal/pkg/sink/pretty/theme"
-	"couture/internal/pkg/tty"
+	"github.com/olekukonko/ts"
 )
 
 // Config ...
@@ -25,7 +25,16 @@ func (cfg Config) EffectiveTerminalWidth() uint {
 		return cfg.Width
 	}
 	if cfg.Wrap {
-		return uint(tty.TerminalWidth())
+		return uint(TerminalWidth())
 	}
 	return 0
+}
+
+// TerminalWidth get the terminal width or 0 if it cannot be determined.
+func TerminalWidth() int {
+	var terminalWidth = 0
+	if size, err := ts.GetSize(); err == nil {
+		terminalWidth = size.Col()
+	}
+	return terminalWidth
 }

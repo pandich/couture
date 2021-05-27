@@ -23,6 +23,7 @@ type (
 		// Start collecting events.
 		Start(wg *sync.WaitGroup, running func() bool, srcChan chan Event, errChan chan Error) error
 	}
+
 	// BaseSource ...
 	BaseSource struct {
 		id        string
@@ -71,13 +72,16 @@ func (b BaseSource) ID() string {
 }
 
 // Sigil ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (b BaseSource) Sigil() rune {
 	return b.sigil
 }
 
 // URL ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (b BaseSource) URL() model.SourceURL {
 	return b.sourceURL
+}
+
+// Start ...
+func (b BaseSource) Start(_ *sync.WaitGroup, _ func() bool, _ chan Event, _ chan Error) error {
+	panic("implement me")
 }

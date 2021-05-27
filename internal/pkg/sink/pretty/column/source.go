@@ -5,7 +5,6 @@ import (
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
 	"couture/internal/pkg/source"
-	"couture/internal/pkg/tty"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
@@ -26,12 +25,12 @@ func newSourceColumn() sourceColumn {
 func (col sourceColumn) RegisterStyles(_ theme.Theme) {}
 
 // RegisterSource ...
-func RegisterSource(theme theme.Theme, consistentColors bool, src source.Source) {
-	bgColor := theme.SourceColor(consistentColors, src)
-	fgColor := tty.Contrast(bgColor)
-	// TODO sigil should stand out
+func RegisterSource(th theme.Theme, consistentColors bool, src source.Source) {
+	bgColor := th.SourceColor(consistentColors, src)
+	fgColor := contrast(bgColor)
+	sigilColor := fgColor
 	cfmt.RegisterStyle(src.ID(), func(s string) string {
-		return cfmt.Sprintf("{{"+string(src.Sigil())+" %s }}::"+fgColor+"|bg"+bgColor, s)
+		return cfmt.Sprintf("{{%s}}::"+sigilColor+"|bg"+bgColor+"{{ %s }}::"+fgColor+"|bg"+bgColor, string(src.Sigil()), s)
 	})
 }
 

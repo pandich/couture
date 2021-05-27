@@ -1,14 +1,16 @@
 package pretty
 
 import (
+	"bufio"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/column"
 	"couture/internal/pkg/sink/pretty/config"
-	"couture/internal/pkg/sink/pretty/theme"
 	"couture/internal/pkg/source"
-	"couture/internal/pkg/tty"
 	"github.com/i582/cfmt/cmd/cfmt"
+	"github.com/mattn/go-isatty"
 	"github.com/muesli/reflow/wordwrap"
+	"github.com/muesli/termenv"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -36,7 +38,7 @@ func New(cfg config.Config) *sink.Sink {
 		terminalWidth: cfg.EffectiveTerminalWidth(),
 		columnOrder:   cfg.Columns,
 		config:        cfg,
-		printer:       tty.NewTTYWriter(os.Stdout),
+		printer:       newTTYWriter(os.Stdout),
 	}
 	return &snk
 }
@@ -65,7 +67,7 @@ func (snk *prettySink) Accept(event sink.Event) error {
 }
 
 func (snk *prettySink) columnFormat(event sink.Event) (string, []interface{}) {
-	const resetSequence = "\x1b[2m"
+	const resetSequence = termenv.CSI + termenv.ResetSeq + "m"
 
 	// get format string and arguments
 	var format = ""
@@ -80,7 +82,7 @@ func (snk *prettySink) columnFormat(event sink.Event) (string, []interface{}) {
 }
 
 func (snk *prettySink) updateColumnWidths() {
-	snk.columnWidths = column.Widths(uint(tty.TerminalWidth()), snk.columnOrder)
+	snk.columnWidths = column.Widths(uint(config.TerminalWidth()), snk.columnOrder)
 }
 
 func (snk *prettySink) handleAutoResizeState() {
@@ -88,15 +90,37 @@ func (snk *prettySink) handleAutoResizeState() {
 	signal.Notify(resize, os.Interrupt, syscall.SIGWINCH)
 	go func() {
 		defer close(resize)
-		for range resize {
+		for {
+			<-resize
 			snk.updateColumnWidths()
 		}
 	}()
 }
 
 func (snk *prettySink) handleColorState() {
-	isBlackOrWhite := snk.config.Theme.BaseColor == theme.White || snk.config.Theme.BaseColor == theme.Black
-	if !tty.IsTTY() || isBlackOrWhite {
+	isTTY := isatty.IsTerminal(os.Stdout.Fd())
+	isBlackOrWhite := snk.config.Theme.BaseColor == "#ffffff"
+	if !isTTY || isBlackOrWhite {
 		cfmt.DisableColors()
 	}
+}
+
+func newTTYWriter(target io.Writer) chan string {
+	delegate := make(chan string)
+	go func() {
+		defer close(delegate)
+		writer := bufio.NewWriter(target)
+		for {
+			message := <-delegate
+			_, err := writer.WriteString(message + "\n")
+			if err != nil {
+				panic(err)
+			}
+			err = writer.Flush()
+			if err != nil {
+				panic(err)
+			}
+		}
+	}()
+	return delegate
 }

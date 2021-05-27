@@ -5,7 +5,6 @@ import (
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"github.com/brianvoe/gofakeit/v6"
-	errors2 "github.com/pkg/errors"
 	"math/rand"
 	"reflect"
 	"strings"
@@ -16,6 +15,7 @@ import (
 const (
 	hipsterStyle = "hipster"
 	loremStyle   = "lorem"
+	hackerStyle  = "hacker"
 	defaultStyle = "default"
 )
 
@@ -26,11 +26,7 @@ func Metadata() source.Metadata {
 		Type:      reflect.TypeOf(fakeSource{}),
 		CanHandle: func(url model.SourceURL) bool { return url.Scheme == "fake" },
 		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {
-			src, err := newSource(sourceURL)
-			if err != nil {
-				return nil, err
-			}
-			var i interface{} = src
+			var i interface{} = newSource(sourceURL)
 			return &i, nil
 		},
 		ExampleURLs: []string{},
@@ -40,70 +36,78 @@ func Metadata() source.Metadata {
 // fakeSource provides fake test data.
 type fakeSource struct {
 	source.BaseSource
-	applicationName  model.ApplicationName
-	messageGenerator string
+	applicationName model.ApplicationName
+	style           string
+	faker           *gofakeit.Faker
 }
 
-// newSource ...
-func newSource(sourceURL model.SourceURL) (*source.Source, error) {
-	// seed
-	seed, err := sourceURL.QueryInt64("seed")
-	if err != nil {
-		return nil, errors2.Wrapf(err, "could not parse seed\n")
-	}
-	if seed != nil {
-		gofakeit.Seed(*seed)
-	}
-
-	// source
-	var messageGenerator, ok = sourceURL.QueryKey("style")
-	if !ok {
-		messageGenerator = defaultStyle
-	}
-
+func newSource(sourceURL model.SourceURL) *source.Source {
+	faker := getFakerArg(sourceURL)
 	var src source.Source = fakeSource{
-		BaseSource:       source.New('🃟', sourceURL),
-		applicationName:  model.ApplicationName(gofakeit.AppName()),
-		messageGenerator: messageGenerator,
+		BaseSource:      source.New('🃟', sourceURL),
+		applicationName: model.ApplicationName(faker.AppName()),
+		style:           getStyleArg(sourceURL),
+		faker:           faker,
 	}
-	return &src, nil
+	return &src
+}
+
+func getStyleArg(sourceURL model.SourceURL) string {
+	var style, ok = sourceURL.QueryKey("style")
+	if !ok {
+		style = defaultStyle
+	}
+	return style
 }
 
 // Start ...
-//nolint:gosec,gomnd
-func (src fakeSource) Start(wg *sync.WaitGroup, running func() bool, srcChan chan source.Event, _ chan source.Error) error {
+func (src fakeSource) Start(
+	wg *sync.WaitGroup,
+	running func() bool,
+	srcChan chan source.Event,
+	_ chan source.Error,
+) error {
+	const paragraphLength = 4
+
+	sentenceMaker := src.getSentenceMaker()
+
+	var messageGenerator = func(lineCount int) string {
+		var sentences []string
+		for i := 0; i < lineCount; i++ {
+			sentences = append(sentences, sentenceMaker(paragraphLength))
+		}
+		return strings.Join(sentences, "")
+	}
+	var exceptionGenerator = func(lineCount int) string {
+		var sentences []string
+		for i := 0; i < lineCount; i++ {
+			sentences = append(sentences, sentenceMaker(paragraphLength))
+		}
+		return strings.Join(sentences, "\n")
+	}
+
 	go func() {
 		defer wg.Done()
+
+		const maxPercent = 100
+		const errorThresholdPercent = 90
+		const maxLineNumber = 200
+
+		nonErrorLevels := []level.Level{level.Trace, level.Debug, level.Info, level.Warn}
+
 		for running() {
-			if rand.Intn(100) >= 90 {
-				continue
-			}
 			var exception *model.Exception
-			var lvl = []level.Level{level.Trace, level.Debug, level.Info, level.Warn}[rand.Intn(4)]
-			const count = 10
-			if rand.Intn(100) > 90 {
-				stackTrace := strings.Join([]string{
-					gofakeit.Sentence(count),
-					gofakeit.Sentence(count),
-					gofakeit.Sentence(count),
-					gofakeit.Sentence(count),
-				}, "\n")
+			//nolint:gosec
+			index := rand.Intn(len(nonErrorLevels))
+			var lvl = nonErrorLevels[index]
+			//nolint:gosec
+			if rand.Intn(maxPercent) > errorThresholdPercent {
+				stackTrace := exceptionGenerator(paragraphLength)
 				exception = &model.Exception{StackTrace: model.StackTrace(stackTrace)}
 				lvl = level.Error
 			}
-
-			threadName := model.ThreadName(gofakeit.Username())
-			var message string
-			switch src.messageGenerator {
-			case hipsterStyle:
-				message = gofakeit.HipsterParagraph(1, 4, count, "\n")
-			case loremStyle:
-				message = gofakeit.LoremIpsumParagraph(1, 4, count, "\n")
-			case defaultStyle:
-				fallthrough
-			default:
-				message = gofakeit.Paragraph(1, 4, count, "\n")
-			}
+			threadName := model.ThreadName(src.faker.Username())
+			message := messageGenerator(paragraphLength)
 			srcChan <- source.Event{
 				Source: src,
 				Event: model.Event{
@@ -111,14 +115,41 @@ func (src fakeSource) Start(wg *sync.WaitGroup, running func() bool, srcChan cha
 					Timestamp:       model.Timestamp(time.Now()),
 					Level:           lvl,
 					Message:         model.Message(message),
-					MethodName:      model.MethodName(gofakeit.Animal()),
-					LineNumber:      model.LineNumber(uint64(rand.Intn(200))),
-					ThreadName:      &threadName,
-					ClassName:       model.ClassName(gofakeit.AppName()),
-					Exception:       exception,
+					MethodName:      model.MethodName(src.faker.Animal()),
+					//nolint:gosec
+					LineNumber: model.LineNumber(rand.Intn(maxLineNumber)),
+					ThreadName: &threadName,
+					ClassName:  model.ClassName(src.faker.AppName()),
+					Exception:  exception,
 				},
 			}
 		}
 	}()
 	return nil
+}
+
+func (src fakeSource) getSentenceMaker() func(int) string {
+	var sentenceMaker func(int) string
+	switch src.style {
+	case hipsterStyle:
+		sentenceMaker = src.faker.HipsterSentence
+	case loremStyle:
+		sentenceMaker = src.faker.LoremIpsumSentence
+	case hackerStyle:
+		sentenceMaker = func(_ int) string { return src.faker.HackerPhrase() }
+	case defaultStyle:
+		fallthrough
+	default:
+		sentenceMaker = src.faker.Sentence
+	}
+	return sentenceMaker
+}
+
+func getFakerArg(sourceURL model.SourceURL) *gofakeit.Faker {
+	var seed, _ = sourceURL.QueryInt64("seed")
+	if seed == nil {
+		epoch := time.Now().Unix()
+		seed = &epoch
+	}
+	return gofakeit.New(*seed)
 }

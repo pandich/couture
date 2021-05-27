@@ -47,7 +47,7 @@ func (mgr *publishingManager) createChannels() (chan source.Event, chan source.E
 		for {
 			evt := <-srcChan
 			if mgr.shouldInclude(evt) {
-				snkChan <- sink.Event{Event: evt, Filters: mgr.options.includeFilters}
+				snkChan <- sink.Event{Event: evt, Filters: mgr.config.IncludeFilters}
 			}
 		}
 	}()

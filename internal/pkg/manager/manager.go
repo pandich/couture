@@ -2,19 +2,22 @@ package manager
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	errors2 "github.com/pkg/errors"
+	"regexp"
 	"runtime"
 	"sync"
+	"time"
 )
 
 // New creates an empty Manager.
-func New(opts ...interface{}) (*model.Manager, error) {
+func New(config Config, opts ...interface{}) (*model.Manager, error) {
 	if runtime.GOOS == "windows" {
 		return nil, errors2.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
-	publisher := publishingManager{wg: &sync.WaitGroup{}}
+	publisher := publishingManager{config: config, wg: &sync.WaitGroup{}}
 	if err := publisher.RegisterOptions(opts...); err != nil {
 		return nil, err
 	}
@@ -31,8 +34,8 @@ type (
 		// running whether or not this Manager has been started.
 		running bool
 
-		// options contains general settings and toggles.
-		options managerOptions
+		// config contains general settings and toggles.
+		config Config
 
 		// sources contains all source.Pushable and source.Pollable instances.
 		sources []*source.Source
@@ -50,11 +53,20 @@ func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error 
 			mgr.sinks = append(mgr.sinks, v)
 		case *source.Source:
 			mgr.sources = append(mgr.sources, v)
-		case option:
-			v.Apply(&mgr.options)
 		default:
 			return errors2.Errorf("unknown manager option type: %T (%+v)\n", registrant, registrant)
 		}
 	}
 	return nil
+}
+
+// Config ...
+type Config struct {
+	Level level.Level
+	// Since
+	// TODO is largely (completely) unused?
+	// 		Each source.Source will need to implement an approach.
+	Since          *time.Time
+	IncludeFilters []regexp.Regexp
+	ExcludeFilters []regexp.Regexp
 }

@@ -5,7 +5,6 @@ import (
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
-	"couture/internal/pkg/tty"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
@@ -26,7 +25,7 @@ func newLevelColumn() levelColumn {
 func (col levelColumn) RegisterStyles(theme theme.Theme) {
 	for _, lvl := range level.Levels {
 		bgColor := theme.LevelColor(lvl)
-		fgColor := tty.Contrast(bgColor)
+		fgColor := contrast(bgColor)
 		cfmt.RegisterStyle(col.name()+string(lvl), func(s string) string {
 			return cfmt.Sprintf("{{ %1.1s }}::bg"+bgColor+"|"+fgColor, s)
 		})

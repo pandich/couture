@@ -68,7 +68,6 @@ type elasticSearch struct {
 	esClient  *elastic.Client
 }
 
-// newSource ...
 func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	normalizeURL(&sourceURL)
 
@@ -167,6 +166,7 @@ func (src *elasticSearch) processEvent(
 		if err == nil {
 			message = formatted.String()
 		}
+		threadName := model.ThreadName(src.scrollID)
 		evt = model.Event{
 			Timestamp:       model.Timestamp(time.Now()),
 			Level:           level.Info,
@@ -174,8 +174,8 @@ func (src *elasticSearch) processEvent(
 			ApplicationName: &applicationName,
 			MethodName:      "search",
 			LineNumber:      model.NoLineNumber,
-			ThreadName:      nil,
-			ClassName:       "-",
+			ThreadName:      &threadName,
+			ClassName:       "index",
 			Exception:       nil,
 		}
 	}

@@ -85,7 +85,6 @@ const (
 	schemeAliasFriendly = "stack"
 )
 
-// cloudFormationSource ...
 type (
 	// cloudFormationSource a CloudFormation stack event, and stack resource log watcher.
 	// Stack resources are recursively searched to discover Cloudwatch log groups related to the stack.

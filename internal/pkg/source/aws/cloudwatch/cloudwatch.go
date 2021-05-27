@@ -88,7 +88,7 @@ func newFromURL(sourceURL model.SourceURL) (*source.Source, error) {
 	return New(awsSource, lookbackTime, sourceURL.Path), nil
 }
 
-// New ...
+// New makes a new AWS base source.
 func New(
 	awsSource aws.Source,
 	lookbackTime *time.Time,

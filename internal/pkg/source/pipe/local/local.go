@@ -24,13 +24,11 @@ func Metadata() source.Metadata {
 	}
 }
 
-// fileSource ...
 type fileSource struct {
 	source.BaseSource
 	filename string
 }
 
-// newSource ...
 func newSource(sourceURL model.SourceURL) *source.Source {
 	sourceURL.Normalize()
 	var src source.Source = fileSource{

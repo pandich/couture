@@ -42,11 +42,11 @@ var priorities = map[Level]int{
 	Error: errorPriority,
 }
 
-// SimpleNames ...
-func SimpleNames() []string {
+// Lower ...
+func Lower() []string {
 	var logLevels []string
 	for _, level := range Levels {
-		logLevels = append(logLevels, level.SimpleName())
+		logLevels = append(logLevels, level.Lower())
 	}
 	return logLevels
 }
@@ -64,7 +64,7 @@ func (level Level) priority() int {
 	return priorities[level]
 }
 
-// SimpleName returns a name that is more simple for the user to enter.
-func (level Level) SimpleName() string {
+// Lower returns a name that is more simple for the user to enter.
+func (level Level) Lower() string {
 	return strings.ToLower(string(level))
 }

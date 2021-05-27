@@ -4,18 +4,14 @@ import (
 	"couture/internal/pkg/sink/pretty/theme"
 )
 
-type registry map[string]column
-
-// ByName ...
-var ByName = registry{}
-
 func init() {
+	// build the registry
 	for _, col := range columns {
 		ByName[col.name()] = col
 	}
 }
 
-// Names ...
+// Names all available column names.
 func Names() []string {
 	var columnNames []string
 	for _, col := range columns {
@@ -24,7 +20,12 @@ func Names() []string {
 	return columnNames
 }
 
-// Init ...
+// ByName ...
+var ByName = registry{}
+
+type registry map[string]column
+
+// Init initializes a theme with the registry.
 func (registry registry) Init(theme theme.Theme) {
 	for _, col := range registry {
 		col.RegisterStyles(theme)

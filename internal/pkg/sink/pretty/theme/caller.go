@@ -1,16 +1,16 @@
 package theme
 
 import (
-	"couture/internal/pkg/tty"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
+	"github.com/muesli/termenv"
 )
 
 func (theme Theme) callerColors() (string, string, string) {
 	var aContrast = 0.4
 	var bContrast = 0.8
 	var cContrast = 0.4
-	if tty.IsDarkMode() {
+	if termenv.HasDarkBackground() {
 		aContrast = 0.6
 		bContrast = 0.0
 		cContrast = 0.0
@@ -32,7 +32,7 @@ func (theme Theme) ClassFg() string {
 // MethodDelimiterFg ...
 func (theme Theme) MethodDelimiterFg() string {
 	const contrast = 0.25
-	return tty.Darker(theme.MethodFg(), contrast)
+	return darker(theme.MethodFg(), contrast)
 }
 
 // MethodFg ...
@@ -44,10 +44,10 @@ func (theme Theme) MethodFg() string {
 // LineNumberDelimiterFg ...
 func (theme Theme) LineNumberDelimiterFg() string {
 	const contrast = 0.25
-	if tty.IsDarkMode() {
-		return tty.Darker(theme.LineNumberFg(), contrast)
+	if termenv.HasDarkBackground() {
+		return darker(theme.LineNumberFg(), contrast)
 	}
-	return tty.Lighter(theme.LineNumberFg(), contrast)
+	return lighter(theme.LineNumberFg(), contrast)
 }
 
 // LineNumberFg ...
@@ -58,15 +58,15 @@ func (theme Theme) LineNumberFg() string {
 
 // ThreadFg ...
 func (theme Theme) ThreadFg() string {
-	if tty.IsDarkMode() {
-		return tty.SimilarBg(tty.Darker(theme.BaseColor, 0.5))
+	if termenv.HasDarkBackground() {
+		return similarBg(darker(theme.BaseColor, 0.5))
 	}
-	return tty.SimilarBg(tty.Lighter(theme.BaseColor, 0.5))
+	return similarBg(lighter(theme.BaseColor, 0.5))
 }
 
 // CallerBg ...
 func (theme Theme) CallerBg() string {
-	if tty.IsDarkMode() {
+	if termenv.HasDarkBackground() {
 		return "#202020"
 	}
 	return "#f0f0f0"

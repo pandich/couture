@@ -1,5 +1,7 @@
 package cli
 
+// TODO cleanup and document
+
 import (
 	"couture/internal/pkg/couture"
 	"fmt"
@@ -70,8 +72,8 @@ func expandAlias(aliasURL *url.URL) (string, error) {
 
 func aliasContext(aliasURL *url.URL) map[string][]string {
 	context := map[string][]string{}
-	addURLFields(context, aliasURL)
-	addDateFields(context)
+	addURLAliasVars(context, aliasURL)
+	addDateAliasVars(context)
 	return context
 }
 
@@ -82,7 +84,7 @@ func expandSchemeShortForm(arg string) string {
 	return arg
 }
 
-func addURLFields(context map[string][]string, aliasURL *url.URL) {
+func addURLAliasVars(context map[string][]string, aliasURL *url.URL) {
 	context["_name"] = []string{aliasURL.Host}
 	context["_path"] = []string{aliasURL.Path}
 	if aliasURL.User != nil {
@@ -96,7 +98,7 @@ func addURLFields(context map[string][]string, aliasURL *url.URL) {
 	}
 }
 
-func addDateFields(context map[string][]string) {
+func addDateAliasVars(context map[string][]string) {
 	const century = 100
 
 	now := time.Now()

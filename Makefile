@@ -56,7 +56,7 @@ release: goreleaser build
 
 # Code Quality
 .PHONY: neat lint metrics
-neat: gocmt
+neat:
 	@echo tidying
 	@go mod tidy
 	@echo commenting

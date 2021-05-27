@@ -1,7 +1,6 @@
 package theme
 
 import (
-	"couture/internal/pkg/tty"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
 )
@@ -11,12 +10,12 @@ func (theme Theme) ApplicationFg() string {
 	cf, _ := colorful.MakeColor(gamut.Quadratic(gamut.Hex(theme.BaseColor))[2])
 	h, _, _ := cf.Hcl()
 	applicationColor := colorful.Hcl(h, 0.9, 0.8).Hex()
-	return tty.SimilarBg(applicationColor)
+	return similarBg(applicationColor)
 }
 
 // ApplicationBg ...
 func (theme Theme) ApplicationBg() string {
-	return tty.Contrast(theme.ApplicationFg())
+	return contrast(theme.ApplicationFg())
 }
 
 // TimestampFg ...
@@ -26,10 +25,10 @@ func (theme Theme) TimestampFg() string {
 	cf, _ := colorful.MakeColor(gamut.Tints(gamut.Complementary(gamut.Hex(theme.BaseColor)), 3)[0])
 	timestampColor := gamut.Blends(yellow, cf, 16)[3]
 	timestampCf, _ := colorful.MakeColor(timestampColor)
-	return tty.SimilarBg(timestampCf.Hex())
+	return similarBg(timestampCf.Hex())
 }
 
 // TimestampBg ...
 func (theme Theme) TimestampBg() string {
-	return tty.Contrast(theme.TimestampFg())
+	return contrast(theme.TimestampFg())
 }

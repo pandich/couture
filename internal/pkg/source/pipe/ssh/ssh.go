@@ -27,14 +27,12 @@ func Metadata() source.Metadata {
 	}
 }
 
-// sshSource ...
 type sshSource struct {
 	source.BaseSource
 	ssh      *goph.Client
 	filename string
 }
 
-// newSource ...
 func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	client, err := getClient(sourceURL)
 	if err != nil {
