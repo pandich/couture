@@ -48,9 +48,8 @@ func Run() {
 	interrupt := make(chan os.Signal)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		defer close(interrupt)
-
 		const stopGracePeriod = 250 * time.Millisecond
+		defer close(interrupt)
 
 		cleanup := func() { termenv.Reset(); os.Exit(0) }
 
