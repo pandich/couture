@@ -61,7 +61,7 @@ func (theme Theme) ThreadFg() string {
 	if termenv.HasDarkBackground() {
 		return similarBg(darker(theme.BaseColor, 0.5))
 	}
-	return similarBg(lighter(theme.BaseColor, 0.5))
+	return similarBg(lighter(theme.BaseColor, 0.2))
 }
 
 // CallerBg ...
