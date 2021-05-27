@@ -19,13 +19,14 @@ const helpSummary = "Tails one or more event sources."
 
 //nolint:lll
 var cli struct {
-	OutputFormat string `group:"Display Options" hidden:"true" help:"The output format: ${enum}." enum:"${outputFormats}" default:"${defaultOutputFormat}" placeholder:"format" short:"f" required:"true" env:"COUTURE_DEFAULT_FORMAT"`
-	Wrap         bool   `group:"Display Options" help:"Wrap the output tp the terminal width, or that specified by --width." short:"w" default:"true" negatable:"true"`
-	Width        uint   `group:"Display Options" help:"Wrap width." placeholder:"width" short:"W"`
-	Theme        string `group:"Display Options" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"${defaultTheme}" enum:"${themeNames}"`
-	Multiline    bool   `group:"Display Options" help:"Display each log event in multiline format." negatable:"true" default:"false"`
-	Highlight    bool   `group:"Display Options" help:"Highlight matches from the patterns specified in --include." negatable:"true" default:"true"`
-	AutoResize   bool   `group:"Display Options" help:"Auto-resize columns when the terminal resizes." negatable:"true" default:"true"`
+	OutputFormat     string `group:"Display Options" hidden:"true" help:"The output format: ${enum}." enum:"${outputFormats}" default:"${defaultOutputFormat}" placeholder:"format" short:"f" required:"true" env:"COUTURE_DEFAULT_FORMAT"`
+	Wrap             bool   `group:"Display Options" help:"Wrap the output tp the terminal width, or that specified by --width." short:"w" default:"true" negatable:"true"`
+	Width            uint   `group:"Display Options" help:"Wrap width." placeholder:"width" short:"W"`
+	Theme            string `group:"Display Options" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"${defaultTheme}" enum:"${themeNames}"`
+	Multiline        bool   `group:"Display Options" help:"Display each log event in multiline format." negatable:"true" default:"false"`
+	Highlight        bool   `group:"Display Options" help:"Highlight matches from the patterns specified in --include." negatable:"true" default:"true"`
+	AutoResize       bool   `group:"Display Options" help:"Auto-resize columns when the terminal resizes." negatable:"true" default:"true"`
+	ConsistentColors bool   `group:"Display Options" help:"Maintain consistent source URL colors between runs." negatable:"true" default:"true"`
 
 	Column     []string   `group:"Content Options" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}"`
 	TimeFormat timeFormat `group:"Content Options" help:"Go-standard time format string or a named format: ${timeFormatNames}." short:"t" default:"stamp"`

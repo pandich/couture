@@ -26,8 +26,8 @@ func newSourceColumn() sourceColumn {
 func (col sourceColumn) RegisterStyles(_ theme.Theme) {}
 
 // RegisterSource ...
-func RegisterSource(theme theme.Theme, src source.Source) {
-	bgColor := <-theme.SourceColors
+func RegisterSource(theme theme.Theme, consistentColors bool, src source.Source) {
+	bgColor := theme.SourceColor(consistentColors, src)
 	fgColor := tty.Contrast(bgColor)
 	cfmt.RegisterStyle(src.ID(), func(s string) string {
 		return cfmt.Sprintf("{{"+string(src.Sigil())+" %s }}::"+fgColor+"|bg"+bgColor, s)

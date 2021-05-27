@@ -3,6 +3,7 @@ package pipe
 import (
 	"bufio"
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"encoding/json"
 	"io"
@@ -26,9 +27,17 @@ func Start(
 		for running() {
 			for scanner.Scan() {
 				var event model.Event
-				// TODO we should be pushing raw strings to the out and do event JSON parsing centrally
-				_ = json.Unmarshal([]byte(scanner.Text()), &event)
-				out <- source.Event{Source: src, Event: event}
+				line := scanner.Text()
+				err := json.Unmarshal([]byte(line), &event)
+				if err != nil {
+					out <- source.Event{Source: src, Event: model.Event{
+						Timestamp: model.Timestamp{},
+						Level:     level.Info,
+						Message:   model.Message(line),
+					}}
+				} else {
+					out <- source.Event{Source: src, Event: event}
+				}
 			}
 		}
 	}

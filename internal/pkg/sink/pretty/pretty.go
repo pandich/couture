@@ -44,7 +44,7 @@ func New(cfg config.Config) *sink.Sink {
 // Init ...
 func (snk *prettySink) Init(sources []*source.Source) {
 	for _, src := range sources {
-		column.RegisterSource(snk.config.Theme, *src)
+		column.RegisterSource(snk.config.Theme, snk.config.ConsistentColors, *src)
 	}
 	snk.handleColorState()
 	snk.updateColumnWidths()

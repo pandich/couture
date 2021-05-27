@@ -7,14 +7,15 @@ import (
 
 // Config ...
 type Config struct {
-	AutoResize bool
-	Columns    []string
-	Highlight  bool
-	Multiline  bool
-	Theme      theme.Theme
-	TimeFormat string
-	Width      uint
-	Wrap       bool
+	AutoResize       bool
+	Columns          []string
+	ConsistentColors bool
+	Highlight        bool
+	Multiline        bool
+	Theme            theme.Theme
+	TimeFormat       string
+	Width            uint
+	Wrap             bool
 }
 
 // EffectiveTerminalWidth ...

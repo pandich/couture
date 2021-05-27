@@ -9,6 +9,7 @@ import (
 	"github.com/muesli/termenv"
 	errors2 "github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
+	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,6 +18,11 @@ import (
 
 // Run ...
 func Run() {
+	const consistentRandomSeed = 0xfeed
+
+	// keep consistent random colors, etc between runs
+	rand.Seed(consistentRandomSeed)
+
 	// load config
 	err := loadAliasConfig()
 	parser.FatalIfErrorf(err)
@@ -81,14 +87,15 @@ func managerOptions() ([]interface{}, error) {
 		switch cli.OutputFormat {
 		case "pretty":
 			return pretty.New(config.Config{
-				AutoResize: cli.AutoResize,
-				Columns:    cli.Column,
-				Highlight:  cli.Highlight,
-				Multiline:  cli.Multiline,
-				Theme:      theme.Registry[cli.Theme],
-				TimeFormat: string(cli.TimeFormat),
-				Width:      cli.Width,
-				Wrap:       cli.Wrap,
+				AutoResize:       cli.AutoResize,
+				Columns:          cli.Column,
+				ConsistentColors: cli.ConsistentColors,
+				Highlight:        cli.Highlight,
+				Multiline:        cli.Multiline,
+				Theme:            theme.Registry[cli.Theme],
+				TimeFormat:       string(cli.TimeFormat),
+				Width:            cli.Width,
+				Wrap:             cli.Wrap,
 			}), nil
 		default:
 			return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
