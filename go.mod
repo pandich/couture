@@ -16,6 +16,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/i582/cfmt v1.3.0
+	github.com/joomcode/errorx v1.0.3
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mattn/go-isatty v0.0.12
 	github.com/melbahja/goph v1.2.1

@@ -1,10 +1,11 @@
 package manager
 
 import (
+	"couture/internal/pkg/couture"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	"fmt"
-	errors2 "github.com/pkg/errors"
+	"github.com/joomcode/errorx"
 	"os"
 )
 
@@ -54,13 +55,16 @@ func (mgr *publishingManager) createChannels() (chan source.Event, chan source.E
 	go func() {
 		defer close(errChan)
 		for {
-			err := <-errChan
-			var sourceName = ""
-			if err.Source != nil {
-				sourceName = err.Source.URL().String()
+			incoming := <-errChan
+			var sourceName = couture.Name
+			if incoming.Source != nil {
+				sourceName = incoming.Source.URL().String()
 			}
-			// TODO proper error logging
-			fmt.Fprintln(os.Stderr, errors2.Errorf(sourceName, err.Error))
+			outgoing := errorx.Decorate(incoming.Error, "source: %s", sourceName)
+			_, err := fmt.Fprintf(os.Stderr, "\nError: %+v\n", outgoing)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}()
 
