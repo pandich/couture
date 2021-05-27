@@ -1,6 +1,6 @@
 package couture
 
-// TODO real code comments
+// TODO document project and code
 
 // Name of the application.
 const Name = "couture"

@@ -1,6 +1,6 @@
 package cli
 
-// TODO cleanup and document
+// TODO cleanup alias code
 
 import (
 	"couture/internal/pkg/couture"
