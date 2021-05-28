@@ -8,6 +8,13 @@ import (
 const TimestampField = "@timestamp"
 
 // Event a log event
+// TODO sources should be able to define one or more formats globally, or by source
+//		perhaps with detection heuristics. Baically, remove JSON tags from this struct
+//		and then have some separate ETL definition file. Standard types could be built-in.
+//		Custom types in ~/.config/couture/mappings/*.yaml
+//		see: https://github.com/tidwall/gjson - quick type detection?
+//		see: https://github.com/jf-tech/omniparser - mapping?
+//		see: https://github.com/Qntfy/kazaam - mapping?
 type Event struct {
 	// Timestamp the timestamp. This field is required, and should default to time.Now() if not present.
 	Timestamp Timestamp `json:"@timestamp"`
