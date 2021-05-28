@@ -4,6 +4,7 @@ import (
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
+	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
@@ -18,16 +19,6 @@ var DefaultColumns = []string{
 	"caller",
 	"level",
 	"message",
-}
-
-var columns = []column{
-	newSourceColumn(),
-	newTimestampColumn(),
-	newApplicationColumn(),
-	newThreadColumn(),
-	newCallerColumn(),
-	newLevelColumn(),
-	newMessageColumn(),
 }
 
 type (
@@ -112,4 +103,19 @@ func (col weightedColumn) Render(_ config.Config, event sink.Event) []interface{
 func contrast(hex string) string {
 	cf, _ := colorful.MakeColor(gamut.Contrast(gamut.Hex(hex)))
 	return cf.Hex()
+}
+
+func formatStringOfWidth(width uint) string {
+	if width <= 0 {
+		return "%s"
+	}
+	return fmt.Sprintf("%%-%[1]d.%[1]ds", width)
+}
+
+func formatStyleOfWidth(style string, width uint) string {
+	return "{{" + formatStringOfWidth(width) + "}}::" + style
+}
+
+func formatColumn(col column, width uint) string {
+	return formatStyleOfWidth(col.name(), width)
 }

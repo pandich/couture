@@ -67,34 +67,15 @@ func (src fakeSource) Start(
 	srcChan chan source.Event,
 	_ chan source.Error,
 ) error {
-	const paragraphLength = 4
+	const maxPercent = 100
+	const errorThresholdPercent = 90
+	const maxLineNumber = 200
+	nonErrorLevels := []level.Level{level.Trace, level.Debug, level.Info, level.Warn}
 
-	sentenceMaker := src.getSentenceMaker()
-
-	var messageGenerator = func(lineCount int) string {
-		var sentences []string
-		for i := 0; i < lineCount; i++ {
-			sentences = append(sentences, sentenceMaker(paragraphLength))
-		}
-		return strings.Join(sentences, "")
-	}
-	var exceptionGenerator = func(lineCount int) string {
-		var sentences []string
-		for i := 0; i < lineCount; i++ {
-			sentences = append(sentences, sentenceMaker(paragraphLength))
-		}
-		return strings.Join(sentences, "\n")
-	}
+	messageGenerator, exceptionGenerator := src.makers()
 
 	go func() {
 		defer wg.Done()
-
-		const maxPercent = 100
-		const errorThresholdPercent = 90
-		const maxLineNumber = 200
-
-		nonErrorLevels := []level.Level{level.Trace, level.Debug, level.Info, level.Warn}
-
 		for running() {
 			var exception *model.Exception
 			//nolint:gosec
@@ -102,12 +83,12 @@ func (src fakeSource) Start(
 			var lvl = nonErrorLevels[index]
 			//nolint:gosec
 			if rand.Intn(maxPercent) > errorThresholdPercent {
-				stackTrace := exceptionGenerator(paragraphLength)
+				stackTrace := exceptionGenerator()
 				exception = &model.Exception{StackTrace: model.StackTrace(stackTrace)}
 				lvl = level.Error
 			}
 			threadName := model.ThreadName(src.faker.Username())
-			message := messageGenerator(paragraphLength)
+			message := messageGenerator()
 			srcChan <- source.Event{
 				Source: src,
 				Event: model.Event{
@@ -143,6 +124,29 @@ func (src fakeSource) getSentenceMaker() func(int) string {
 		sentenceMaker = src.faker.Sentence
 	}
 	return sentenceMaker
+}
+
+func (src fakeSource) makers() (func() string, func() string) {
+	const paragraphLength = 4
+	const sentenceLength = 10
+
+	sentenceMaker := src.getSentenceMaker()
+
+	var messageGenerator = func() string {
+		var sentences []string
+		for i := 0; i < paragraphLength; i++ {
+			sentences = append(sentences, sentenceMaker(sentenceLength))
+		}
+		return strings.Join(sentences, "")
+	}
+	var exceptionGenerator = func() string {
+		var sentences []string
+		for i := 0; i < paragraphLength; i++ {
+			sentences = append(sentences, sentenceMaker(sentenceLength))
+		}
+		return strings.Join(sentences, "\n")
+	}
+	return messageGenerator, exceptionGenerator
 }
 
 func getFakerArg(sourceURL model.SourceURL) *gofakeit.Faker {

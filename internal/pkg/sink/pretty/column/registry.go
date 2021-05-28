@@ -1,33 +1,31 @@
 package column
 
-import (
-	"couture/internal/pkg/sink/pretty/theme"
-)
+var allColumns = []column{
+	newSourceColumn(),
+	newTimestampColumn(),
+	newApplicationColumn(),
+	newThreadColumn(),
+	newCallerColumn(),
+	newLevelColumn(),
+	newMessageColumn(),
+}
 
 func init() {
-	// build the registry
-	for _, col := range columns {
-		ByName[col.name()] = col
+	// build the columnRegistry
+	for _, col := range allColumns {
+		registry[col.name()] = col
 	}
 }
 
 // Names all available column names.
 func Names() []string {
 	var columnNames []string
-	for _, col := range columns {
+	for _, col := range allColumns {
 		columnNames = append(columnNames, col.name())
 	}
 	return columnNames
 }
 
-// ByName ...
-var ByName = registry{}
+var registry = columnRegistry{}
 
-type registry map[string]column
-
-// Init initializes a theme with the registry.
-func (registry registry) Init(theme theme.Theme) {
-	for _, col := range registry {
-		col.RegisterStyles(theme)
-	}
-}
+type columnRegistry map[string]column

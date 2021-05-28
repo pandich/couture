@@ -25,13 +25,12 @@ func (cfg Config) EffectiveTerminalWidth() uint {
 		return cfg.Width
 	}
 	if cfg.Wrap {
-		return uint(TerminalWidth())
+		return uint(terminalWidth())
 	}
 	return 0
 }
 
-// TerminalWidth get the terminal width or 0 if it cannot be determined.
-func TerminalWidth() int {
+func terminalWidth() int {
 	var terminalWidth = 0
 	if size, err := ts.GetSize(); err == nil {
 		terminalWidth = size.Col()
