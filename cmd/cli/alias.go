@@ -9,7 +9,6 @@ import (
 	errors2 "github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"net/url"
-	"os"
 	"regexp"
 	"time"
 )
@@ -32,19 +31,20 @@ func aliasConfig() map[string]string {
 	return viper.GetStringMapString(aliasesConfigKey)
 }
 
-func expandAliases() ([]string, error) {
-	args := os.Args[1:]
+func expandAliases(args []string) ([]string, error) {
 	for i := range args {
 		var arg = args[i]
 		arg = expandSchemeShortForm(arg)
 		u, err := url.Parse(arg)
-		if err == nil && u.Scheme == "alias" {
-			value, err := expandAlias(u)
-			if err != nil {
-				return nil, err
-			}
-			if value != "" {
-				args[i] = value
+		if err == nil {
+			if u.Scheme == "alias" {
+				value, err := expandAlias(u)
+				if err != nil {
+					return nil, err
+				}
+				if value != "" {
+					args[i] = value
+				}
 			}
 		}
 	}

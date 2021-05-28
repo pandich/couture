@@ -48,7 +48,7 @@ type (
 		Name        string
 		Type        reflect.Type
 		CanHandle   func(url model.SourceURL) bool
-		Creator     func(sourceURL model.SourceURL) (*interface{}, error)
+		Creator     func(sourceURL model.SourceURL) (*Source, error)
 		ExampleURLs []string
 	}
 )

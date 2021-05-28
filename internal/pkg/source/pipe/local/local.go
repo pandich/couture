@@ -13,13 +13,10 @@ import (
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{
-		Name:      "Local File",
-		Type:      reflect.TypeOf(fileSource{}),
-		CanHandle: func(url model.SourceURL) bool { return url.Scheme == "file" },
-		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {
-			var i interface{} = newSource(sourceURL)
-			return &i, nil
-		},
+		Name:        "Local File",
+		Type:        reflect.TypeOf(fileSource{}),
+		CanHandle:   func(url model.SourceURL) bool { return url.Scheme == "file" },
+		Creator:     newSource,
 		ExampleURLs: []string{"file://<path>"},
 	}
 }
@@ -29,13 +26,13 @@ type fileSource struct {
 	filename string
 }
 
-func newSource(sourceURL model.SourceURL) *source.Source {
+func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	sourceURL.Normalize()
 	var src source.Source = fileSource{
 		BaseSource: source.New('⫽', sourceURL),
 		filename:   sourceURL.Path,
 	}
-	return &src
+	return &src, nil
 }
 
 // Start ...

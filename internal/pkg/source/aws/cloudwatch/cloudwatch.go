@@ -37,14 +37,7 @@ func Metadata() source.Metadata {
 			}[url.Scheme]
 			return ok
 		},
-		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {
-			src, err := newFromURL(sourceURL)
-			if err != nil {
-				return nil, err
-			}
-			var i interface{} = src
-			return &i, err
-		},
+		Creator:     newFromURL,
 		ExampleURLs: exampleURLs,
 	}
 }

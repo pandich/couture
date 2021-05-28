@@ -23,8 +23,11 @@ var AvailableSources = []source.Metadata{
 }
 
 // GetSource gets a source, if possible, for the specified sourceURL.
-func GetSource(sourceURL model.SourceURL) ([]interface{}, []error) {
-	var sources []interface{}
+func GetSource(sourceURL model.SourceURL) ([]source.Source, []error) {
+	if sourceURL.Scheme == "complete" {
+		return nil, nil
+	}
+	var sources []source.Source
 	var violations []error
 	metadata := getSourceMetadata(sourceURL)
 	if metadata != nil {

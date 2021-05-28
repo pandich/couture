@@ -12,12 +12,14 @@ import (
 
 // Run runs the manager using the CLI arguments.
 func Run() {
+	var args = os.Args[1:]
+
 	// load config
 	err := loadAliasConfig()
 	parser.FatalIfErrorf(err)
 
 	// expand aliases, etc.
-	args, err := expandAliases()
+	args, err = expandAliases(args)
 	parser.FatalIfErrorf(err)
 
 	// parse CLI args

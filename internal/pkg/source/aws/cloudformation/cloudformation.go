@@ -35,14 +35,7 @@ func Metadata() source.Metadata {
 			}[url.Scheme]
 			return ok
 		},
-		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {
-			src, err := newSource(sourceURL)
-			if err != nil {
-				return nil, err
-			}
-			var i interface{} = src
-			return &i, nil
-		},
+		Creator:     newSource,
 		ExampleURLs: exampleURLs,
 	}
 }
@@ -108,7 +101,7 @@ type (
 )
 
 // newSource CloudFormation source.
-func newSource(sourceURL model.SourceURL) (*cloudFormationSource, error) {
+func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	normalizeURL(&sourceURL)
 	stackName := sourceURL.Path
 	awsSource, err := aws.New('☁', &sourceURL)
@@ -134,7 +127,7 @@ func newSource(sourceURL model.SourceURL) (*cloudFormationSource, error) {
 		children = append(children, cloudwatch.New(awsSource, lookbackTime, logGroupName))
 	}
 
-	return &cloudFormationSource{
+	var src source.Source = cloudFormationSource{
 		Source:               awsSource,
 		lookbackTime:         lookbackTime,
 		includeStackEvents:   sourceURL.QueryFlag(includeStackEventsFlag),
@@ -142,7 +135,8 @@ func newSource(sourceURL model.SourceURL) (*cloudFormationSource, error) {
 		cf:                   cf,
 		stackName:            stackName,
 		stackEventsNextToken: nil,
-	}, nil
+	}
+	return &src, nil
 }
 
 // normalizeURL take the sourceURL and expands any syntactic sugar.
@@ -156,7 +150,7 @@ func normalizeURL(sourceURL *model.SourceURL) {
 }
 
 // Start ...
-func (src *cloudFormationSource) Start(
+func (src cloudFormationSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,

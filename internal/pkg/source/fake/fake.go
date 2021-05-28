@@ -22,13 +22,10 @@ const (
 // Metadata ...
 func Metadata() source.Metadata {
 	return source.Metadata{
-		Name:      "Fake",
-		Type:      reflect.TypeOf(fakeSource{}),
-		CanHandle: func(url model.SourceURL) bool { return url.Scheme == "fake" },
-		Creator: func(sourceURL model.SourceURL) (*interface{}, error) {
-			var i interface{} = newSource(sourceURL)
-			return &i, nil
-		},
+		Name:        "Fake",
+		Type:        reflect.TypeOf(fakeSource{}),
+		CanHandle:   func(url model.SourceURL) bool { return url.Scheme == "fake" },
+		Creator:     newSource,
 		ExampleURLs: []string{},
 	}
 }
@@ -41,7 +38,7 @@ type fakeSource struct {
 	faker           *gofakeit.Faker
 }
 
-func newSource(sourceURL model.SourceURL) *source.Source {
+func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	faker := getFakerArg(sourceURL)
 	var src source.Source = fakeSource{
 		BaseSource:      source.New('🃟', sourceURL),
@@ -49,7 +46,7 @@ func newSource(sourceURL model.SourceURL) *source.Source {
 		style:           getStyleArg(sourceURL),
 		faker:           faker,
 	}
-	return &src
+	return &src, nil
 }
 
 func getStyleArg(sourceURL model.SourceURL) string {

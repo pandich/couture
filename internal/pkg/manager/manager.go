@@ -51,8 +51,8 @@ func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error 
 		switch v := registrant.(type) {
 		case *sink.Sink:
 			mgr.sinks = append(mgr.sinks, v)
-		case *source.Source:
-			mgr.sources = append(mgr.sources, v)
+		case source.Source:
+			mgr.sources = append(mgr.sources, &v)
 		default:
 			return errors2.Errorf("unknown manager option type: %T (%+v)\n", registrant, registrant)
 		}

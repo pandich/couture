@@ -8,7 +8,10 @@ import (
 	"couture/internal/pkg/sink/pretty/column"
 	"couture/internal/pkg/sink/pretty/theme"
 	"github.com/alecthomas/kong"
+	"github.com/posener/complete/cmd/install"
+	"github.com/willabides/kongplete"
 	"net/url"
+	"os"
 	"reflect"
 	"regexp"
 	"strings"
@@ -86,6 +89,7 @@ var parser = kong.Must(&cli,
 		"content": "Content Config",
 		"filter":  "Filter Config",
 	},
+	kong.PostBuild(completionsHook()),
 )
 
 func helpDescription() string {
@@ -105,4 +109,30 @@ func helpDescription() string {
 		}
 	}
 	return strings.Join(lines, "\n")
+}
+
+// FIXME completions are not working properly
+func completionsHook() func(k *kong.Kong) error {
+	return func(k *kong.Kong) error {
+		commandName := k.Model.Name
+		doInstall := os.Getenv("COMP_INSTALL") == "1"
+		doUninstall := os.Getenv("COMP_UNINSTALL") == "1"
+		if doInstall || doUninstall {
+			kongplete.Complete(k)
+			var err error
+			if doInstall {
+				if install.IsInstalled(commandName) {
+					_ = install.Uninstall(commandName)
+				}
+				err = install.Install(commandName)
+			} else {
+				err = install.Uninstall(commandName)
+			}
+			if err != nil {
+				return err
+			}
+			os.Exit(0)
+		}
+		return nil
+	}
 }

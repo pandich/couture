@@ -20,7 +20,9 @@ func getSourceAndSinkOptions() ([]interface{}, error) {
 			if len(err) > 0 {
 				violations = append(violations, err...)
 			} else {
-				sources = append(sources, src...)
+				for _, s := range src {
+					sources = append(sources, s)
+				}
 			}
 		}
 		if len(violations) > 0 {
