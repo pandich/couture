@@ -16,6 +16,7 @@ import (
 )
 
 // FEATURE shell completion
+// FEATURE use the kong config integration for all the non-alias config
 
 const helpSummary = "Tails one or more event sources."
 
