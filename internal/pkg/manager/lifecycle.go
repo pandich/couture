@@ -49,7 +49,6 @@ func (mgr *publishingManager) createChannels() (chan source.Event, chan model.Si
 	return srcChan, snkChan, errChan
 }
 
-//nolint:funlen
 func unmarshallEvent(sch schema.Schema, s string) (*model.Event, error) {
 	if !gjson.Valid(s) {
 		return nil, errors2.Errorf("invalid JSON: %s", s)
@@ -79,30 +78,28 @@ func unmarshallEvent(sch schema.Schema, s string) (*model.Event, error) {
 			}
 		case schema.Application:
 			if v.Exists() {
-				name := model.ApplicationName(v.String())
-				event.ApplicationName = &name
+				event.Application = model.Application(v.String())
 			}
 		case schema.Method:
 			if v.Exists() {
-				event.MethodName = model.MethodName(v.String())
+				event.Method = model.Method(v.String())
 			}
 		case schema.Line:
 			if v.Exists() {
-				event.LineNumber = model.LineNumber(v.Int())
+				event.Line = model.Line(v.Int())
 			}
 		case schema.Thread:
 			if v.Exists() {
-				name := model.ThreadName(v.String())
-				event.ThreadName = &name
+				event.Thread = model.Thread(v.String())
 			}
 		case schema.Class:
 			if v.Exists() {
-				event.ClassName = model.ClassName(v.String())
+				event.Class = model.Class(v.String())
 			}
 		case schema.Exception:
 			if v.Exists() {
 				stackTrace := model.PrettyJSON(v.String())
-				event.Exception = &model.Exception{StackTrace: model.StackTrace(stackTrace)}
+				event.Exception = model.Exception(stackTrace)
 			}
 		}
 	}

@@ -7,36 +7,36 @@ import (
 
 const (
 	// NoLineNumber indicates no line number is present.
-	NoLineNumber LineNumber = 0
+	NoLineNumber Line = 0
 )
 
-// ClassName ...
+// Class ...
 type (
-	// ApplicationName the name of an application.
-	ApplicationName string
-	// ThreadName a thread name.
-	ThreadName string
-	// ClassName a class name.
-	ClassName string
-	// MethodName a method name.
-	MethodName string
-	// LineNumber  a line number.
-	LineNumber uint64
+	// Application the name of an application.
+	Application string
+	// Thread a thread name.
+	Thread string
+	// Class a class name.
+	Class string
+	// Method a method name.
+	Method string
+	// Line  a line number.
+	Line uint64
 )
 
 // UnmarshalJSON ...
-func (l *LineNumber) UnmarshalJSON(bytes []byte) error {
+func (l *Line) UnmarshalJSON(bytes []byte) error {
 	s := strings.Trim(string(bytes), `"`)
 	n, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {
 		return err
 	}
-	*l = LineNumber(n)
+	*l = Line(n)
 	return nil
 }
 
 // Abbreviate ...
-func (c ClassName) Abbreviate(maxWidth int) ClassName {
+func (c Class) Abbreviate(maxWidth int) Class {
 	var s = string(c)
 	var pieces = strings.Split(s, ".")
 	var l = len(s)
@@ -67,10 +67,10 @@ func (c ClassName) Abbreviate(maxWidth int) ClassName {
 	if l > maxWidth {
 		pieces[0] = pieces[0][len(pieces[0])-maxWidth:]
 	}
-	return ClassName(strings.Join(pieces, "."))
+	return Class(strings.Join(pieces, "."))
 }
 
 // String ...
-func (threadName ThreadName) String() string {
+func (threadName Thread) String() string {
 	return string(threadName)
 }

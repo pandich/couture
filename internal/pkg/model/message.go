@@ -9,13 +9,8 @@ type (
 	// Message a message.
 	Message string
 
-	// Exception an exception.
-	Exception struct {
-		// StackTrace the full text of the stack trace.
-		StackTrace StackTrace `json:"stack_trace"`
-	}
-	// StackTrace a stack trace.
-	StackTrace Message
+	// Exception a stack trace.
+	Exception Message
 )
 
 // Matches determines if an event Matches the filters criteria.

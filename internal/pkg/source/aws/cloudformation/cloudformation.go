@@ -195,23 +195,20 @@ func (src cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
 		if src.lookbackTime == nil || src.lookbackTime.Before(*stackEvent.Timestamp) {
 			lvl := logLevelByResourceStatus[stackEvent.ResourceStatus]
 
-			var exception *model.Exception
+			var exception model.Exception
 			if lvl == level.Error {
-				exception = &model.Exception{
-					StackTrace: model.StackTrace(*stackEvent.ResourceStatusReason),
-				}
+				exception = model.Exception(*stackEvent.ResourceStatusReason)
 			}
-			threadName := model.ThreadName("cloudformation")
 			events = append(events, model.SinkEvent{
 				Event: model.Event{
-					Timestamp:  model.Timestamp(*stackEvent.Timestamp),
-					ThreadName: &threadName,
-					ClassName:  model.ClassName(*stackEvent.StackName),
-					MethodName: model.MethodName(*stackEvent.EventId),
-					LineNumber: model.NoLineNumber,
-					Level:      lvl,
-					Message:    model.Message(stackEvent.ResourceStatus),
-					Exception:  exception,
+					Timestamp: model.Timestamp(*stackEvent.Timestamp),
+					Thread:    "cloudformation",
+					Class:     model.Class(*stackEvent.StackName),
+					Method:    model.Method(*stackEvent.EventId),
+					Line:      model.NoLineNumber,
+					Level:     lvl,
+					Message:   model.Message(stackEvent.ResourceStatus),
+					Exception: exception,
 				},
 				SourceURL: src.URL(),
 			})

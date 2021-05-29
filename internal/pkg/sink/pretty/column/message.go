@@ -71,7 +71,6 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []inte
 	if lvl == "" {
 		lvl = level.Info
 	}
-	stackTrace := event.StackTrace()
 	var message = string(event.Message)
 	if cfg.ExpandJSON {
 		iterator, err := col.lexer.Tokenise(nil, message)
@@ -88,7 +87,7 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []inte
 	}
 
 	var msg = col.levelSprintf(col.prefix(cfg), "", lvl, message)
-	msg += col.stackTrace(lvl, stackTrace)
+	msg += col.stackTrace(lvl, event.Exception)
 
 	if cfg.Highlight {
 		for _, filter := range event.Filters {
@@ -105,11 +104,14 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []inte
 // Helpers
 //
 
-func (col messageColumn) stackTrace(lvl level.Level, stackTrace *model.StackTrace) string {
-	if stackTrace == nil {
+func (col messageColumn) stackTrace(lvl level.Level, exception model.Exception) string {
+	if exception == "" {
 		return ""
 	}
-	return "\n" + indent.String(col.levelSprintf("", errorSuffix, lvl, *stackTrace), 4)
+	return "\n" + indent.String(
+		col.levelSprintf("", errorSuffix, lvl, exception),
+		4,
+	)
 }
 
 func (col messageColumn) prefix(config config.Config) string {

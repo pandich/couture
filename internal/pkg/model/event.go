@@ -16,42 +16,18 @@ type Event struct {
 	Level level.Level
 	// Message the message. This field is required.
 	Message Message
-	// ApplicationName is the name of the application that generated this event. This field is optional.
-	ApplicationName *ApplicationName
-	// MethodName the method name. This field is optional.
-	MethodName MethodName
-	// LineNumber the line number. This field is optional.
-	LineNumber LineNumber
-	// ThreadName the thread name. This field is optional.
-	ThreadName *ThreadName
-	// ClassName the class name. This field is optional.
-	ClassName ClassName
+	// Application is the name of the application that generated this event. This field is optional.
+	Application Application
+	// Method the method name. This field is optional.
+	Method Method
+	// Line the line number. This field is optional.
+	Line Line
+	// Thread the thread name. This field is optional.
+	Thread Thread
+	// Class the class name. This field is optional.
+	Class Class
 	// Exception the exception. This field is optional.
-	Exception *Exception
-}
-
-// ApplicationNameOrBlank ...
-func (event Event) ApplicationNameOrBlank() ApplicationName {
-	if event.ApplicationName != nil {
-		return *event.ApplicationName
-	}
-	return ""
-}
-
-// ThreadNameOrBlank ...
-func (event Event) ThreadNameOrBlank() ThreadName {
-	if event.ThreadName != nil {
-		return *event.ThreadName
-	}
-	return ""
-}
-
-// StackTrace ...
-func (event Event) StackTrace() *StackTrace {
-	if event.Exception != nil && event.Exception.StackTrace != "" {
-		return &event.Exception.StackTrace
-	}
-	return nil
+	Exception Exception
 }
 
 // SinkEvent ...

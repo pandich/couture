@@ -34,7 +34,7 @@ func Metadata() source.Metadata {
 // fakeSource provides fake test data.
 type fakeSource struct {
 	source.BaseSource
-	applicationName model.ApplicationName
+	applicationName model.Application
 	style           string
 	faker           *gofakeit.Faker
 }
@@ -43,7 +43,7 @@ func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	faker := getFakerArg(sourceURL)
 	var src source.Source = fakeSource{
 		BaseSource:      source.New('🃟', sourceURL),
-		applicationName: model.ApplicationName(faker.AppName()),
+		applicationName: model.Application(faker.AppName()),
 		style:           getStyleArg(sourceURL),
 		faker:           faker,
 	}
