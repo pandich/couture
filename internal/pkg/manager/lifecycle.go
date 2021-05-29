@@ -58,48 +58,48 @@ func unmarshallEvent(sch schema.Schema, s string) (*model.Event, error) {
 	event := model.Event{}
 	for i := 0; i < len(sch.Fields); i++ {
 		v := values[i]
-		f := schema.Field(sch.Fields[i])
+		f := schema.InputField(sch.Fields[i])
 		c := sch.Mapping[f]
 		switch c {
-		case schema.TimestampCol:
+		case schema.Timestamp:
 			if v.Exists() {
 				t, _ := dateparse.ParseAny(v.String())
 				event.Timestamp = model.Timestamp(t)
 			}
-		case schema.LevelCol:
+		case schema.Level:
 			const defaultLevel = level.Info
 			if v.Exists() {
 				event.Level = level.ByName(v.String(), defaultLevel)
 			} else {
 				event.Level = defaultLevel
 			}
-		case schema.MessageCol:
+		case schema.Message:
 			if v.Exists() {
 				event.Message = model.Message(model.PrettyJSON(v.String()))
 			}
-		case schema.ApplicationCol:
+		case schema.Application:
 			if v.Exists() {
 				name := model.ApplicationName(v.String())
 				event.ApplicationName = &name
 			}
-		case schema.MethodCol:
+		case schema.Method:
 			if v.Exists() {
 				event.MethodName = model.MethodName(v.String())
 			}
-		case schema.LineCol:
+		case schema.Line:
 			if v.Exists() {
 				event.LineNumber = model.LineNumber(v.Int())
 			}
-		case schema.ThreadCol:
+		case schema.Thread:
 			if v.Exists() {
 				name := model.ThreadName(v.String())
 				event.ThreadName = &name
 			}
-		case schema.ClassCol:
+		case schema.Class:
 			if v.Exists() {
 				event.ClassName = model.ClassName(v.String())
 			}
-		case schema.ExceptionCol:
+		case schema.Exception:
 			if v.Exists() {
 				stackTrace := model.PrettyJSON(v.String())
 				event.Exception = &model.Exception{StackTrace: model.StackTrace(stackTrace)}
