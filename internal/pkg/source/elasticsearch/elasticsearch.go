@@ -2,7 +2,6 @@ package elasticsearch
 
 import (
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/schema"
 	"couture/internal/pkg/source"
 	"encoding/json"
 	"github.com/bnkamalesh/errors"
@@ -134,5 +133,5 @@ func (src *elasticSearch) scroll() (*elastic.SearchResult, error) {
 }
 
 func (src *elasticSearch) processEvent(srcChan chan source.Event, hit json.RawMessage) {
-	srcChan <- source.Event{Source: src, Event: string(hit), Schema: schema.Logstash}
+	srcChan <- source.Event{Source: src, Event: string(hit), Schema: "logstash"}
 }

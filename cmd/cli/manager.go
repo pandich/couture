@@ -3,15 +3,35 @@ package cli
 import (
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/schema"
+	"encoding/json"
+	"github.com/gobuffalo/packr"
 	"github.com/muesli/termenv"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 	"time"
 )
 
 // Run runs the manager using the CLI arguments.
 func Run() {
+	schemas := map[string]schema.Schema{}
+	schemaBox := packr.NewBox("./schemas")
+	for _, schemaFilename := range schemaBox.List() {
+		schemaJSON, err := schemaBox.FindString(schemaFilename)
+		parser.FatalIfErrorf(err)
+
+		var def = schema.Mapping{}
+		err = json.Unmarshal([]byte(schemaJSON), &def)
+		parser.FatalIfErrorf(err)
+
+		newSchema := schema.NewSchema(def)
+
+		var schemaName = path.Base(schemaFilename)
+		schemaName = schemaName[:len(schemaName)-len(path.Ext(schemaName))]
+		schemas[schemaName] = newSchema
+	}
 	var args = os.Args[1:]
 
 	// load config
@@ -32,6 +52,7 @@ func Run() {
 		Since:          &cli.Since,
 		IncludeFilters: cli.Include,
 		ExcludeFilters: cli.Exclude,
+		Schemas:        schemas,
 	}
 
 	// get sources and sinks

@@ -3,7 +3,6 @@ package fake
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/model/schema"
 	"couture/internal/pkg/source"
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
@@ -116,7 +115,7 @@ func (src fakeSource) Start(
 					src.faker.AppName(),
 					exception,
 				),
-				Schema: schema.Logstash,
+				Schema: "logstash",
 			}
 			srcChan <- event
 		}

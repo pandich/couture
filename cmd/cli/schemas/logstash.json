@@ -1,0 +1,11 @@
+{
+  "@timestamp":           "timestamp",
+  "level":                "level",
+  "message":              "message",
+  "application":          "application",
+  "method":               "method",
+  "line_number":          "line",
+  "thread_name":          "thread",
+  "class":                "class",
+  "exception.stacktrace": "exception"
+}

@@ -2,7 +2,6 @@ package source
 
 import (
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/schema"
 	"crypto/sha256"
 	"encoding/hex"
 	"net/url"
@@ -34,7 +33,7 @@ type (
 	Event struct {
 		Source Source
 		Event  string
-		Schema schema.Schema
+		Schema string
 	}
 
 	// Error ...
@@ -77,6 +76,6 @@ func (b BaseSource) URL() model.SourceURL {
 }
 
 // Start ...
-func (b BaseSource) Start(_ *sync.WaitGroup, _ func() bool, _ chan Event, _ model.SinkEvent, _ chan Error) error {
+func (b BaseSource) Start(_ *sync.WaitGroup, _ func() bool, _ chan Event, _ chan model.SinkEvent, _ chan Error) error {
 	panic("implement me")
 }

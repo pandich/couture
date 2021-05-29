@@ -1,18 +1,5 @@
 package schema
 
-// Logstash ...
-var Logstash = newSchema(mapping{
-	"@timestamp":           TimestampCol,
-	"level":                LevelCol,
-	"message":              MessageCol,
-	"application":          ApplicationCol,
-	"method":               MethodCol,
-	"line_number":          LineCol,
-	"thread_name":          ThreadCol,
-	"class":                ClassCol,
-	"exception.stacktrace": ExceptionCol,
-})
-
 const (
 	// TimestampCol ...
 	TimestampCol = column("timestamp")
@@ -36,17 +23,20 @@ const (
 
 // Field ...
 type Field string
+
 type column string
 
-type mapping map[Field]column
+// Mapping ...
+type Mapping map[Field]column
 
 // Schema ...
 type Schema struct {
-	Mapping mapping
+	Mapping Mapping
 	Fields  []string
 }
 
-func newSchema(mapping mapping) Schema {
+// NewSchema ...
+func NewSchema(mapping Mapping) Schema {
 	var fields []string
 	for f := range mapping {
 		fields = append(fields, string(f))

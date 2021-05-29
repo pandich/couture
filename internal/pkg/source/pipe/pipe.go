@@ -3,7 +3,6 @@ package pipe
 import (
 	"bufio"
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/schema"
 	"couture/internal/pkg/source"
 	"io"
 	"sync"
@@ -30,7 +29,7 @@ func Start(
 				srcChan <- source.Event{
 					Source: src,
 					Event:  scanner.Text(),
-					Schema: schema.Logstash,
+					Schema: "logstash",
 				}
 			}
 		}
