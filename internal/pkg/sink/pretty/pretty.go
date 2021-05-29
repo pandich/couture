@@ -2,6 +2,7 @@ package pretty
 
 import (
 	"bufio"
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/column"
 	"couture/internal/pkg/sink/pretty/config"
@@ -51,7 +52,7 @@ func (snk *prettySink) Init(sources []*source.Source) {
 }
 
 // Accept ...
-func (snk *prettySink) Accept(event sink.Event) error {
+func (snk *prettySink) Accept(event model.SinkEvent) error {
 	snk.out <- snk.table.RenderEvent(event)
 	return nil
 }

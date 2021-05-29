@@ -2,38 +2,32 @@ package model
 
 import (
 	"couture/internal/pkg/model/level"
+	"regexp"
 )
 
 // TimestampField ...
 const TimestampField = "@timestamp"
 
 // Event a log event
-// TODO sources should be able to define one or more formats globally, or by source
-//		perhaps with detection heuristics. Baically, remove JSON tags from this struct
-//		and then have some separate ETL definition file. Standard types could be built-in.
-//		Custom types in ~/.config/couture/mappings/*.yaml
-//		see: https://github.com/tidwall/gjson - quick type detection?
-//		see: https://github.com/jf-tech/omniparser - mapping?
-//		see: https://github.com/Qntfy/kazaam - mapping?
 type Event struct {
 	// Timestamp the timestamp. This field is required, and should default to time.Now() if not present.
-	Timestamp Timestamp `json:"@timestamp"`
+	Timestamp Timestamp
 	// Level the level. This field is required, and should default to Info if not present.
-	Level level.Level `json:"level"`
+	Level level.Level
 	// Message the message. This field is required.
-	Message Message `json:"message"`
+	Message Message
 	// ApplicationName is the name of the application that generated this event. This field is optional.
-	ApplicationName *ApplicationName `json:"application,omitempty"`
+	ApplicationName *ApplicationName
 	// MethodName the method name. This field is optional.
-	MethodName MethodName `json:"method"`
+	MethodName MethodName
 	// LineNumber the line number. This field is optional.
-	LineNumber LineNumber `json:"line_number"`
+	LineNumber LineNumber
 	// ThreadName the thread name. This field is optional.
-	ThreadName *ThreadName `json:"thread_name"`
+	ThreadName *ThreadName
 	// ClassName the class name. This field is optional.
-	ClassName ClassName `json:"class"`
+	ClassName ClassName
 	// Exception the exception. This field is optional.
-	Exception *Exception `json:"exception,omitempty"`
+	Exception *Exception
 }
 
 // ApplicationNameOrBlank ...
@@ -58,4 +52,11 @@ func (event Event) StackTrace() *StackTrace {
 		return &event.Exception.StackTrace
 	}
 	return nil
+}
+
+// SinkEvent ...
+type SinkEvent struct {
+	Event
+	SourceURL SourceURL
+	Filters   []regexp.Regexp
 }

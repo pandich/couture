@@ -68,3 +68,21 @@ func (level Level) priority() int {
 func (level Level) Lower() string {
 	return strings.ToLower(string(level))
 }
+
+// ByName ...
+func ByName(s string, defaultLevel Level) Level {
+	switch Level(s) {
+	case Trace:
+		return Trace
+	case Debug:
+		return Debug
+	case Info:
+		return Info
+	case Warn:
+		return Warn
+	case Error:
+		return Error
+	default:
+		return defaultLevel
+	}
+}

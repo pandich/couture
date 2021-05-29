@@ -1,7 +1,7 @@
 package column
 
 import (
-	"couture/internal/pkg/sink"
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
 	"fmt"
@@ -48,14 +48,14 @@ func (col callerColumn) RegisterStyles(theme theme.Theme) {
 }
 
 // Format ...
-func (col callerColumn) Format(_ uint, _ sink.Event) string {
+func (col callerColumn) Format(_ uint, _ model.SinkEvent) string {
 	return "{{%s}}::Class" +
 		"{{∕}}::MethodDelimiter" + "{{%s}}::Method" +
 		"{{#}}::LineNumberDelimiter" + "{{%s}}::LineNumber"
 }
 
 // Render ...
-func (col callerColumn) Render(_ config.Config, event sink.Event) []interface{} {
+func (col callerColumn) Render(_ config.Config, event model.SinkEvent) []interface{} {
 	const maxClassNameWidth = 30
 	const maxWidth = 60
 

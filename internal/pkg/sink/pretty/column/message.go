@@ -4,12 +4,9 @@ import (
 	"bytes"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
 	"github.com/alecthomas/chroma"
-	"github.com/alecthomas/chroma/formatters"
-	"github.com/alecthomas/chroma/lexers"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/indent"
 	"github.com/muesli/termenv"
@@ -29,21 +26,6 @@ type messageColumn struct {
 
 func newMessageColumn() messageColumn {
 	sigil := '▸'
-
-	var formatter chroma.Formatter
-	switch termenv.EnvColorProfile() {
-	case termenv.ANSI:
-		formatter = formatters.Get("terminal8")
-	case termenv.ANSI256:
-		formatter = formatters.Get("terminal256")
-	case termenv.TrueColor:
-		formatter = formatters.Get("terminal16m")
-	case termenv.Ascii:
-		fallthrough
-	default:
-		formatter = formatters.Get("noop")
-	}
-
 	return messageColumn{
 		baseColumn: baseColumn{
 			columnName:  "message",
@@ -51,8 +33,8 @@ func newMessageColumn() messageColumn {
 			widthWeight: 0,
 			sigil:       &sigil,
 		},
-		lexer:      chroma.Coalesce(lexers.Get("json")),
-		formatter:  formatter,
+		lexer:      model.NewChromaLexer("json"),
+		formatter:  model.NewChromaFormatter(),
 		bgColorSeq: map[level.Level]string{},
 	}
 }
@@ -79,13 +61,16 @@ func (col messageColumn) RegisterStyles(theme theme.Theme) {
 }
 
 // Format ...
-func (col messageColumn) Format(_ uint, _ sink.Event) string {
+func (col messageColumn) Format(_ uint, _ model.SinkEvent) string {
 	return "%s"
 }
 
 // Render ...
-func (col messageColumn) Render(cfg config.Config, event sink.Event) []interface{} {
-	lvl := event.Level
+func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []interface{} {
+	var lvl = event.Level
+	if lvl == "" {
+		lvl = level.Info
+	}
 	stackTrace := event.StackTrace()
 	var message = string(event.Message)
 	if cfg.ExpandJSON {

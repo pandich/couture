@@ -3,7 +3,9 @@ package fake
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/model/schema"
 	"couture/internal/pkg/source"
+	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"math/rand"
 	"reflect"
@@ -58,10 +60,12 @@ func getStyleArg(sourceURL model.SourceURL) string {
 }
 
 // Start ...
+//nolint:gosec
 func (src fakeSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
+	_ chan model.SinkEvent,
 	_ chan source.Error,
 ) error {
 	const maxPercent = 100
@@ -74,33 +78,47 @@ func (src fakeSource) Start(
 	go func() {
 		defer wg.Done()
 		for running() {
-			var exception *model.Exception
-			//nolint:gosec
+			var exception string
 			index := rand.Intn(len(nonErrorLevels))
 			var lvl = nonErrorLevels[index]
-			//nolint:gosec
 			if rand.Intn(maxPercent) > errorThresholdPercent {
-				stackTrace := exceptionGenerator()
-				exception = &model.Exception{StackTrace: model.StackTrace(stackTrace)}
+				exception = exceptionGenerator()
 				lvl = level.Error
 			}
-			threadName := model.ThreadName(src.faker.Username())
 			message := messageGenerator()
-			srcChan <- source.Event{
-				Source: src,
-				Event: model.Event{
-					ApplicationName: &src.applicationName,
-					Timestamp:       model.Timestamp(time.Now()),
-					Level:           lvl,
-					Message:         model.Message(message),
-					MethodName:      model.MethodName(src.faker.Animal()),
-					//nolint:gosec
-					LineNumber: model.LineNumber(rand.Intn(maxLineNumber)),
-					ThreadName: &threadName,
-					ClassName:  model.ClassName(src.faker.AppName()),
-					Exception:  exception,
-				},
+			var format = "{" +
+				`"@timestamp":"%s",` +
+				`"level":"%s",` +
+				`"message":"%s",` +
+				`"application":"%s",` +
+				`"method":"%s",` +
+				`"line_number":%d,` +
+				`"thread_name":"%s",` +
+				`"class":"%s"`
+			if exception != "" {
+				format += `,"exception":{"stacktrace":"%s"}`
+			} else {
+				format += "%s"
 			}
+			format += "}"
+			event := source.Event{
+				Source: src,
+				Event: fmt.Sprintf(
+					format,
+					time.Now().Format(time.RFC3339),
+					lvl,
+					message,
+					src.applicationName,
+					src.faker.Animal(),
+					//nolint:gosec
+					rand.Uint64()%maxLineNumber,
+					src.faker.Adverb(),
+					src.faker.AppName(),
+					exception,
+				),
+				Schema: schema.Logstash,
+			}
+			srcChan <- event
 		}
 	}()
 	return nil
@@ -141,7 +159,7 @@ func (src fakeSource) makers() (func() string, func() string) {
 		for i := 0; i < paragraphLength; i++ {
 			sentences = append(sentences, sentenceMaker(sentenceLength))
 		}
-		return strings.Join(sentences, "\n")
+		return strings.Join(sentences, "\\n")
 	}
 	return messageGenerator, exceptionGenerator
 }

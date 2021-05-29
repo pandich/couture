@@ -3,10 +3,9 @@ package cloudwatch
 import (
 	"context"
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/model/schema"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/aws"
-	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	errors2 "github.com/pkg/errors"
@@ -115,6 +114,7 @@ func (src *cloudwatchSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
+	_ chan model.SinkEvent,
 	errChan chan source.Error,
 ) error {
 	var startTime *int64
@@ -132,34 +132,16 @@ func (src *cloudwatchSource) Start(
 				StartTime:    startTime,
 			})
 			if err != nil {
-				errChan <- source.Error{Source: src, Error: err}
+				errChan <- source.Error{SourceURL: src.URL(), Error: err}
 				continue
 			}
-
 			src.nextToken = logEvents.NextToken
 			for _, logEvent := range logEvents.Events {
 				if logEvent.Message != nil {
-					var event = model.Event{}
-					err := json.Unmarshal([]byte(*logEvent.Message), &event)
 					if err != nil {
-						var message model.Message
-						if logEvent.Message != nil {
-							message = model.Message(*logEvent.Message)
-						}
-						threadName := model.ThreadName(*logEvent.LogStreamName)
-						srcChan <- source.Event{
-							Source: src,
-							Event: model.Event{
-								Timestamp:  model.Timestamp(time.Unix(*logEvent.Timestamp, 0)),
-								Level:      level.Info,
-								Message:    message,
-								ThreadName: &threadName,
-								ClassName:  model.ClassName(*logEvent.EventId),
-								Exception:  nil,
-							},
-						}
+						errChan <- source.Error{SourceURL: src.URL(), Error: err}
 					} else {
-						srcChan <- source.Event{Source: src, Event: event}
+						srcChan <- source.Event{Source: src, Event: *logEvent.Message, Schema: schema.Logstash}
 					}
 				}
 			}

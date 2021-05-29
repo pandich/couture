@@ -154,10 +154,11 @@ func (src cloudFormationSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
+	snkChan chan model.SinkEvent,
 	errChan chan source.Error,
 ) error {
 	for _, child := range src.children {
-		err := (*child).Start(wg, running, srcChan, errChan)
+		err := (*child).Start(wg, running, srcChan, snkChan, errChan)
 		if err != nil {
 			return err
 		}
@@ -167,10 +168,10 @@ func (src cloudFormationSource) Start(
 			for running() {
 				stackEvents, err := src.getStackEvents()
 				if err != nil {
-					errChan <- source.Error{Source: src, Error: err}
+					errChan <- source.Error{SourceURL: src.URL(), Error: err}
 				}
-				for _, stackEvent := range stackEvents {
-					srcChan <- source.Event{Source: src, Event: stackEvent}
+				for _, evt := range stackEvents {
+					snkChan <- evt
 				}
 			}
 		}()
@@ -179,7 +180,7 @@ func (src cloudFormationSource) Start(
 }
 
 // getChildEvents retrieves CloudFormation events for this stack.
-func (src cloudFormationSource) getStackEvents() ([]model.Event, error) {
+func (src cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
 	stackEvents, err := src.cf.DescribeStackEvents(context.TODO(), &cloudformation.DescribeStackEventsInput{
 		NextToken: src.stackEventsNextToken,
 		StackName: &src.stackName,
@@ -189,7 +190,7 @@ func (src cloudFormationSource) getStackEvents() ([]model.Event, error) {
 	}
 	src.stackEventsNextToken = stackEvents.NextToken
 
-	var events []model.Event
+	var events []model.SinkEvent
 	for _, stackEvent := range stackEvents.StackEvents {
 		if src.lookbackTime == nil || src.lookbackTime.Before(*stackEvent.Timestamp) {
 			lvl := logLevelByResourceStatus[stackEvent.ResourceStatus]
@@ -200,17 +201,19 @@ func (src cloudFormationSource) getStackEvents() ([]model.Event, error) {
 					StackTrace: model.StackTrace(*stackEvent.ResourceStatusReason),
 				}
 			}
-
 			threadName := model.ThreadName("cloudformation")
-			events = append(events, model.Event{
-				Timestamp:  model.Timestamp(*stackEvent.Timestamp),
-				ThreadName: &threadName,
-				ClassName:  model.ClassName(*stackEvent.StackName),
-				MethodName: model.MethodName(*stackEvent.EventId),
-				LineNumber: model.NoLineNumber,
-				Level:      lvl,
-				Message:    model.Message(stackEvent.ResourceStatus),
-				Exception:  exception,
+			events = append(events, model.SinkEvent{
+				Event: model.Event{
+					Timestamp:  model.Timestamp(*stackEvent.Timestamp),
+					ThreadName: &threadName,
+					ClassName:  model.ClassName(*stackEvent.StackName),
+					MethodName: model.MethodName(*stackEvent.EventId),
+					LineNumber: model.NoLineNumber,
+					Level:      lvl,
+					Message:    model.Message(stackEvent.ResourceStatus),
+					Exception:  exception,
+				},
+				SourceURL: src.URL(),
 			})
 		}
 	}

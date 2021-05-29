@@ -2,6 +2,7 @@ package source
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/schema"
 	"crypto/sha256"
 	"encoding/hex"
 	"net/url"
@@ -14,14 +15,12 @@ import (
 type (
 	// Source of events. Responsible for ingest and conversion to the standard format.
 	Source interface {
-		// ID is the unique id for this source.
-		ID() string
 		// Sigil represents the type of source in a single character.
 		Sigil() rune
 		// URL is the URL from which the events come.
 		URL() model.SourceURL
 		// Start collecting events.
-		Start(wg *sync.WaitGroup, running func() bool, srcChan chan Event, errChan chan Error) error
+		Start(wg *sync.WaitGroup, running func() bool, srcChan chan Event, snkChan chan model.SinkEvent, errChan chan Error) error
 	}
 
 	// BaseSource ...
@@ -33,14 +32,15 @@ type (
 
 	// Event ...
 	Event struct {
-		model.Event
 		Source Source
+		Event  string
+		Schema schema.Schema
 	}
 
 	// Error ...
 	Error struct {
-		Source Source
-		Error  error
+		SourceURL model.SourceURL
+		Error     error
 	}
 
 	// Metadata ...
@@ -66,11 +66,6 @@ func New(sigil rune, sourceURL model.SourceURL) BaseSource {
 	}
 }
 
-// ID ...
-func (b BaseSource) ID() string {
-	return b.id
-}
-
 // Sigil ...
 func (b BaseSource) Sigil() rune {
 	return b.sigil
@@ -82,6 +77,6 @@ func (b BaseSource) URL() model.SourceURL {
 }
 
 // Start ...
-func (b BaseSource) Start(_ *sync.WaitGroup, _ func() bool, _ chan Event, _ chan Error) error {
+func (b BaseSource) Start(_ *sync.WaitGroup, _ func() bool, _ chan Event, _ model.SinkEvent, _ chan Error) error {
 	panic("implement me")
 }

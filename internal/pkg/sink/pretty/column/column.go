@@ -1,7 +1,7 @@
 package column
 
 import (
-	"couture/internal/pkg/sink"
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
 	"fmt"
@@ -24,8 +24,8 @@ var DefaultColumns = []string{
 type (
 	column interface {
 		RegisterStyles(th theme.Theme)
-		Format(width uint, event sink.Event) string
-		Render(cfg config.Config, event sink.Event) []interface{}
+		Format(width uint, event model.SinkEvent) string
+		Render(cfg config.Config, event model.SinkEvent) []interface{}
 		name() string
 		mode() widthMode
 		weight() widthWeight
@@ -57,7 +57,7 @@ func (col baseColumn) weight() widthWeight {
 type weightedColumn struct {
 	baseColumn
 	color func(theme.Theme) string
-	value func(event sink.Event) []interface{}
+	value func(event model.SinkEvent) []interface{}
 }
 
 func newWeightedColumn(
@@ -65,7 +65,7 @@ func newWeightedColumn(
 	sigil *rune,
 	widthWeight widthWeight,
 	color func(theme.Theme) string,
-	value func(event sink.Event) []interface{},
+	value func(event model.SinkEvent) []interface{},
 ) weightedColumn {
 	return weightedColumn{
 		baseColumn: baseColumn{
@@ -91,12 +91,12 @@ func (col weightedColumn) RegisterStyles(theme theme.Theme) {
 }
 
 // Format ...
-func (col weightedColumn) Format(width uint, _ sink.Event) string {
+func (col weightedColumn) Format(width uint, _ model.SinkEvent) string {
 	return formatColumn(col, width)
 }
 
 // Render ...
-func (col weightedColumn) Render(_ config.Config, event sink.Event) []interface{} {
+func (col weightedColumn) Render(_ config.Config, event model.SinkEvent) []interface{} {
 	return col.value(event)
 }
 

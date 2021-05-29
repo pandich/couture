@@ -52,7 +52,7 @@ func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
 	return nil
 }
 
-func (mgr publishingManager) shouldInclude(evt source.Event) bool {
+func (mgr publishingManager) shouldInclude(evt model.Event) bool {
 	if !evt.Level.IsAtLeast(mgr.config.Level) {
 		return false
 	}

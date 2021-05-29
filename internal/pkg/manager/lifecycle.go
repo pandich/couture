@@ -2,10 +2,15 @@ package manager
 
 import (
 	"couture/internal/pkg/couture"
-	"couture/internal/pkg/sink"
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/model/schema"
 	"couture/internal/pkg/source"
 	"fmt"
+	"github.com/araddon/dateparse"
 	"github.com/joomcode/errorx"
+	errors2 "github.com/pkg/errors"
+	"github.com/tidwall/gjson"
 	"os"
 )
 
@@ -16,10 +21,10 @@ func (mgr *publishingManager) Start() error {
 	for _, snk := range mgr.sinks {
 		(*snk).Init(mgr.sources)
 	}
-	srcChan, errChan := mgr.createChannels()
+	srcChan, snkChan, errChan := mgr.createChannels()
 	for _, src := range mgr.sources {
 		mgr.wg.Add(1)
-		err := (*src).Start(mgr.wg, func() bool { return mgr.running }, srcChan, errChan)
+		err := (*src).Start(mgr.wg, func() bool { return mgr.running }, srcChan, snkChan, errChan)
 		if err != nil {
 			return err
 		}
@@ -37,17 +42,27 @@ func (mgr *publishingManager) Wait() {
 	mgr.wg.Wait()
 }
 
-func (mgr *publishingManager) createChannels() (chan source.Event, chan source.Error) {
+func (mgr *publishingManager) createChannels() (chan source.Event, chan model.SinkEvent, chan source.Error) {
 	srcChan := make(chan source.Event)
-	snkChan := make(chan sink.Event)
+	snkChan := make(chan model.SinkEvent)
 	errChan := make(chan source.Error)
 
 	go func() {
 		defer close(srcChan)
 		for {
-			evt := <-srcChan
-			if mgr.shouldInclude(evt) {
-				snkChan <- sink.Event{Event: evt, Filters: mgr.config.IncludeFilters}
+			sourceEvent := <-srcChan
+			modelEvent, err := unmarshallEvent(sourceEvent.Schema, sourceEvent.Event)
+			if err != nil {
+				errChan <- source.Error{
+					SourceURL: sourceEvent.Source.URL(),
+					Error:     err,
+				}
+			} else if mgr.shouldInclude(*modelEvent) {
+				snkChan <- model.SinkEvent{
+					SourceURL: sourceEvent.Source.URL(),
+					Event:     *modelEvent,
+					Filters:   mgr.config.IncludeFilters,
+				}
 			}
 		}
 	}()
@@ -56,9 +71,9 @@ func (mgr *publishingManager) createChannels() (chan source.Event, chan source.E
 		defer close(errChan)
 		for {
 			incoming := <-errChan
-			var sourceName = couture.Name
-			if incoming.Source != nil {
-				sourceName = incoming.Source.URL().String()
+			var sourceName = incoming.SourceURL.String()
+			if sourceName == "" {
+				sourceName = couture.Name
 			}
 			outgoing := errorx.Decorate(incoming.Error, "source: %s", sourceName)
 			_, err := fmt.Fprintf(os.Stderr, "\nError: %+v\n", outgoing)
@@ -75,11 +90,71 @@ func (mgr *publishingManager) createChannels() (chan source.Event, chan source.E
 			for _, snk := range mgr.sinks {
 				err := (*snk).Accept(event)
 				if err != nil {
-					errChan <- source.Error{Source: event.Source, Error: err}
+					errChan <- source.Error{SourceURL: event.SourceURL, Error: err}
 				}
 			}
 		}
 	}()
 
-	return srcChan, errChan
+	return srcChan, snkChan, errChan
+}
+
+//nolint:funlen
+func unmarshallEvent(sch schema.Schema, s string) (*model.Event, error) {
+	if !gjson.Valid(s) {
+		return nil, errors2.Errorf("invalid JSON: %s", s)
+	}
+	values := gjson.GetMany(s, sch.Fields...)
+	event := model.Event{}
+	for i := 0; i < len(sch.Fields); i++ {
+		v := values[i]
+		f := schema.Field(sch.Fields[i])
+		c := sch.Mapping[f]
+		switch c {
+		case schema.TimestampCol:
+			if v.Exists() {
+				t, _ := dateparse.ParseAny(v.String())
+				event.Timestamp = model.Timestamp(t)
+			}
+		case schema.LevelCol:
+			const defaultLevel = level.Info
+			if v.Exists() {
+				event.Level = level.ByName(v.String(), defaultLevel)
+			} else {
+				event.Level = defaultLevel
+			}
+		case schema.MessageCol:
+			if v.Exists() {
+				event.Message = model.Message(model.PrettyJSON(v.String()))
+			}
+		case schema.ApplicationCol:
+			if v.Exists() {
+				name := model.ApplicationName(v.String())
+				event.ApplicationName = &name
+			}
+		case schema.MethodCol:
+			if v.Exists() {
+				event.MethodName = model.MethodName(v.String())
+			}
+		case schema.LineCol:
+			if v.Exists() {
+				event.LineNumber = model.LineNumber(v.Int())
+			}
+		case schema.ThreadCol:
+			if v.Exists() {
+				name := model.ThreadName(v.String())
+				event.ThreadName = &name
+			}
+		case schema.ClassCol:
+			if v.Exists() {
+				event.ClassName = model.ClassName(v.String())
+			}
+		case schema.ExceptionCol:
+			if v.Exists() {
+				stackTrace := model.PrettyJSON(v.String())
+				event.Exception = &model.Exception{StackTrace: model.StackTrace(stackTrace)}
+			}
+		}
+	}
+	return &event, nil
 }

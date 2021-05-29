@@ -1,7 +1,7 @@
 package column
 
 import (
-	"couture/internal/pkg/sink"
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
 	"github.com/i582/cfmt/cmd/cfmt"
@@ -28,11 +28,11 @@ func (col timestampColumn) RegisterStyles(theme theme.Theme) {
 }
 
 // Format ...
-func (col timestampColumn) Format(width uint, _ sink.Event) string {
+func (col timestampColumn) Format(width uint, _ model.SinkEvent) string {
 	return formatColumn(col, width)
 }
 
 // Render ...
-func (col timestampColumn) Render(cfg config.Config, event sink.Event) []interface{} {
+func (col timestampColumn) Render(cfg config.Config, event model.SinkEvent) []interface{} {
 	return []interface{}{time.Time(event.Timestamp).Format(cfg.TimeFormat)}
 }

@@ -1,8 +1,8 @@
 package column
 
 import (
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
 	"github.com/i582/cfmt/cmd/cfmt"
@@ -33,11 +33,19 @@ func (col levelColumn) RegisterStyles(theme theme.Theme) {
 }
 
 // Format ...
-func (col levelColumn) Format(_ uint, event sink.Event) string {
-	return formatStyleOfWidth(col.name()+string(event.Level), uint(col.weight()))
+func (col levelColumn) Format(_ uint, event model.SinkEvent) string {
+	var lvl = event.Level
+	if lvl == "" {
+		lvl = level.Info
+	}
+	return formatStyleOfWidth(col.name()+string(lvl), uint(col.weight()))
 }
 
 // Render ...
-func (col levelColumn) Render(_ config.Config, event sink.Event) []interface{} {
-	return []interface{}{string(event.Level)}
+func (col levelColumn) Render(_ config.Config, event model.SinkEvent) []interface{} {
+	var lvl = event.Level
+	if lvl == "" {
+		lvl = level.Info
+	}
+	return []interface{}{string(lvl)}
 }

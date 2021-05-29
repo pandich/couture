@@ -1,9 +1,8 @@
 package elasticsearch
 
 import (
-	"bytes"
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/model/schema"
 	"couture/internal/pkg/source"
 	"encoding/json"
 	"github.com/bnkamalesh/errors"
@@ -47,10 +46,6 @@ const (
 	scheme           = "elasticsearch"
 	schemeAliasShort = "es"
 )
-
-type eventHolder struct {
-	Event string `json:"log"`
-}
 
 type elasticSearch struct {
 	source.BaseSource
@@ -98,6 +93,7 @@ func (src elasticSearch) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
+	_ chan model.SinkEvent,
 	errChan chan source.Error,
 ) error {
 	go func() {
@@ -110,11 +106,11 @@ func (src elasticSearch) Start(
 				if errors.Is(err, io.EOF) {
 					time.Sleep(eofSleepTime)
 				} else {
-					errChan <- source.Error{Source: src, Error: err}
+					errChan <- source.Error{SourceURL: src.URL(), Error: err}
 				}
 			} else if result != nil || result.Hits != nil || result.Hits.Hits != nil {
 				for _, hit := range result.Hits.Hits {
-					src.processEvent(srcChan, errChan, *hit.Source)
+					src.processEvent(srcChan, *hit.Source)
 				}
 			}
 		}
@@ -137,39 +133,6 @@ func (src *elasticSearch) scroll() (*elastic.SearchResult, error) {
 	return result, err
 }
 
-func (src *elasticSearch) processEvent(
-	srcChan chan source.Event,
-	errChan chan source.Error,
-	hit json.RawMessage,
-) {
-	holder := eventHolder{}
-	err := json.Unmarshal(hit, &holder)
-	if err != nil {
-		errChan <- source.Error{Source: src, Error: err}
-		return
-	}
-	var evt = model.Event{}
-	err = json.Unmarshal([]byte(holder.Event), &evt)
-	if err != nil || evt.Timestamp == model.Timestamp(time.Time{}) {
-		applicationName := model.ApplicationName(src.indexName)
-		var formatted bytes.Buffer
-		err := json.Indent(&formatted, []byte(holder.Event), "", "   ")
-		var message = holder.Event
-		if err == nil {
-			message = formatted.String()
-		}
-		threadName := model.ThreadName(src.scrollID)
-		evt = model.Event{
-			Timestamp:       model.Timestamp(time.Now()),
-			Level:           level.Info,
-			Message:         model.Message(message),
-			ApplicationName: &applicationName,
-			MethodName:      "search",
-			LineNumber:      model.NoLineNumber,
-			ThreadName:      &threadName,
-			ClassName:       "index",
-			Exception:       nil,
-		}
-	}
-	srcChan <- source.Event{Source: src, Event: evt}
+func (src *elasticSearch) processEvent(srcChan chan source.Event, hit json.RawMessage) {
+	srcChan <- source.Event{Source: src, Event: string(hit), Schema: schema.Logstash}
 }

@@ -1,7 +1,7 @@
 package column
 
 import (
-	"couture/internal/pkg/sink"
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink/pretty/config"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/wordwrap"
@@ -45,7 +45,7 @@ func NewTable(config config.Config) *Table {
 }
 
 // RenderEvent ...
-func (table *Table) RenderEvent(event sink.Event) string {
+func (table *Table) RenderEvent(event model.SinkEvent) string {
 	const resetSequence = termenv.CSI + termenv.ResetSeq + "m"
 
 	// get format string and arguments

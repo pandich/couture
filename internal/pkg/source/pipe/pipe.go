@@ -3,8 +3,8 @@ package pipe
 import (
 	"bufio"
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/schema"
 	"couture/internal/pkg/source"
-	"encoding/json"
 	"io"
 	"sync"
 )
@@ -15,7 +15,8 @@ func Start(
 	running func() bool,
 	src source.Source,
 	srcChan chan source.Event,
-	errChan chan source.Error,
+	_ chan model.SinkEvent,
+	_ chan source.Error,
 	closer func(),
 	in io.Reader,
 ) error {
@@ -26,18 +27,14 @@ func Start(
 		defer closer()
 		for running() {
 			for scanner.Scan() {
-				var event model.Event
-				line := scanner.Text()
-				err := json.Unmarshal([]byte(line), &event)
-				if err != nil {
-					errChan <- source.Error{Source: src, Error: err}
-				} else {
-					srcChan <- source.Event{Source: src, Event: event}
+				srcChan <- source.Event{
+					Source: src,
+					Event:  scanner.Text(),
+					Schema: schema.Logstash,
 				}
 			}
 		}
 	}
-
 	wg.Add(1)
 	go f()
 	return nil
