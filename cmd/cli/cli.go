@@ -34,8 +34,6 @@ var cli struct {
 	AutoResize       bool   `group:"display" help:"Auto-resize columns when the terminal resizes." negatable:"true" default:"true"`
 	ConsistentColors bool   `group:"display" help:"Maintain consistent source URL colors between runs." negatable:"true" default:"true"`
 
-	// FIXME format has to be by source
-	Format     string     `group:"content" help:"Specify the JSON format used for the log events: ${enum}" short:"f" enum:"logstash" default:"logstash"`
 	Column     []string   `group:"content" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}" env:"COUTURE_DEFAULT_COLUMN_NAMES"`
 	TimeFormat timeFormat `group:"content" help:"Go-standard time format string or a named format: ${timeFormatNames}." short:"t" default:"stamp" env:"COUTURE_DEFAULT_TIME_FORMAT"`
 	ExpandJSON bool       `group:"content" help:"Example JSON message bodies. Warning: has a significant performance impact." negatable:"true" default:"false"`
