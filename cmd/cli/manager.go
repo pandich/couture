@@ -1,37 +1,26 @@
 package cli
 
 import (
+	"couture/internal/pkg/couture"
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/schema"
 	"encoding/json"
 	"github.com/gobuffalo/packr"
 	"github.com/muesli/termenv"
+	"io/fs"
+	"io/ioutil"
 	"os"
 	"os/signal"
 	"path"
+	"path/filepath"
 	"syscall"
 	"time"
 )
 
 // Run runs the manager using the CLI arguments.
 func Run() {
-	schemas := map[string]schema.Schema{}
-	schemaBox := packr.NewBox("./schemas")
-	for _, schemaFilename := range schemaBox.List() {
-		schemaJSON, err := schemaBox.FindString(schemaFilename)
-		parser.FatalIfErrorf(err)
-
-		var def = schema.Mapping{}
-		err = json.Unmarshal([]byte(schemaJSON), &def)
-		parser.FatalIfErrorf(err)
-
-		newSchema := schema.NewSchema(def)
-
-		var schemaName = path.Base(schemaFilename)
-		schemaName = schemaName[:len(schemaName)-len(path.Ext(schemaName))]
-		schemas[schemaName] = newSchema
-	}
+	schemas := loadSchemas()
 	var args = os.Args[1:]
 
 	// load config
@@ -69,6 +58,46 @@ func Run() {
 	// wait for it to die
 	(*mgr).Wait()
 	os.Exit(0)
+}
+
+func loadSchemas() map[string]schema.Schema {
+	schemas := map[string]schema.Schema{}
+	schemaBox := packr.NewBox("./schemas")
+
+	addSchema := func(schemaFilename string, schemaJSON string) {
+		var mapping = schema.Mapping{}
+		err := json.Unmarshal([]byte(schemaJSON), &mapping)
+		parser.FatalIfErrorf(err)
+
+		var schemaName = path.Base(schemaFilename)
+		schemaName = schemaName[:len(schemaName)-len(path.Ext(schemaName))]
+		schemas[schemaName] = schema.NewSchema(mapping)
+	}
+
+	for _, schemaFilename := range schemaBox.List() {
+		schemaJSON, err := schemaBox.FindString(schemaFilename)
+		parser.FatalIfErrorf(err)
+		addSchema(schemaFilename, schemaJSON)
+	}
+
+	home, err := os.UserHomeDir()
+	parser.FatalIfErrorf(err)
+	schemasDir := path.Join(home, ".config", couture.Name, "schemas")
+	err = filepath.Walk(schemasDir, func(schemaFilename string, info fs.FileInfo, err error) error {
+		if path.Ext(schemaFilename) == ".json" {
+			if info != nil && info.IsDir() {
+				return nil
+			}
+			schemaJSON, err := ioutil.ReadFile(schemaFilename)
+			if err != nil {
+				return err
+			}
+			addSchema(schemaFilename, string(schemaJSON))
+		}
+		return nil
+	})
+	parser.FatalIfErrorf(err)
+	return schemas
 }
 
 func trapInterrupt(mgr *model.Manager) {
