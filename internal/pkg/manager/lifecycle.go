@@ -53,12 +53,11 @@ func unmarshallEvent(sch schema.Schema, s string) (*model.Event, error) {
 	if !gjson.Valid(s) {
 		return nil, errors2.Errorf("invalid JSON: %s", s)
 	}
-	values := gjson.GetMany(s, sch.Fields...)
+	values := gjson.GetMany(s, sch.InputFields()...)
 	event := model.Event{}
-	for i := 0; i < len(sch.Fields); i++ {
+	for i := 0; i < len(sch.InputFields()); i++ {
 		v := values[i]
-		f := schema.InputField(sch.Fields[i])
-		c := sch.Mapping[f]
+		c := sch.Mapping()[sch.InputFields()[i]]
 		switch c {
 		case schema.Timestamp:
 			if v.Exists() {
