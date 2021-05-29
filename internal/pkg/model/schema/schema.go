@@ -30,8 +30,9 @@ const (
 type (
 	// Schema ...
 	Schema interface {
-		InputFields() []string
-		Mapping() map[string]string
+		Fields() []string
+		Column(field string) (string, bool)
+		Test(s string) bool
 	}
 
 	baseSchema struct {
@@ -47,16 +48,6 @@ type (
 	}
 )
 
-// InputFields ...
-func (b baseSchema) InputFields() []string {
-	return b.inputFields
-}
-
-// Mapping ...
-func (b baseSchema) Mapping() map[string]string {
-	return b.mapping
-}
-
 // NewSchema ...
 func NewSchema(definition Definition) Schema {
 	var inputFields []string
@@ -64,8 +55,10 @@ func NewSchema(definition Definition) Schema {
 		inputFields = append(inputFields, inputField)
 	}
 	var predicateFields []string
-	for f := range definition.Predicates {
-		predicateFields = append(predicateFields, f)
+	predicatePatterns := map[string]*regexp.Regexp{}
+	for fieldName, pattern := range definition.Predicates {
+		predicatePatterns[fieldName] = regexp.MustCompile(pattern)
+		predicateFields = append(predicateFields, fieldName)
 	}
 	predicate := func(s string) bool {
 		if !gjson.Valid(s) {
@@ -73,10 +66,10 @@ func NewSchema(definition Definition) Schema {
 		}
 		values := gjson.GetMany(s, predicateFields...)
 		for i := range predicateFields {
-			predicateField := predicateFields[i]
 			value := values[i]
-			test := regexp.MustCompile(definition.Predicates[predicateField])
-			if !test.MatchString(value.String()) {
+			field := predicateFields[i]
+			pattern := predicatePatterns[field]
+			if !pattern.MatchString(value.String()) {
 				return false
 			}
 		}
@@ -87,4 +80,20 @@ func NewSchema(definition Definition) Schema {
 		inputFields: inputFields,
 		predicate:   predicate,
 	}
+}
+
+// Fields ...
+func (b baseSchema) Fields() []string {
+	return b.inputFields
+}
+
+// Column ...
+func (b baseSchema) Column(field string) (string, bool) {
+	s, ok := b.mapping[field]
+	return s, ok
+}
+
+// Test ...
+func (b baseSchema) Test(s string) bool {
+	return b.predicate(s)
 }

@@ -133,5 +133,5 @@ func (src *elasticSearch) scroll() (*elastic.SearchResult, error) {
 }
 
 func (src *elasticSearch) processEvent(srcChan chan source.Event, hit json.RawMessage) {
-	srcChan <- source.Event{Source: src, Event: string(hit), Schema: "logstash"}
+	srcChan <- source.Event{Source: src, Event: string(hit)}
 }

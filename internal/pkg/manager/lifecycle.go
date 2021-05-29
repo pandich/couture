@@ -53,56 +53,60 @@ func unmarshallEvent(sch schema.Schema, s string) (*model.Event, error) {
 	if !gjson.Valid(s) {
 		return nil, errors2.Errorf("invalid JSON: %s", s)
 	}
-	values := gjson.GetMany(s, sch.InputFields()...)
+	values := gjson.GetMany(s, sch.Fields()...)
 	event := model.Event{}
-	for i := 0; i < len(sch.InputFields()); i++ {
-		v := values[i]
-		c := sch.Mapping()[sch.InputFields()[i]]
-		switch c {
-		case schema.Timestamp:
-			if v.Exists() {
-				t, _ := dateparse.ParseAny(v.String())
-				event.Timestamp = model.Timestamp(t)
-			}
-		case schema.Level:
-			const defaultLevel = level.Info
-			if v.Exists() {
-				event.Level = level.ByName(v.String(), defaultLevel)
-			} else {
-				event.Level = defaultLevel
-			}
-		case schema.Message:
-			if v.Exists() {
-				event.Message = model.Message(model.PrettyJSON(v.String()))
-			}
-		case schema.Application:
-			if v.Exists() {
-				event.Application = model.Application(v.String())
-			}
-		case schema.Method:
-			if v.Exists() {
-				event.Method = model.Method(v.String())
-			}
-		case schema.Line:
-			if v.Exists() {
-				event.Line = model.Line(v.Int())
-			}
-		case schema.Thread:
-			if v.Exists() {
-				event.Thread = model.Thread(v.String())
-			}
-		case schema.Class:
-			if v.Exists() {
-				event.Class = model.Class(v.String())
-			}
-		case schema.Exception:
-			if v.Exists() {
-				stackTrace := model.PrettyJSON(v.String())
-				event.Exception = model.Exception(stackTrace)
-			}
+	for i, field := range sch.Fields() {
+		if col, ok := sch.Column(field); ok {
+			updateEvent(&event, col, values[i])
 		}
 	}
 	return &event, nil
+}
+
+func updateEvent(event *model.Event, col string, v gjson.Result) {
+	switch col {
+	case schema.Timestamp:
+		if v.Exists() {
+			t, _ := dateparse.ParseAny(v.String())
+			event.Timestamp = model.Timestamp(t)
+		}
+	case schema.Level:
+		const defaultLevel = level.Info
+		if v.Exists() {
+			event.Level = level.ByName(v.String(), defaultLevel)
+		} else {
+			event.Level = defaultLevel
+		}
+	case schema.Message:
+		if v.Exists() {
+			event.Message = model.Message(model.PrettyJSON(v.String()))
+		}
+	case schema.Application:
+		if v.Exists() {
+			event.Application = model.Application(v.String())
+		}
+	case schema.Method:
+		if v.Exists() {
+			event.Method = model.Method(v.String())
+		}
+	case schema.Line:
+		if v.Exists() {
+			event.Line = model.Line(v.Int())
+		}
+	case schema.Thread:
+		if v.Exists() {
+			event.Thread = model.Thread(v.String())
+		}
+	case schema.Class:
+		if v.Exists() {
+			event.Class = model.Class(v.String())
+		}
+	case schema.Exception:
+		if v.Exists() {
+			stackTrace := model.PrettyJSON(v.String())
+			event.Exception = model.Exception(stackTrace)
+		}
+	}
 }
 
 func (mgr *publishingManager) makeErrChan() chan source.Error {
@@ -133,14 +137,15 @@ func (mgr *publishingManager) makeSrcChan(errChan chan source.Error, snkChan cha
 		defer close(srcChan)
 		for {
 			sourceEvent := <-srcChan
-			sch, ok := mgr.config.Schemas[sourceEvent.Schema]
-			if !ok {
+			sch := schema.Predict(sourceEvent.Event, mgr.config.Schemas...)
+			if sch == nil {
+				// TODO a default raw message approach is needed here
 				errChan <- source.Error{
 					SourceURL: sourceEvent.Source.URL(),
-					Error:     errors2.Errorf("unknown schema: %s", sourceEvent.Schema),
+					Error:     errors2.Errorf("unknown format"),
 				}
 			} else {
-				modelEvent, err := unmarshallEvent(sch, sourceEvent.Event)
+				modelEvent, err := unmarshallEvent(*sch, sourceEvent.Event)
 				if err != nil {
 					errChan <- source.Error{
 						SourceURL: sourceEvent.Source.URL(),

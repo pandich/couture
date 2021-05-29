@@ -26,11 +26,7 @@ func Start(
 		defer closer()
 		for running() {
 			for scanner.Scan() {
-				srcChan <- source.Event{
-					Source: src,
-					Event:  scanner.Text(),
-					Schema: "logstash",
-				}
+				srcChan <- source.Event{Source: src, Event: scanner.Text()}
 			}
 		}
 	}

@@ -140,7 +140,7 @@ func (src *cloudwatchSource) Start(
 					if err != nil {
 						errChan <- source.Error{SourceURL: src.URL(), Error: err}
 					} else {
-						srcChan <- source.Event{Source: src, Event: *logEvent.Message, Schema: "logstash"}
+						srcChan <- source.Event{Source: src, Event: *logEvent.Message}
 					}
 				}
 			}

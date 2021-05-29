@@ -10,8 +10,6 @@ import (
 	"sync"
 ) // Source ...
 
-// TODO the schema name needs to become associated with the source
-
 // Source ...
 type (
 	// Source of events. Responsible for ingest and conversion to the standard format.
@@ -35,7 +33,6 @@ type (
 	Event struct {
 		Source Source
 		Event  string
-		Schema string
 	}
 
 	// Error ...

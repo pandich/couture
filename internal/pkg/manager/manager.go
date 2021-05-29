@@ -70,5 +70,5 @@ type Config struct {
 	Since          *time.Time
 	IncludeFilters []regexp.Regexp
 	ExcludeFilters []regexp.Regexp
-	Schemas        map[string]schema.Schema
+	Schemas        []schema.Schema
 }

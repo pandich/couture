@@ -86,6 +86,7 @@ func (src fakeSource) Start(
 			}
 			message := messageGenerator()
 			var format = "{" +
+				`"@version":1,` +
 				`"@timestamp":"%s",` +
 				`"level":"%s",` +
 				`"message":"%s",` +
@@ -115,7 +116,6 @@ func (src fakeSource) Start(
 					src.faker.AppName(),
 					exception,
 				),
-				Schema: "logstash",
 			}
 			srcChan <- event
 		}

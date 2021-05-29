@@ -60,24 +60,21 @@ func Run() {
 	os.Exit(0)
 }
 
-func loadSchemas() map[string]schema.Schema {
-	schemas := map[string]schema.Schema{}
+func loadSchemas() []schema.Schema {
+	var schemas []schema.Schema
 	schemaBox := packr.NewBox("./schemas")
 
-	addSchema := func(schemaFilename string, schemaJSON string) {
+	addSchema := func(schemaJSON string) {
 		var schemaDefinition = schema.Definition{}
 		err := json.Unmarshal([]byte(schemaJSON), &schemaDefinition)
 		parser.FatalIfErrorf(err)
-
-		var schemaName = path.Base(schemaFilename)
-		schemaName = schemaName[:len(schemaName)-len(path.Ext(schemaName))]
-		schemas[schemaName] = schema.NewSchema(schemaDefinition)
+		schemas = append(schemas, schema.NewSchema(schemaDefinition))
 	}
 
 	for _, schemaFilename := range schemaBox.List() {
 		schemaJSON, err := schemaBox.FindString(schemaFilename)
 		parser.FatalIfErrorf(err)
-		addSchema(schemaFilename, schemaJSON)
+		addSchema(schemaJSON)
 	}
 
 	home, err := os.UserHomeDir()
@@ -92,7 +89,7 @@ func loadSchemas() map[string]schema.Schema {
 			if err != nil {
 				return err
 			}
-			addSchema(schemaFilename, string(schemaJSON))
+			addSchema(string(schemaJSON))
 		}
 		return nil
 	})
