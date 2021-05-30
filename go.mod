@@ -16,13 +16,12 @@ require (
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gobuffalo/envy v1.9.0 // indirect
-	github.com/gobuffalo/here v0.6.2 // indirect
 	github.com/gobuffalo/packd v1.0.0 // indirect
 	github.com/gobuffalo/packr v1.30.1
 	github.com/i582/cfmt v1.3.0
 	github.com/joomcode/errorx v1.0.3
+	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0
-	github.com/markbates/pkger v0.17.1
 	github.com/mattn/go-isatty v0.0.12
 	github.com/melbahja/goph v1.2.1
 	github.com/muesli/gamut v0.2.0
@@ -40,6 +39,7 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea // indirect
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/multierror.v1 v1.0.2
 	gopkg.in/olivere/elastic.v3 v3.0.75
 	gopkg.in/yaml.v2 v2.4.0 // indirect

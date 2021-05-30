@@ -1,4 +1,4 @@
-package cli
+package cmd
 
 // TODO cleanup alias code
 

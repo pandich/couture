@@ -4,8 +4,8 @@ APPLICATION = couture
 # Variables
 
 # Core
-SOURCE_DIRS	= cmd internal
-COMMAND		= cmd/$(APPLICATION).go
+COMMAND		= main.go
+SOURCES	= $(COMMAND) cmd internal
 
 # Go
 GO 				= go
@@ -61,14 +61,14 @@ neat:
 	@echo tidying
 	@go mod tidy
 	@echo commenting
-	@find $(SOURCE_DIRS) -type d -exec gocmt -p -i -d {} \; 2> /dev/null
+	@find $(SOURCES) -type d -exec gocmt -p -i -d {} \; 2> /dev/null
 	@echo formatting
-	@gofmt -l -s -w $(SOURCE_DIRS)
+	@gofmt -l -s -w $(SOURCES)
 lint: golangci-lint neat
 	@echo linting
 	@golangci-lint run
 metrics: scc
-	@scc --wide --by-file --no-gen --sort lines $(SOURCE_DIRS)
+	@scc --wide --by-file --no-gen --sort lines $(SOURCES)
 
 # Utility
 setup-env: golangci-lint goreleaser scc gocmt

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"couture/cmd/cli"
+	"couture/cmd"
 )
 
 func main() {
-	cli.Run()
+	cmd.Run()
 }
