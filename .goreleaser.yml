@@ -1,5 +1,6 @@
 builds:
-  - main: cmd/couture.go
+  - id: couture
+    main: main.go
     env:
       - CGO_ENABLED=0
     goos:
