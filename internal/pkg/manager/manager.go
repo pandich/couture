@@ -19,7 +19,7 @@ func New(config Config, opts ...interface{}) (*model.Manager, error) {
 		return nil, errors2.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
 	publisher := publishingManager{config: config, wg: &sync.WaitGroup{}}
-	if err := publisher.RegisterOptions(opts...); err != nil {
+	if err := publisher.Register(opts...); err != nil {
 		return nil, err
 	}
 	var mgr model.Manager = &publisher
@@ -46,8 +46,8 @@ type (
 	}
 )
 
-// RegisterOptions registers a configuration option, source, or sink.
-func (mgr *publishingManager) RegisterOptions(registrants ...interface{}) error {
+// Register registers a configuration option, source, or sink.
+func (mgr *publishingManager) Register(registrants ...interface{}) error {
 	for _, registrant := range registrants {
 		switch v := registrant.(type) {
 		case *sink.Sink:

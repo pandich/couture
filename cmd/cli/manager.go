@@ -1,44 +1,29 @@
 package cli
 
 import (
-	"couture/internal/pkg/couture"
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/schema"
-	"encoding/json"
-	"github.com/gobuffalo/packr"
-	"github.com/muesli/termenv"
-	"io/fs"
-	"io/ioutil"
+	"couture/internal/pkg/sink/pretty"
+	"couture/internal/pkg/sink/pretty/config"
+	"couture/internal/pkg/sink/pretty/theme"
+	errors2 "github.com/pkg/errors"
+	"gopkg.in/multierror.v1"
 	"os"
-	"os/signal"
-	"path"
-	"path/filepath"
-	"sort"
-	"strings"
-	"syscall"
-	"time"
 )
 
 // Run runs the manager using the CLI arguments.
 func Run() {
-	schemas := loadSchemas()
 	var args = os.Args[1:]
+	args, err := expandAliases(args)
+	maybeDie(err)
 
-	// load config
-	err := loadAliasConfig()
-	parser.FatalIfErrorf(err)
-
-	// expand aliases, etc.
-	args, err = expandAliases(args)
-	parser.FatalIfErrorf(err)
-
-	// parse CLI args
 	_, err = parser.Parse(args)
-	parser.FatalIfErrorf(err)
+	maybeDie(err)
 
-	// get manager config
-	mgrConfig := manager.Config{
+	schemas, err := schema.LoadSchemas()
+	maybeDie(err)
+	cfg := manager.Config{
 		Level:          cli.Level,
 		Since:          &cli.Since,
 		IncludeFilters: cli.Include,
@@ -46,79 +31,69 @@ func Run() {
 		Schemas:        schemas,
 	}
 
-	// get sources and sinks
-	mgrOptions, err := getSourceAndSinkOptions()
-	parser.FatalIfErrorf(err)
+	options, err := getOptions()
+	maybeDie(err)
 
-	// create the manager
-	mgr, err := manager.New(mgrConfig, mgrOptions...)
-	parser.FatalIfErrorf(err)
-	// start it
-	trapInterrupt(mgr)
-	err = (*mgr).Start()
-	parser.FatalIfErrorf(err)
-	// wait for it to die
-	(*mgr).Wait()
-	os.Exit(0)
+	mgr, err := manager.New(cfg, options...)
+	maybeDie(err)
+
+	err = (*mgr).Run()
+	maybeDie(err)
 }
 
-func loadSchemas() []schema.Schema {
-	const jsonExtension = ".json"
-
-	schemaBox := packr.NewBox("./schemas")
-
-	var schemas []schema.Schema
-	addSchema := func(schemaFilename string, schemaJSON string) {
-		name := path.Base(schemaFilename[0 : len(schemaFilename)-len(jsonExtension)])
-		var schemaDefinition = schema.Definition{}
-		err := json.Unmarshal([]byte(schemaJSON), &schemaDefinition)
-		parser.FatalIfErrorf(err)
-		schemas = append(schemas, schema.NewSchema(name, schemaDefinition))
-	}
-
-	for _, schemaFilename := range schemaBox.List() {
-		schemaJSON, err := schemaBox.FindString(schemaFilename)
-		parser.FatalIfErrorf(err)
-		addSchema(schemaFilename, schemaJSON)
-	}
-
-	home, err := os.UserHomeDir()
-	parser.FatalIfErrorf(err)
-	schemasDir := path.Join(home, ".config", couture.Name, "schemas")
-	err = filepath.Walk(schemasDir, func(schemaFilename string, info fs.FileInfo, err error) error {
-		if path.Ext(schemaFilename) == jsonExtension {
-			if info != nil && info.IsDir() {
-				return nil
+func getOptions() ([]interface{}, error) {
+	sourceArgs := func() ([]interface{}, error) {
+		var sources []interface{}
+		var violations []error
+		for _, u := range cli.Source {
+			sourceURL := model.SourceURL(u)
+			src, err := manager.GetSource(sourceURL)
+			if len(err) > 0 {
+				violations = append(violations, err...)
+			} else {
+				for _, s := range src {
+					sources = append(sources, s)
+				}
 			}
-			schemaJSON, err := ioutil.ReadFile(schemaFilename)
-			if err != nil {
-				return err
-			}
-			addSchema(schemaFilename, string(schemaJSON))
 		}
-		return nil
-	})
-	parser.FatalIfErrorf(err)
+		if len(violations) > 0 {
+			return nil, multierror.New(violations)
+		}
+		return sources, nil
+	}
 
-	sort.Slice(schemas, func(i, j int) bool { return strings.Compare(schemas[i].Name(), schemas[j].Name()) <= 0 })
+	sinkFlag := func() (interface{}, error) {
+		switch cli.OutputFormat {
+		case "pretty":
+			return pretty.New(config.Config{
+				AutoResize:       cli.AutoResize,
+				Columns:          cli.Column,
+				ConsistentColors: cli.ConsistentColors,
+				ExpandJSON:       cli.ExpandJSON,
+				Highlight:        cli.Highlight,
+				Multiline:        cli.Multiline,
+				Theme:            theme.Registry[cli.Theme],
+				TimeFormat:       string(cli.TimeFormat),
+				Width:            cli.Width,
+				Wrap:             cli.Wrap,
+			}), nil
+		default:
+			return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
+		}
+	}
 
-	return schemas
-}
+	var options []interface{}
+	snk, err := sinkFlag()
+	if err != nil {
+		return nil, err
+	}
+	options = append(options, snk)
 
-func trapInterrupt(mgr *model.Manager) {
-	interrupt := make(chan os.Signal)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		const stopGracePeriod = 250 * time.Millisecond
-		defer close(interrupt)
+	sources, err := sourceArgs()
+	if err != nil {
+		return nil, err
+	}
+	options = append(options, sources...)
 
-		cleanup := func() { termenv.Reset(); os.Exit(0) }
-
-		<-interrupt
-		(*mgr).Stop()
-
-		go func() { time.Sleep(stopGracePeriod); cleanup() }()
-		(*mgr).Wait()
-		cleanup()
-	}()
+	return options, nil
 }

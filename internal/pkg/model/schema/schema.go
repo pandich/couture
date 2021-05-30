@@ -33,7 +33,7 @@ type (
 		Name() string
 		Fields() []string
 		Column(field string) (string, bool)
-		Test(s string) bool
+		CanHandle(s string) bool
 	}
 
 	baseSchema struct {
@@ -43,15 +43,13 @@ type (
 		predicate   func(s string) bool
 	}
 
-	// Definition ...
-	Definition struct {
+	definition struct {
 		Predicates map[string]string `json:"predicates"`
 		Mapping    map[string]string `json:"mapping"`
 	}
 )
 
-// NewSchema ...
-func NewSchema(name string, definition Definition) Schema {
+func newSchema(name string, definition definition) Schema {
 	var inputFields []string
 	for inputField := range definition.Mapping {
 		inputFields = append(inputFields, inputField)
@@ -109,7 +107,7 @@ func (b baseSchema) Column(field string) (string, bool) {
 	return s, ok
 }
 
-// Test ...
-func (b baseSchema) Test(s string) bool {
+// CanHandle ...
+func (b baseSchema) CanHandle(s string) bool {
 	return b.predicate(s)
 }

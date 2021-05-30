@@ -1,18 +1,8 @@
 package cli
 
 import (
-	"couture/internal/pkg/couture"
-	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/sink/pretty"
-	"couture/internal/pkg/sink/pretty/column"
-	"couture/internal/pkg/sink/pretty/theme"
-	"github.com/alecthomas/kong"
-	"github.com/posener/complete/cmd/install"
-	"github.com/willabides/kongplete"
 	"net/url"
-	"os"
-	"reflect"
 	"regexp"
 	"strings"
 	"time"
@@ -20,8 +10,6 @@ import (
 
 // FEATURE shell completion
 // FEATURE use the kong config integration for all the non-alias config
-
-const helpSummary = "Tails one or more event sources."
 
 //nolint:lll
 var cli struct {
@@ -46,93 +34,42 @@ var cli struct {
 	Source []url.URL `arg:"true" help:"Log event source URLs." name:"source_url" required:"true"`
 }
 
-var parser = kong.Must(&cli,
-	kong.Name(couture.Name),
-	kong.Description(helpDescription()),
-	kong.UsageOnError(),
-	kong.ConfigureHelp(kong.HelpOptions{
-		Summary:   true,
-		FlagsLast: true,
-	}),
-	kong.TypeMapper(reflect.TypeOf(regexp.Regexp{}), regexpDecoder()),
-	kong.TypeMapper(reflect.TypeOf(time.Time{}), timeLikeDecoder()),
-	kong.Vars{
-		"timeFormatNames": strings.Join([]string{
-			"c",
-			"iso8601",
-			"iso8601-nanos",
-			"kitchen",
-			"rfc1123",
-			"rfc1123-utc",
-			"rfc3339",
-			"rfc3339-nanos",
-			"rfc822",
-			"rfc822-utc",
-			"rfc850",
-			"ruby",
-			"stamp",
-			"stamp-micros",
-			"stamp-millis",
-			"stamp-nanos",
-			"unix",
-		}, ","),
-		"columnNames":         strings.Join(column.Names(), ","),
-		"themeNames":          strings.Join(theme.Names(), ","),
-		"defaultTheme":        theme.Default,
-		"logLevels":           strings.Join(level.Lower(), ","),
-		"defaultLogLevel":     level.Info.Lower(),
-		"outputFormats":       strings.Join([]string{pretty.Name}, ","),
-		"defaultOutputFormat": pretty.Name,
-	},
-	kong.Groups{
-		"display": "Display Config",
-		"content": "Content Config",
-		"filter":  "Filter Config",
-	},
-	kong.PostBuild(completionsHook()),
-)
+type timeFormat string
 
-func helpDescription() string {
-	var lines = []string{
-		helpSummary,
-		"",
-		"Examples Sources:",
-		"",
+// AfterApply ...
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (t *timeFormat) AfterApply() error {
+	switch strings.ToLower(string(*t)) {
+	case "c":
+		*t = time.ANSIC
+	case "unix":
+		*t = time.UnixDate
+	case "ruby":
+		*t = time.RubyDate
+	case "rfc822":
+		*t = time.RFC822
+	case "rfc822-utc":
+		*t = time.RFC822Z
+	case "rfc850":
+		*t = time.RFC850
+	case "rfc1123":
+		*t = time.RFC1123
+	case "rfc1123-utc":
+		*t = time.RFC1123Z
+	case "rfc3339", "iso8601":
+		*t = time.RFC3339
+	case "rfc3339-nanos", "iso8601-nanos":
+		*t = time.RFC3339Nano
+	case "kitchen":
+		*t = time.Kitchen
+	case "stamp":
+		*t = time.Stamp
+	case "stamp-millis":
+		*t = time.StampMilli
+	case "stamp-micros":
+		*t = time.StampMicro
+	case "stamp-nanos":
+		*t = time.StampNano
 	}
-	for _, src := range manager.AvailableSources {
-		if len(src.ExampleURLs) > 0 {
-			lines = append(lines, "  "+src.Name+":")
-			for _, u := range src.ExampleURLs {
-				lines = append(lines, "    "+u)
-			}
-			lines = append(lines, "")
-		}
-	}
-	return strings.Join(lines, "\n")
-}
-
-// FIXME completions are not working properly
-func completionsHook() func(k *kong.Kong) error {
-	return func(k *kong.Kong) error {
-		commandName := k.Model.Name
-		doInstall := os.Getenv("COMP_INSTALL") == "1"
-		doUninstall := os.Getenv("COMP_UNINSTALL") == "1"
-		if doInstall || doUninstall {
-			kongplete.Complete(k)
-			var err error
-			if doInstall {
-				if install.IsInstalled(commandName) {
-					_ = install.Uninstall(commandName)
-				}
-				err = install.Install(commandName)
-			} else {
-				err = install.Uninstall(commandName)
-			}
-			if err != nil {
-				return err
-			}
-			os.Exit(0)
-		}
-		return nil
-	}
+	return nil
 }

@@ -9,9 +9,12 @@ import (
 	"fmt"
 	"github.com/araddon/dateparse"
 	"github.com/joomcode/errorx"
+	"github.com/muesli/termenv"
 	errors2 "github.com/pkg/errors"
 	"github.com/tidwall/gjson"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -141,7 +144,7 @@ func (mgr *publishingManager) makeSrcChan(errChan chan source.Error, snkChan cha
 		defer close(srcChan)
 		for {
 			sourceEvent := <-srcChan
-			sch := schema.Predict(sourceEvent.Event, mgr.config.Schemas...)
+			sch := schema.Guess(sourceEvent.Event, mgr.config.Schemas...)
 			if sch == nil {
 				snkChan <- model.SinkEvent{
 					Event: model.Event{
@@ -192,4 +195,35 @@ func (mgr *publishingManager) makeSnkChan(errChan chan source.Error) chan model.
 		}
 	}()
 	return snkChan
+}
+
+// TrapSignals ...
+func (mgr *publishingManager) TrapSignals() {
+	interrupt := make(chan os.Signal)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		const stopGracePeriod = 250 * time.Millisecond
+		defer close(interrupt)
+
+		cleanup := func() { termenv.Reset(); os.Exit(0) }
+
+		<-interrupt
+		(*mgr).Stop()
+
+		go func() { time.Sleep(stopGracePeriod); cleanup() }()
+		(*mgr).Wait()
+		cleanup()
+	}()
+}
+
+// Run ...
+func (mgr *publishingManager) Run() error {
+	mgr.TrapSignals()
+	err := mgr.Start()
+	if err != nil {
+		return err
+	}
+	// wait for it to die
+	(*mgr).Wait()
+	return nil
 }

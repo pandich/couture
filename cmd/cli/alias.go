@@ -32,6 +32,10 @@ func aliasConfig() map[string]string {
 }
 
 func expandAliases(args []string) ([]string, error) {
+	err := loadAliasConfig()
+	if err != nil {
+		return nil, err
+	}
 	for i := range args {
 		var arg = args[i]
 		arg = expandSchemeShortForm(arg)
