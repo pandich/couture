@@ -1,5 +1,7 @@
 package column
 
+// TODO get rid of cfmt for this section - this is too complex for it
+
 import (
 	"bytes"
 	"couture/internal/pkg/model"
@@ -73,9 +75,11 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []inte
 	}
 	var message = string(event.Message)
 	if cfg.ExpandJSON {
+		// TODO pretty JSON
 		iterator, err := col.lexer.Tokenise(nil, message)
 		if err == nil {
 			var buf bytes.Buffer
+			// TODO one color-scheme per log level
 			err := col.formatter.Format(&buf, cfg.Theme.JSONColorTheme, iterator)
 			if err == nil {
 				message = buf.String()
