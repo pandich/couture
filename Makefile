@@ -1,4 +1,4 @@
-APPLICATION	?= $(shell basename `pwd`T)
+APPLICATION = couture
 
 #
 # Variables
