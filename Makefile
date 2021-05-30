@@ -1,11 +1,9 @@
-.PHONY: default
-default: all
+APPLICATION	?= $(shell basename `pwd`T)
 
 #
 # Variables
 
 # Core
-APPLICATION	= couture
 SOURCE_DIRS	= cmd internal
 COMMAND		= cmd/$(APPLICATION).go
 
@@ -15,6 +13,9 @@ GOPATH			?= $(shell $(GO) env GOPATH)
 GOHOSTOS		?= $(shell $(GO) env GOHOSTOS)
 GOHOSTARCH		?= $(shell $(GO) env GOHOSTARCH)
 GO_GET 			= $(GO) get -u
+
+.PHONY: default
+default: all
 
 #
 # External Commands
