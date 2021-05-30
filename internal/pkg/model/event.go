@@ -5,9 +5,6 @@ import (
 	"regexp"
 )
 
-// TimestampField ...
-const TimestampField = "@timestamp"
-
 // Event a log event
 type Event struct {
 	// Timestamp the timestamp. This field is required, and should default to time.Now() if not present.

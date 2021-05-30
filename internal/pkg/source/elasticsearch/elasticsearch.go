@@ -1,6 +1,7 @@
 package elasticsearch
 
 import (
+	"context"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/source"
 	"encoding/json"
@@ -12,8 +13,6 @@ import (
 	"sync"
 	"time"
 )
-
-const eventsPerFetch = 100
 
 // Metadata ...
 func Metadata() source.Metadata {
@@ -39,8 +38,6 @@ func Metadata() source.Metadata {
 	}
 }
 
-const keepAliveOneMinute = "1m"
-
 const (
 	scheme           = "elasticsearch"
 	schemeAliasShort = "es"
@@ -48,13 +45,14 @@ const (
 
 type elasticSearch struct {
 	source.BaseSource
-	query     elastic.Query
-	scrollID  string
-	indexName string
-	esClient  *elastic.Client
+	scroll *elastic.ScrollService
 }
 
+// FIXME sorting by time
 func newSource(sourceURL model.SourceURL) (*source.Source, error) {
+	const eventsPerFetch = 100
+	const keepAliveOneMinute = "1m"
+
 	normalizeURL(&sourceURL)
 
 	esClient, err := newElasticsearchClient(sourceURL)
@@ -63,13 +61,16 @@ func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	}
 
 	indexName := strings.Trim(sourceURL.Path, "/")
-	query := elastic.NewQueryStringQuery(sourceURL.RawQuery)
 
+	scroll := esClient.Scroll(indexName).
+		KeepAlive(keepAliveOneMinute).
+		Size(eventsPerFetch)
+	if sourceURL.RawQuery != "" {
+		scroll.Query(elastic.NewQueryStringQuery(sourceURL.RawQuery))
+	}
 	var src source.Source = elasticSearch{
 		BaseSource: source.New('፨', sourceURL),
-		esClient:   esClient,
-		query:      query,
-		indexName:  indexName,
+		scroll:     scroll,
 	}
 	return &src, nil
 }
@@ -99,8 +100,17 @@ func (src elasticSearch) Start(
 		const eofSleepTime = 100 * time.Millisecond
 
 		defer wg.Done()
+		defer func() {
+			err := src.scroll.Clear(context.TODO())
+			if err != nil {
+				errChan <- source.Error{
+					SourceURL: src.URL(),
+					Error:     err,
+				}
+			}
+		}()
 		for running() {
-			result, err := src.scroll()
+			result, err := src.scroll.DoC(context.TODO())
 			if err != nil {
 				if errors.Is(err, io.EOF) {
 					time.Sleep(eofSleepTime)
@@ -115,21 +125,6 @@ func (src elasticSearch) Start(
 		}
 	}()
 	return nil
-}
-
-func (src *elasticSearch) scroll() (*elastic.SearchResult, error) {
-	result, err := src.esClient.Scroll(src.indexName).
-		KeepAlive(keepAliveOneMinute).
-		ScrollId(src.scrollID).
-		Size(eventsPerFetch).
-		Query(src.query).
-		SortBy(elastic.NewFieldSort(model.TimestampField)).
-		Pretty(true).
-		Do()
-	if err == nil {
-		src.scrollID = result.ScrollId
-	}
-	return result, err
 }
 
 func (src *elasticSearch) processEvent(srcChan chan source.Event, hit json.RawMessage) {

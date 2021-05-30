@@ -12,6 +12,7 @@ import (
 	errors2 "github.com/pkg/errors"
 	"github.com/tidwall/gjson"
 	"os"
+	"time"
 )
 
 // Start the Manager. This starts all source.PushingSource instances, and begins polling all polling.Pushable instances.
@@ -116,6 +117,9 @@ func (mgr *publishingManager) makeErrChan() chan source.Error {
 		defer close(errChan)
 		for {
 			incoming := <-errChan
+			if incoming.Error == nil {
+				continue
+			}
 			var sourceName = incoming.SourceURL.String()
 			if sourceName == "" {
 				sourceName = couture.Name
@@ -139,10 +143,19 @@ func (mgr *publishingManager) makeSrcChan(errChan chan source.Error, snkChan cha
 			sourceEvent := <-srcChan
 			sch := schema.Predict(sourceEvent.Event, mgr.config.Schemas...)
 			if sch == nil {
-				// TODO a default raw message approach is needed here
-				errChan <- source.Error{
+				snkChan <- model.SinkEvent{
+					Event: model.Event{
+						Timestamp:   model.Timestamp(time.Now()),
+						Level:       level.Warn,
+						Message:     model.Message(sourceEvent.Event),
+						Application: couture.Name,
+						Method:      "-",
+						Line:        0,
+						Thread:      "-",
+						Class:       "-",
+						Exception:   "Warning: entry is in an unknown log format.",
+					},
 					SourceURL: sourceEvent.Source.URL(),
-					Error:     errors2.Errorf("unknown format"),
 				}
 			} else {
 				modelEvent, err := unmarshallEvent(*sch, sourceEvent.Event)

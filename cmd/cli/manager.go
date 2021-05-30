@@ -14,6 +14,8 @@ import (
 	"os/signal"
 	"path"
 	"path/filepath"
+	"sort"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -61,27 +63,30 @@ func Run() {
 }
 
 func loadSchemas() []schema.Schema {
-	var schemas []schema.Schema
+	const jsonExtension = ".json"
+
 	schemaBox := packr.NewBox("./schemas")
 
-	addSchema := func(schemaJSON string) {
+	var schemas []schema.Schema
+	addSchema := func(schemaFilename string, schemaJSON string) {
+		name := path.Base(schemaFilename[0 : len(schemaFilename)-len(jsonExtension)])
 		var schemaDefinition = schema.Definition{}
 		err := json.Unmarshal([]byte(schemaJSON), &schemaDefinition)
 		parser.FatalIfErrorf(err)
-		schemas = append(schemas, schema.NewSchema(schemaDefinition))
+		schemas = append(schemas, schema.NewSchema(name, schemaDefinition))
 	}
 
 	for _, schemaFilename := range schemaBox.List() {
 		schemaJSON, err := schemaBox.FindString(schemaFilename)
 		parser.FatalIfErrorf(err)
-		addSchema(schemaJSON)
+		addSchema(schemaFilename, schemaJSON)
 	}
 
 	home, err := os.UserHomeDir()
 	parser.FatalIfErrorf(err)
 	schemasDir := path.Join(home, ".config", couture.Name, "schemas")
 	err = filepath.Walk(schemasDir, func(schemaFilename string, info fs.FileInfo, err error) error {
-		if path.Ext(schemaFilename) == ".json" {
+		if path.Ext(schemaFilename) == jsonExtension {
 			if info != nil && info.IsDir() {
 				return nil
 			}
@@ -89,11 +94,14 @@ func loadSchemas() []schema.Schema {
 			if err != nil {
 				return err
 			}
-			addSchema(string(schemaJSON))
+			addSchema(schemaFilename, string(schemaJSON))
 		}
 		return nil
 	})
 	parser.FatalIfErrorf(err)
+
+	sort.Slice(schemas, func(i, j int) bool { return strings.Compare(schemas[i].Name(), schemas[j].Name()) <= 0 })
+
 	return schemas
 }
 

@@ -1,0 +1,12 @@
+{
+  "predicates": {
+    "log"     : ""
+  },
+  "mapping"   : {
+    "@timestamp"          : "timestamp",
+    "log"                 : "message",
+    "tag"                 : "application",
+    "logStream"           : "class",
+    "logGroup"            : "thread"
+  }
+}
