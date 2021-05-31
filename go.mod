@@ -25,6 +25,7 @@ require (
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.8.1
 	github.com/olekukonko/ts v0.0.0-20171002115256-78ecb04241c0
+	github.com/oriser/regroup v0.0.0-20201024192559-010c434ff8f3
 	github.com/pkg/errors v0.9.1
 	github.com/posener/complete v1.2.3
 	github.com/rakyll/statik v0.1.7

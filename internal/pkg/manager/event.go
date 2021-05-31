@@ -1,23 +1,72 @@
 package manager
 
 import (
+	"couture/internal/pkg/couture"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/schema"
 	"github.com/araddon/dateparse"
 	"github.com/tidwall/gjson"
+	"strings"
+	"time"
 )
 
-func unmarshallEvent(sch schema.Schema, s string) *model.Event {
-	values := gjson.GetMany(s, sch.Fields()...)
+func unmarshallEvent(sch *schema.Schema, s string) *model.Event {
+	var evt *model.Event
+	if sch != nil {
+		switch (*sch).Format() {
+		case schema.JSON:
+			evt = unmarshallJSONEvent(sch, s)
+		case schema.Text:
+			fallthrough
+		default:
+			evt = unmarshallTextEvent(sch, s)
+		}
+	}
+	if evt == nil {
+		evt = unmarshallUnknown(s)
+	}
+	return evt
+}
+
+func unmarshallJSONEvent(sch *schema.Schema, s string) *model.Event {
+	values := gjson.GetMany(s, (*sch).Fields()...)
 	event := model.Event{}
-	for i, field := range sch.Fields() {
-		if col, ok := sch.Column(field); ok {
+	for i, field := range (*sch).Fields() {
+		if col, ok := (*sch).Column(field); ok {
 			value := values[i]
 			updateEvent(&event, col, value)
 		}
 	}
 	return &event
+}
+
+func unmarshallTextEvent(sch *schema.Schema, s string) *model.Event {
+	pattern := (*sch).TextPattern()
+	if pattern == nil {
+		return nil
+	}
+
+	event := model.Event{}
+	err := pattern.MatchToTarget(strings.TrimRight(s, "\n"), &event)
+	if err != nil {
+		return nil
+	}
+	return &event
+}
+
+func unmarshallUnknown(msg string) *model.Event {
+	return &model.Event{
+		Timestamp:   model.Timestamp(time.Now()),
+		Level:       level.Warn,
+		Message:     model.Message(msg),
+		Application: couture.Name,
+		Method:      "-",
+		Line:        0,
+		Thread:      "-",
+		Class:       "-",
+		Exception:   "Warning: entry is in an unknown log format.",
+	}
 }
 
 func updateEvent(event *model.Event, col string, v gjson.Result) {

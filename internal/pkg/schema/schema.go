@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"github.com/oriser/regroup"
 	errors2 "github.com/pkg/errors"
 	"github.com/tidwall/gjson"
 	"regexp"
@@ -29,8 +30,10 @@ const (
 )
 
 const (
-	jsonFormat      format = "json"
-	plainTextFormat format = "text"
+	// JSON ...
+	JSON format = "json"
+	// Text ...
+	Text format = "text"
 )
 
 type (
@@ -49,15 +52,18 @@ type (
 		Fields() []string
 		Column(field string) (string, bool)
 		CanHandle(s string) bool
+		TextPattern() *regroup.ReGroup
 	}
 
 	baseSchema struct {
-		name        string
-		format      format
-		priority    priority
-		mapping     map[string]string
-		inputFields []string
-		predicate   func(s string) bool
+		name              string
+		format            format
+		priority          priority
+		mapping           map[string]string
+		inputFields       []string
+		predicate         func(s string) bool
+		predicatePatterns map[string]*regexp.Regexp
+		textPattern       *regroup.ReGroup
 	}
 )
 
@@ -77,9 +83,10 @@ func newSchema(name string, definition definition) (*Schema, error) {
 		}
 		predicateFields = append(predicateFields, fieldName)
 	}
+	var textPattern *regroup.ReGroup
 	var test predicate
 	switch definition.Format {
-	case jsonFormat:
+	case JSON:
 		test = func(s string) bool {
 			values := gjson.GetMany(s, predicateFields...)
 			for i := range predicateFields {
@@ -100,12 +107,10 @@ func newSchema(name string, definition definition) (*Schema, error) {
 			return true
 		}
 	// TODO use the regex groups to create an event
-	case plainTextFormat:
+	case Text:
+		pattern := predicatePatterns["_"]
+		textPattern = regroup.MustCompile(pattern.String())
 		test = func(s string) bool {
-			pattern, ok := predicatePatterns["_"]
-			if !ok {
-				return false
-			}
 			return pattern.MatchString(strings.TrimRight(s, "\n"))
 		}
 	default:
@@ -118,12 +123,14 @@ func newSchema(name string, definition definition) (*Schema, error) {
 		inputFields = append(inputFields, v)
 	}
 	var schema Schema = baseSchema{
-		name:        name,
-		format:      definition.Format,
-		priority:    definition.Priority,
-		mapping:     inverseMapping,
-		inputFields: inputFields,
-		predicate:   test,
+		name:              name,
+		format:            definition.Format,
+		priority:          definition.Priority,
+		mapping:           inverseMapping,
+		inputFields:       inputFields,
+		predicate:         test,
+		predicatePatterns: predicatePatterns,
+		textPattern:       textPattern,
 	}
 	return &schema, nil
 }
@@ -152,4 +159,9 @@ func (schema baseSchema) Column(field string) (string, bool) {
 // CanHandle ...
 func (schema baseSchema) CanHandle(s string) bool {
 	return schema.predicate(s)
+}
+
+// TextPattern ...
+func (schema baseSchema) TextPattern() *regroup.ReGroup {
+	return schema.textPattern
 }

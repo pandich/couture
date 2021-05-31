@@ -3,13 +3,11 @@ package manager
 import (
 	"couture/internal/pkg/couture"
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/source"
 	"fmt"
 	"github.com/joomcode/errorx"
 	"os"
-	"time"
 )
 
 func (mgr *publishingManager) createChannels() (chan source.Event, chan model.SinkEvent, chan source.Error) {
@@ -51,29 +49,12 @@ func (mgr *publishingManager) makeSrcChan(_ chan source.Error, snkChan chan mode
 		for {
 			sourceEvent := <-srcChan
 			sch := schema.Guess(sourceEvent.Event, mgr.config.Schemas...)
-			if sch == nil {
+			modelEvent := unmarshallEvent(sch, sourceEvent.Event)
+			if mgr.shouldInclude(modelEvent) {
 				snkChan <- model.SinkEvent{
-					Event: model.Event{
-						Timestamp:   model.Timestamp(time.Now()),
-						Level:       level.Warn,
-						Message:     model.Message(sourceEvent.Event),
-						Application: couture.Name,
-						Method:      "-",
-						Line:        0,
-						Thread:      "-",
-						Class:       "-",
-						Exception:   "Warning: entry is in an unknown log format.",
-					},
 					SourceURL: sourceEvent.Source.URL(),
-				}
-			} else {
-				modelEvent := unmarshallEvent(*sch, sourceEvent.Event)
-				if mgr.shouldInclude(modelEvent) {
-					snkChan <- model.SinkEvent{
-						SourceURL: sourceEvent.Source.URL(),
-						Event:     *modelEvent,
-						Filters:   mgr.config.IncludeFilters,
-					}
+					Event:     *modelEvent,
+					Filters:   mgr.config.IncludeFilters,
 				}
 			}
 		}

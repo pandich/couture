@@ -18,16 +18,16 @@ exception = "exception.stacktrace"
 format = "text"
 priority = 90
 [aws-billing-report.predicates]
-"_" = "^(?P<message>REPORT RequestId: (?P<thread>\\S+)\\s+.+)$"
+"_" = "^(?P<message>REPORT (?P<class>RequestId):\\s+(?P<method>\\S+)\\s+.+)(?P<level>)(?P<thread>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<exception>)$"
 
 [aws-billing-start]
 format = "text"
 priority = 90
 [aws-billing-start.predicates]
-"_" = "^(?P<message>START RequestId:\\s+(?P<thread>\\S+).+)$"
+"_" = "^(?P<message>START (?P<class>RequestId):(?P<method>\\s+\\S+).+)(?P<level>)(?P<thread>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<exception>)$"
 
 [aws-billing-end]
 format = "text"
 priority = 90
 [aws-billing-end.predicates]
-"_" = "^(?P<message>END RequestId: (?P<thread>.+))$"
+"_" = "^(?P<message>END (?P<class>RequestId):\\s+(?P<method>\\S+)\\s+.+)(?P<level>)(?P<thread>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<exception>)$"
