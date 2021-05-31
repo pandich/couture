@@ -19,12 +19,15 @@ type definition struct {
 
 // LoadSchemas ...
 func LoadSchemas() ([]Schema, error) {
+	var schemas []Schema
 	bundledSchemas, err := loadSchemaFile(schemataFile)
 	if err != nil {
 		return nil, err
 	}
-	var schemas []Schema
 	schemas = append(schemas, bundledSchemas...)
+
+	// TODO load ~/.config/couture/schemata.toml
+
 	return schemas, nil
 }
 
