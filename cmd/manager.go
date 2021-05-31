@@ -69,7 +69,6 @@ func getOptions() ([]interface{}, error) {
 				AutoResize:       cli.AutoResize,
 				Columns:          cli.Column,
 				ConsistentColors: cli.ConsistentColors,
-				ExpandJSON:       cli.ExpandJSON,
 				Highlight:        cli.Highlight,
 				Multiline:        cli.Multiline,
 				Theme:            theme.Registry[cli.Theme],

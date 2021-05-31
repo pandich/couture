@@ -10,7 +10,6 @@ type Config struct {
 	AutoResize       bool
 	Columns          []string
 	ConsistentColors bool
-	ExpandJSON       bool
 	Highlight        bool
 	Multiline        bool
 	Theme            theme.Theme

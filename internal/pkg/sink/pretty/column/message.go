@@ -3,7 +3,6 @@ package column
 // TODO get rid of cfmt for this section - this is too complex for it
 
 import (
-	"bytes"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/sink/pretty/config"
@@ -74,34 +73,18 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []inte
 		lvl = level.Info
 	}
 	var message = string(event.Message)
-	if cfg.ExpandJSON {
-		// TODO pretty JSON
-		iterator, err := col.lexer.Tokenise(nil, message)
-		if err == nil {
-			var buf bytes.Buffer
-			// TODO one color-scheme per log level
-			err := col.formatter.Format(&buf, cfg.Theme.JSONColorTheme, iterator)
-			if err == nil {
-				message = buf.String()
-				if !cfg.Multiline {
-					message = "\n" + message
-				}
-			}
-		}
-	}
-
-	var msg = col.levelSprintf(col.prefix(cfg), "", lvl, message)
-	msg += col.stackTrace(lvl, event.Exception)
+	message = col.levelSprintf(col.prefix(cfg), "", lvl, message)
+	message += col.stackTrace(lvl, event.Exception)
 
 	if cfg.Highlight {
 		for _, filter := range event.Filters {
-			msg = filter.ReplaceAllStringFunc(msg, func(s string) string {
+			message = filter.ReplaceAllStringFunc(message, func(s string) string {
 				return col.levelSprintf("", highlightSuffix, lvl, s) + col.bgColorSeq[lvl]
 			})
 		}
 	}
 
-	return []interface{}{msg}
+	return []interface{}{message}
 }
 
 //

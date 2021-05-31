@@ -1,6 +1,7 @@
 package theme
 
 import (
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"crypto/sha256"
 	"github.com/alecthomas/chroma"
@@ -43,11 +44,20 @@ var Registry = map[string]Theme{
 }
 
 func newTheme(baseColor string, sourceColorGamut gamut.Palette, jsonColorScheme *chroma.Style) Theme {
+	jsonColorSchemes := map[level.Level]*chroma.Style{}
+	for _, lvl := range level.Levels {
+		colorScheme, err := jsonColorScheme.Builder().Add(chroma.Background, "#ff0000").Build()
+		if err != nil {
+			panic(err)
+		}
+		jsonColorSchemes[lvl] = colorScheme
+	}
+
 	baseColor = determineBaseColor(baseColor)
 	return Theme{
 		BaseColor:      baseColor,
 		sourceColors:   buildSourceColors(baseColor, sourceColorGamut),
-		JSONColorTheme: jsonColorScheme,
+		JSONColorTheme: jsonColorSchemes,
 	}
 }
 
@@ -56,7 +66,7 @@ type Theme struct {
 	// BaseColor drives most color generation options.
 	BaseColor string
 	// JSONColorTheme is the theme used for colorizing JSON model.Message if it contains JSON.
-	JSONColorTheme *chroma.Style
+	JSONColorTheme map[level.Level]*chroma.Style
 	// sourceColors is a list of available colors for displaying the source column.
 	sourceColors []color.Color
 }
