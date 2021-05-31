@@ -57,4 +57,4 @@ linters-settings:
 
 run:
   skip-files:
-    - internal/pkg/source/fake.go
+    - internal/pkg/assets/statik.go
