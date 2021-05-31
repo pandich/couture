@@ -1,12 +1,14 @@
 [logstash]
 priority = 100
-predicates."@version " = "^1$"
-mapping.timestamp = "@timestamp"
-mapping.level = "level"
-mapping.application = "application"
-mapping.thread = "thread_name"
-mapping.class = "class"
-mapping.method = "method"
-mapping.line = "line_number"
-mapping.message = "message"
-mapping.exception = "exception.stacktrace"
+[logstash.predicates]
+"@version" = "^1$"
+[logstash.mapping]
+timestamp = "@timestamp"
+level = "level"
+application = "application"
+thread = "thread_name"
+class = "class"
+method = "method"
+line = "line_number"
+message = "message"
+exception = "exception.stacktrace"

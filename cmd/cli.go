@@ -8,13 +8,12 @@ import (
 	"time"
 )
 
-// FEATURE shell completion
 // FEATURE use the kong config integration for all the non-alias config
 
 //nolint:lll
 var cli struct {
 	OutputFormat     string `group:"display" hidden:"true" help:"The output format: ${enum}." enum:"${outputFormats}" default:"${defaultOutputFormat}" placeholder:"format" short:"f" required:"true" env:"COUTURE_DEFAULT_FORMAT"`
-	Wrap             bool   `group:"display" help:"Wrap the output tp the terminal width, or that specified by --width." short:"w" default:"true" negatable:"true"`
+	Wrap             bool   `group:"display" help:"Wrap the output tp the terminal width, or that specified by --width." short:"w" default:"false" negatable:"true"`
 	Width            uint   `group:"display" help:"Wrap width." placeholder:"width" short:"W"`
 	Theme            string `group:"display" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"${defaultTheme}" enum:"${themeNames}" env:"COUTURE_THEME"`
 	Multiline        bool   `group:"display" help:"Display each log event in multiline format." negatable:"true" default:"false"`
@@ -24,7 +23,7 @@ var cli struct {
 
 	Column     []string   `group:"content" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}" env:"COUTURE_DEFAULT_COLUMN_NAMES"`
 	TimeFormat timeFormat `group:"content" help:"Go-standard time format string or a named format: ${timeFormatNames}." short:"t" default:"stamp" env:"COUTURE_DEFAULT_TIME_FORMAT"`
-	ExpandJSON bool       `group:"content" help:"Example JSON message bodies. Warning: has a significant performance impact." negatable:"true" default:"false"`
+	ExpandJSON bool       `group:"content" help:"Example JSON message bodies. Warning: has a significant performance impact." negatable:"true" default:"true"`
 
 	Level   level.Level     `group:"filter" help:"The minimum log level to display: ${enum}." default:"${defaultLogLevel}" placeholder:"level" short:"l" enum:"${logLevels}" env:"COUTURE_DEFAULT_LEVEL"`
 	Since   time.Time       `group:"filter" help:"How far back to look for events. Parses most time and duration formats including human friendly." placeholder:"(time|duration)" short:"s" default:"15m" env:"COUTURE_DEFAULT_SINCE"`

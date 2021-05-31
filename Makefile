@@ -35,15 +35,17 @@ statik:
 # Targets
 
 # Build
-.PHONY: all clean build
+.PHONY: all clean build assets
 all: clean build
 clean:
 	@echo cleaning
 	@rm -rf dist/
+	@find $(SOURCES) -name statik.go -exec rm {} \;
 build: neat assets
 	@echo building
 	@$(GO) build -o dist/couture $(COMMAND)
 assets: statik
+	@echo assets
 	@statik -dest=internal/pkg -src=assets -f -p assets
 
 # Release
