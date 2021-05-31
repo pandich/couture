@@ -108,7 +108,7 @@ func newSchema(name string, definition definition) (*Schema, error) {
 		}
 	// TODO use the regex groups to create an event
 	case Text:
-		pattern := predicatePatterns["_"]
+		pattern := predicatePatterns["text"]
 		textPattern = regroup.MustCompile(pattern.String())
 		test = func(s string) bool {
 			return pattern.MatchString(strings.TrimRight(s, "\n"))
