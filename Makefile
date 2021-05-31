@@ -40,7 +40,7 @@ all: clean build
 clean:
 	@echo cleaning
 	@rm -rf dist/
-build: assets neat
+build: neat assets
 	@echo building
 	@$(GO) build -o dist/couture $(COMMAND)
 assets: statik
