@@ -1,9 +1,9 @@
 package schema
 
 // Guess ..
-func Guess(possibleJSON string, schemasToCheck ...Schema) *Schema {
+func Guess(s string, schemasToCheck ...Schema) *Schema {
 	for _, schema := range schemasToCheck {
-		if schema.CanHandle(possibleJSON) {
+		if schema.CanHandle(s) {
 			return &schema
 		}
 	}

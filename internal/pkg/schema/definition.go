@@ -11,6 +11,7 @@ import (
 var schemataFile = couture.MustOpen("/schemata.toml")
 
 type definition struct {
+	Format     format            `json:"format"`
 	Priority   priority          `json:"priority"`
 	Predicates map[string]string `json:"predicates"`
 	Mapping    map[string]string `json:"mapping"`
@@ -42,7 +43,11 @@ func loadSchemaFile(schemataFile io.ReadCloser) ([]Schema, error) {
 	}
 
 	for name, schema := range schemaByName {
-		schemas = append(schemas, newSchema(name, schema))
+		s, err := newSchema(name, schema)
+		if err != nil {
+			return nil, err
+		}
+		schemas = append(schemas, *s)
 	}
 	sort.Slice(schemas, func(i, j int) bool {
 		a, b := schemas[i], schemas[j]

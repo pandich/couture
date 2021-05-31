@@ -43,7 +43,7 @@ clean:
 	@find $(SOURCES) -name statik.go -exec rm {} \;
 build: neat assets
 	@echo building
-	@$(GO) build -o dist/couture $(COMMAND)
+	@$(GO) build -o dist/$(APPLICATION) $(COMMAND)
 assets: statik
 	@echo assets
 	@statik -dest=internal/pkg -src=assets -f -p assets
@@ -52,10 +52,10 @@ assets: statik
 .PHONY: install uninstall release
 install: build
 	@echo installing
-	@$(GO) install $(COMMAND)
+	@$(GO) install $(APPLICATION)
 uninstall:
 	@echo uninstalling
-	@$(GO) clean -i $(COMMAND)
+	@$(GO) clean -i $(APPLICATION)
 release: goreleaser build
 	@echo releasing
 	@goreleaser build --snapshot --rm-dist

@@ -1,8 +1,10 @@
 package schema
 
 import (
+	errors2 "github.com/pkg/errors"
 	"github.com/tidwall/gjson"
 	"regexp"
+	"strings"
 )
 
 const (
@@ -26,13 +28,23 @@ const (
 	Exception = "exception"
 )
 
+const (
+	jsonFormat      format = "json"
+	plainTextFormat format = "text"
+)
+
 type (
+	predicate func(s string) bool
+
 	// priority ...
 	priority = uint8
+
+	format string
 
 	// Schema ...
 	Schema interface {
 		Name() string
+		Format() format
 		Priority() priority
 		Fields() []string
 		Column(field string) (string, bool)
@@ -41,6 +53,7 @@ type (
 
 	baseSchema struct {
 		name        string
+		format      format
 		priority    priority
 		mapping     map[string]string
 		inputFields []string
@@ -53,7 +66,7 @@ func (schema baseSchema) Priority() priority {
 	return schema.priority
 }
 
-func newSchema(name string, definition definition) Schema {
+func newSchema(name string, definition definition) (*Schema, error) {
 	var predicateFields []string
 	predicatePatterns := map[string]*regexp.Regexp{}
 	for fieldName, pattern := range definition.Predicates {
@@ -64,44 +77,65 @@ func newSchema(name string, definition definition) Schema {
 		}
 		predicateFields = append(predicateFields, fieldName)
 	}
-	predicate := func(possibleJSON string) bool {
-		values := gjson.GetMany(possibleJSON, predicateFields...)
-		for i := range predicateFields {
-			value := values[i]
-			field := predicateFields[i]
-			pattern := predicatePatterns[field]
-			if pattern == nil {
-				if !value.Exists() {
-					return false
-				}
-			} else {
-				stringValue := value.String()
-				if !pattern.MatchString(stringValue) {
-					return false
+	var test predicate
+	switch definition.Format {
+	case jsonFormat:
+		test = func(s string) bool {
+			values := gjson.GetMany(s, predicateFields...)
+			for i := range predicateFields {
+				value := values[i]
+				field := predicateFields[i]
+				pattern := predicatePatterns[field]
+				if pattern == nil {
+					if !value.Exists() {
+						return false
+					}
+				} else {
+					stringValue := value.String()
+					if !pattern.MatchString(stringValue) {
+						return false
+					}
 				}
 			}
+			return true
 		}
-		return true
+	// TODO use the regex groups to create an event
+	case plainTextFormat:
+		test = func(s string) bool {
+			pattern, ok := predicatePatterns["_"]
+			if !ok {
+				return false
+			}
+			return pattern.MatchString(strings.TrimRight(s, "\n"))
+		}
+	default:
+		return nil, errors2.Errorf("unknown schema format: %s", definition.Format)
 	}
-
 	var inputFields []string
 	inverseMapping := map[string]string{}
 	for k, v := range definition.Mapping {
 		inverseMapping[v] = k
 		inputFields = append(inputFields, v)
 	}
-	return baseSchema{
+	var schema Schema = baseSchema{
 		name:        name,
+		format:      definition.Format,
 		priority:    definition.Priority,
 		mapping:     inverseMapping,
 		inputFields: inputFields,
-		predicate:   predicate,
+		predicate:   test,
 	}
+	return &schema, nil
 }
 
 // Name ...
 func (schema baseSchema) Name() string {
 	return schema.name
+}
+
+// Format ...
+func (schema baseSchema) Format() format {
+	return schema.format
 }
 
 // Fields ...

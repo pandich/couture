@@ -1,4 +1,5 @@
 [logstash]
+format = "json"
 priority = 100
 [logstash.predicates]
 "@version" = "^1$"
@@ -12,3 +13,21 @@ method = "method"
 line = "line_number"
 message = "message"
 exception = "exception.stacktrace"
+
+[aws-billing-report]
+format = "text"
+priority = 90
+[aws-billing-report.predicates]
+"_" = "^(?P<message>REPORT RequestId: (?P<thread>\\S+)\\s+.+)$"
+
+[aws-billing-start]
+format = "text"
+priority = 90
+[aws-billing-start.predicates]
+"_" = "^(?P<message>START RequestId:\\s+(?P<thread>\\S+).+)$"
+
+[aws-billing-end]
+format = "text"
+priority = 90
+[aws-billing-end.predicates]
+"_" = "^(?P<message>END RequestId: (?P<thread>.+))$"
