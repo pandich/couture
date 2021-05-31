@@ -26,11 +26,14 @@ const (
 	Exception = "exception"
 )
 
-// Schema ...
 type (
+	// priority ...
+	priority = uint8
+
 	// Schema ...
 	Schema interface {
 		Name() string
+		Priority() priority
 		Fields() []string
 		Column(field string) (string, bool)
 		CanHandle(s string) bool
@@ -38,22 +41,19 @@ type (
 
 	baseSchema struct {
 		name        string
+		priority    priority
 		mapping     map[string]string
 		inputFields []string
 		predicate   func(s string) bool
 	}
-
-	definition struct {
-		Predicates map[string]string `json:"predicates"`
-		Mapping    map[string]string `json:"mapping"`
-	}
 )
 
+// Priority ...
+func (schema baseSchema) Priority() priority {
+	return schema.priority
+}
+
 func newSchema(name string, definition definition) Schema {
-	var inputFields []string
-	for inputField := range definition.Mapping {
-		inputFields = append(inputFields, inputField)
-	}
 	var predicateFields []string
 	predicatePatterns := map[string]*regexp.Regexp{}
 	for fieldName, pattern := range definition.Predicates {
@@ -83,31 +83,39 @@ func newSchema(name string, definition definition) Schema {
 		}
 		return true
 	}
+
+	var inputFields []string
+	inverseMapping := map[string]string{}
+	for k, v := range definition.Mapping {
+		inverseMapping[v] = k
+		inputFields = append(inputFields, v)
+	}
 	return baseSchema{
 		name:        name,
-		mapping:     definition.Mapping,
+		priority:    definition.Priority,
+		mapping:     inverseMapping,
 		inputFields: inputFields,
 		predicate:   predicate,
 	}
 }
 
 // Name ...
-func (b baseSchema) Name() string {
-	return b.name
+func (schema baseSchema) Name() string {
+	return schema.name
 }
 
 // Fields ...
-func (b baseSchema) Fields() []string {
-	return b.inputFields
+func (schema baseSchema) Fields() []string {
+	return schema.inputFields
 }
 
 // Column ...
-func (b baseSchema) Column(field string) (string, bool) {
-	s, ok := b.mapping[field]
+func (schema baseSchema) Column(field string) (string, bool) {
+	s, ok := schema.mapping[field]
 	return s, ok
 }
 
 // CanHandle ...
-func (b baseSchema) CanHandle(s string) bool {
-	return b.predicate(s)
+func (schema baseSchema) CanHandle(s string) bool {
+	return schema.predicate(s)
 }

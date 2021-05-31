@@ -20,16 +20,17 @@ default: all
 #
 # External Commands
 
-.PHONY: golangci-lint goreleaser gocmt scc
-golangci-lint:;
-	@command -v golangci-lint > /dev/null || $(GO_GET) github.com/golangci/golangci-lint/cmd/golangci-lint
+.PHONY: golangci-lint goreleaser gocmt scc statik
+golangci-lint:
+	@command -v $@ > /dev/null || $(GO_GET) github.com/golangci/golangci-lint/cmd/golangci-lint
 goreleaser:
-	@command -v goreleaser > /dev/null || $(GO_GET) github.com/goreleaser/goreleaser
+	@command -v $@ > /dev/null || $(GO_GET) github.com/goreleaser/goreleaser
 gocmt:
-	@command -v gocmt > /dev/null || $(GO_GET) github.com/cuonglm/gocmt
+	@command -v $@ > /dev/null || $(GO_GET) github.com/cuonglm/gocmt
 scc:
-	@command -v scc > /dev/null || $(GO_GET) github.com/boyter/scc
-
+	@command -v $@ > /dev/null || $(GO_GET) github.com/boyter/scc
+statik:
+	@command -v $@ > /dev/null || $(GO_GET) github.com/rakyll/statik
 #
 # Targets
 
@@ -39,9 +40,11 @@ all: clean build
 clean:
 	@echo cleaning
 	@rm -rf dist/
-build: neat
+build: assets neat
 	@echo building
 	@$(GO) build -o dist/couture $(COMMAND)
+assets: statik
+	@statik -dest=internal/pkg -src=assets -f -p assets
 
 # Release
 .PHONY: install uninstall release
@@ -71,5 +74,5 @@ metrics: scc
 	@scc --wide --by-file --no-gen --sort lines $(SOURCES)
 
 # Utility
-setup-env: golangci-lint goreleaser scc gocmt
+setup-env: golangci-lint goreleaser scc gocmt statik
 	@git config --local core.hooksPath .githooks

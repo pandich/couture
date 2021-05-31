@@ -3,7 +3,7 @@ package manager
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/model/schema"
+	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	errors2 "github.com/pkg/errors"

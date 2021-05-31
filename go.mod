@@ -3,6 +3,7 @@ module couture
 go 1.16
 
 require (
+	github.com/BurntSushi/toml v0.3.1
 	github.com/alecthomas/chroma v0.9.1
 	github.com/alecthomas/kong v0.2.16
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
@@ -15,9 +16,6 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.4.1
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/gobuffalo/envy v1.9.0 // indirect
-	github.com/gobuffalo/packd v1.0.0 // indirect
-	github.com/gobuffalo/packr v1.30.1
 	github.com/i582/cfmt v1.3.0
 	github.com/joomcode/errorx v1.0.3
 	github.com/kr/pretty v0.2.0 // indirect
@@ -30,7 +28,7 @@ require (
 	github.com/olekukonko/ts v0.0.0-20171002115256-78ecb04241c0
 	github.com/pkg/errors v0.9.1
 	github.com/posener/complete v1.2.3
-	github.com/rogpeppe/go-internal v1.8.0 // indirect
+	github.com/rakyll/statik v0.1.7
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/tidwall/gjson v1.8.0

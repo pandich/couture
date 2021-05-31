@@ -4,13 +4,12 @@ import (
 	"couture/internal/pkg/couture"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/model/schema"
+	"couture/internal/pkg/schema"
 	"couture/internal/pkg/source"
 	"fmt"
 	"github.com/araddon/dateparse"
 	"github.com/joomcode/errorx"
 	"github.com/muesli/termenv"
-	errors2 "github.com/pkg/errors"
 	"github.com/tidwall/gjson"
 	"os"
 	"os/signal"
@@ -53,18 +52,16 @@ func (mgr *publishingManager) createChannels() (chan source.Event, chan model.Si
 	return srcChan, snkChan, errChan
 }
 
-func unmarshallEvent(sch schema.Schema, s string) (*model.Event, error) {
-	if !gjson.Valid(s) {
-		return nil, errors2.Errorf("invalid JSON: %s", s)
-	}
+func unmarshallEvent(sch schema.Schema, s string) *model.Event {
 	values := gjson.GetMany(s, sch.Fields()...)
 	event := model.Event{}
 	for i, field := range sch.Fields() {
 		if col, ok := sch.Column(field); ok {
-			updateEvent(&event, col, values[i])
+			value := values[i]
+			updateEvent(&event, col, value)
 		}
 	}
-	return &event, nil
+	return &event
 }
 
 func updateEvent(event *model.Event, col string, v gjson.Result) {
@@ -138,7 +135,7 @@ func (mgr *publishingManager) makeErrChan() chan source.Error {
 	return errChan
 }
 
-func (mgr *publishingManager) makeSrcChan(errChan chan source.Error, snkChan chan model.SinkEvent) chan source.Event {
+func (mgr *publishingManager) makeSrcChan(_ chan source.Error, snkChan chan model.SinkEvent) chan source.Event {
 	srcChan := make(chan source.Event)
 	go func() {
 		defer close(srcChan)
@@ -161,13 +158,8 @@ func (mgr *publishingManager) makeSrcChan(errChan chan source.Error, snkChan cha
 					SourceURL: sourceEvent.Source.URL(),
 				}
 			} else {
-				modelEvent, err := unmarshallEvent(*sch, sourceEvent.Event)
-				if err != nil {
-					errChan <- source.Error{
-						SourceURL: sourceEvent.Source.URL(),
-						Error:     err,
-					}
-				} else if mgr.shouldInclude(*modelEvent) {
+				modelEvent := unmarshallEvent(*sch, sourceEvent.Event)
+				if mgr.shouldInclude(modelEvent) {
 					snkChan <- model.SinkEvent{
 						SourceURL: sourceEvent.Source.URL(),
 						Event:     *modelEvent,

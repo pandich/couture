@@ -3,7 +3,7 @@ package cmd
 import (
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/schema"
+	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink/pretty"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
