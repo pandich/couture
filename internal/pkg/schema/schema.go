@@ -8,6 +8,16 @@ import (
 	"strings"
 )
 
+// Guess ..
+func Guess(s string, schemasToCheck ...Schema) *Schema {
+	for _, schema := range schemasToCheck {
+		if schema.CanHandle(s) {
+			return &schema
+		}
+	}
+	return nil
+}
+
 const (
 	// Timestamp ...
 	Timestamp = "timestamp"
@@ -66,11 +76,6 @@ type (
 		textPattern       *regroup.ReGroup
 	}
 )
-
-// Priority ...
-func (schema baseSchema) Priority() priority {
-	return schema.priority
-}
 
 func newSchema(name string, definition definition) (*Schema, error) {
 	var predicateFields []string
@@ -132,6 +137,11 @@ func newSchema(name string, definition definition) (*Schema, error) {
 		textPattern:       textPattern,
 	}
 	return &schema, nil
+}
+
+// Priority ...
+func (schema baseSchema) Priority() priority {
+	return schema.priority
 }
 
 // Name ...
