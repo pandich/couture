@@ -1,11 +1,8 @@
 package theme
 
 import (
-	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"crypto/sha256"
-	"github.com/alecthomas/chroma"
-	"github.com/alecthomas/chroma/styles"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
 	"github.com/muesli/gamut/palette"
@@ -37,27 +34,17 @@ func Names() []string {
 
 // Registry is the registry of theme names to their structs.
 var Registry = map[string]Theme{
-	blackAndWhite: newTheme("White", palette.Crayola, styles.BlackWhite),
-	prince:        newTheme("#ae99bf", palette.Crayola, styles.Monokai),
-	brougham:      newTheme("Red", palette.Crayola, styles.Autumn),
-	ocean:         newTheme("Navy Blue", palette.Crayola, styles.Tango),
+	blackAndWhite: newTheme("White", palette.Crayola),
+	prince:        newTheme("#ae99bf", palette.Crayola),
+	brougham:      newTheme("Red", palette.Crayola),
+	ocean:         newTheme("Navy Blue", palette.Crayola),
 }
 
-func newTheme(baseColor string, sourceColorGamut gamut.Palette, jsonColorScheme *chroma.Style) Theme {
-	jsonColorSchemes := map[level.Level]*chroma.Style{}
-	for _, lvl := range level.Levels {
-		colorScheme, err := jsonColorScheme.Builder().Add(chroma.Background, "#ff0000").Build()
-		if err != nil {
-			panic(err)
-		}
-		jsonColorSchemes[lvl] = colorScheme
-	}
-
+func newTheme(baseColor string, sourceColorGamut gamut.Palette) Theme {
 	baseColor = determineBaseColor(baseColor)
 	return Theme{
-		BaseColor:      baseColor,
-		sourceColors:   buildSourceColors(baseColor, sourceColorGamut),
-		JSONColorTheme: jsonColorSchemes,
+		BaseColor:    baseColor,
+		sourceColors: buildSourceColors(baseColor, sourceColorGamut),
 	}
 }
 
@@ -65,8 +52,6 @@ func newTheme(baseColor string, sourceColorGamut gamut.Palette, jsonColorScheme 
 type Theme struct {
 	// BaseColor drives most color generation options.
 	BaseColor string
-	// JSONColorTheme is the theme used for colorizing JSON model.Message if it contains JSON.
-	JSONColorTheme map[level.Level]*chroma.Style
 	// sourceColors is a list of available colors for displaying the source column.
 	sourceColors []color.Color
 }

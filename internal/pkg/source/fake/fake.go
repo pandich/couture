@@ -82,7 +82,7 @@ func (src fakeSource) Start(
 			index := rand.Intn(len(nonErrorLevels))
 			var lvl = nonErrorLevels[index]
 			if rand.Intn(maxPercent) > errorThresholdPercent {
-				if rand.Intn(10) > 8 {
+				if rand.Intn(10) > 2 {
 					exception = jsonExceptionGenerator()
 				} else {
 					exception = exceptionGenerator()
@@ -90,7 +90,7 @@ func (src fakeSource) Start(
 				lvl = level.Error
 			}
 			var message string
-			if rand.Intn(10) > 8 {
+			if rand.Intn(10) > 2 {
 				message = jsonMessageGenerater()
 			} else {
 				message = messageGenerator()

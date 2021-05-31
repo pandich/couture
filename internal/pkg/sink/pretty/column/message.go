@@ -3,29 +3,22 @@ package column
 // TODO get rid of cfmt for this section - this is too complex for it
 
 import (
-	"bytes"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/sink/pretty/theme"
-	"github.com/alecthomas/chroma"
-	"github.com/alecthomas/chroma/styles"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/indent"
 	"github.com/muesli/termenv"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
+	"strconv"
 	"strings"
 )
 
 const (
 	highlightSuffix = "Highlight"
 	errorSuffix     = "Error"
-)
-
-var (
-	jsonLexer     = model.NewChromaLexer("json")
-	jsonFormatter = model.NewChromaFormatter()
 )
 
 type messageColumn struct {
@@ -81,12 +74,16 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []inte
 	}
 	var message = string(event.Message)
 	if cfg.ExpandJSON {
-		message = expandJSON(cfg.Theme.JSONColorTheme[lvl], message)
+		if s, ok := expandJSON(message); ok {
+			message = "\n" + s
+		}
 	}
 	message = col.levelSprintf(col.prefix(cfg), "", lvl, message)
 	var exception = string(event.Exception)
 	if exception != "" && cfg.ExpandJSON {
-		exception = expandJSON(styles.BlackWhite, exception)
+		if s, ok := expandJSON(exception); ok {
+			exception = s
+		}
 	}
 	if exception != "" {
 		exception = "\n" + indent.String(
@@ -138,23 +135,21 @@ func colorFormat(fgColor string, bgColor string) func(s string) string {
 	}
 }
 
-func expandJSON(style *chroma.Style, s string) string {
-	if !gjson.Valid(s) {
-		return s
+func expandJSON(in string) (string, bool) {
+	if in == "" {
+		return in, false
 	}
-	s = string(pretty.Pretty([]byte(s)))
-	s = strings.TrimRight(s, "\n")
-	if style == styles.BlackWhite {
-		return s
+	if in[0] == '"' {
+		s, err := strconv.Unquote(in)
+		if err != nil {
+			return in, false
+		}
+		in = s
 	}
-	iterator, err := jsonLexer.Tokenise(nil, s)
-	if err != nil {
-		return s
+	if !gjson.Valid(in) {
+		return in, false
 	}
-	var buf bytes.Buffer
-	err = jsonFormatter.Format(&buf, style, iterator)
-	if err != nil {
-		return s
-	}
-	return "\n" + buf.String()
+	in = string(pretty.Pretty([]byte(in)))
+	in = strings.TrimRight(in, "\n")
+	return in, true
 }

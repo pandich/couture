@@ -4,7 +4,6 @@ go 1.16
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/alecthomas/chroma v0.9.1
 	github.com/alecthomas/kong v0.2.16
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/aws/aws-sdk-go-v2 v1.6.0
