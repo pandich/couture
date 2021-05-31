@@ -71,7 +71,7 @@ type (
 		priority          priority
 		mapping           map[string]string
 		inputFields       []string
-		predicate         func(s string) bool
+		predicate         predicate
 		predicatePatterns map[string]*regexp.Regexp
 		textPattern       *regroup.ReGroup
 	}
