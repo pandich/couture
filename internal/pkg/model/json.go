@@ -1,11 +1,9 @@
 package model
 
 import (
-	"bytes"
 	"github.com/alecthomas/chroma"
 	"github.com/alecthomas/chroma/formatters"
 	"github.com/alecthomas/chroma/lexers"
-	"github.com/alecthomas/chroma/styles"
 	"github.com/muesli/termenv"
 )
 
@@ -30,19 +28,4 @@ func NewChromaFormatter() chroma.Formatter {
 		formatter = formatters.Fallback
 	}
 	return formatter
-}
-
-var jsonLexer = NewChromaLexer("json")
-
-// PrettyJSON ...
-func PrettyJSON(s string) string {
-	iterator, err := jsonLexer.Tokenise(nil, s)
-	if err == nil {
-		var buf bytes.Buffer
-		err := formatters.TTY.Format(&buf, styles.BlackWhite, iterator)
-		if err == nil {
-			s = buf.String()
-		}
-	}
-	return s
 }

@@ -1,3 +1,4 @@
+//nolint:gomnd,gosec
 package fake
 
 import (
@@ -59,7 +60,6 @@ func getStyleArg(sourceURL model.SourceURL) string {
 }
 
 // Start ...
-//nolint:gosec
 func (src fakeSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
@@ -72,7 +72,8 @@ func (src fakeSource) Start(
 	const maxLineNumber = 200
 	nonErrorLevels := []level.Level{level.Trace, level.Debug, level.Info, level.Warn}
 
-	messageGenerator, exceptionGenerator := src.makers()
+	messageGenerator, exceptionGenerator := src.textGenerators()
+	jsonMessageGenerater, jsonExceptionGenerator := src.jsonGenerators()
 
 	go func() {
 		defer wg.Done()
@@ -81,36 +82,29 @@ func (src fakeSource) Start(
 			index := rand.Intn(len(nonErrorLevels))
 			var lvl = nonErrorLevels[index]
 			if rand.Intn(maxPercent) > errorThresholdPercent {
-				exception = exceptionGenerator()
+				if rand.Intn(10) > 8 {
+					exception = jsonExceptionGenerator()
+				} else {
+					exception = exceptionGenerator()
+				}
 				lvl = level.Error
 			}
-			message := messageGenerator()
-			var format = "{" +
-				`"@version":1,` +
-				`"@timestamp":"%s",` +
-				`"level":"%s",` +
-				`"message":"%s",` +
-				`"application":"%s",` +
-				`"method":"%s",` +
-				`"line_number":%d,` +
-				`"thread_name":"%s",` +
-				`"class":"%s"`
-			if exception != "" {
-				format += `,"exception":{"stacktrace":"%s"}`
+			var message string
+			if rand.Intn(10) > 8 {
+				message = jsonMessageGenerater()
 			} else {
-				format += "%s"
+				message = messageGenerator()
 			}
-			format += "}"
+			hasException := exception != ""
 			event := source.Event{
 				Source: src,
 				Event: fmt.Sprintf(
-					format,
+					src.getFormat(hasException),
 					time.Now().Format(time.RFC3339),
 					lvl,
 					message,
 					src.applicationName,
 					src.faker.Animal(),
-					//nolint:gosec
 					rand.Uint64()%maxLineNumber,
 					src.faker.Adverb(),
 					src.faker.AppName(),
@@ -123,40 +117,94 @@ func (src fakeSource) Start(
 	return nil
 }
 
-func (src fakeSource) getSentenceMaker() func(int) string {
-	var sentenceMaker func(int) string
+func (src fakeSource) getSentenceGenerator() func(int) string {
+	var sentenceGenerator func(int) string
 	switch src.style {
 	case hipsterStyle:
-		sentenceMaker = src.faker.HipsterSentence
+		sentenceGenerator = src.faker.HipsterSentence
 	case loremStyle:
-		sentenceMaker = src.faker.LoremIpsumSentence
+		sentenceGenerator = src.faker.LoremIpsumSentence
 	case hackerStyle:
-		sentenceMaker = func(_ int) string { return src.faker.HackerPhrase() }
+		sentenceGenerator = func(_ int) string { return src.faker.HackerPhrase() }
 	case defaultStyle:
 		fallthrough
 	default:
-		sentenceMaker = src.faker.Sentence
+		sentenceGenerator = src.faker.Sentence
 	}
-	return sentenceMaker
+	return sentenceGenerator
 }
 
-func (src fakeSource) makers() (func() string, func() string) {
+func (src fakeSource) jsonGenerators() (func() string, func() string) {
+	messageGenerator := func() string {
+		ba, err := src.faker.JSON(&gofakeit.JSONOptions{
+			Type:     "object",
+			RowCount: 10,
+			Fields: []gofakeit.Field{
+				{Name: "first_name", Function: "firstname"},
+				{Name: "last_name", Function: "lastname"},
+				{Name: "email", Function: "email"},
+			},
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		return strings.ReplaceAll(string(ba), `"`, `\"`)
+	}
+	exceptionGenerator := func() string {
+		ba, err := src.faker.JSON(&gofakeit.JSONOptions{
+			Type:     "object",
+			RowCount: 10,
+			Fields: []gofakeit.Field{
+				{Name: "first_name", Function: "firstname"},
+				{Name: "last_name", Function: "lastname"},
+				{Name: "email", Function: "email"},
+			},
+		})
+		if err != nil {
+			panic(err)
+		}
+		return strings.ReplaceAll(string(ba), `"`, `\"`)
+	}
+	return messageGenerator, exceptionGenerator
+}
+
+func (src fakeSource) getFormat(hasException bool) string {
+	var format = "{" +
+		`"@version":1,` +
+		`"@timestamp":"%s",` +
+		`"level":"%s",` +
+		`"message":"%s",` +
+		`"application":"%s",` +
+		`"method":"%s",` +
+		`"line_number":%d,` +
+		`"thread_name":"%s",` +
+		`"class":"%s"`
+	if hasException {
+		format += `,"exception":{"stacktrace":"%s"}`
+	} else {
+		format += "%s"
+	}
+	format += "}"
+	return format
+}
+func (src fakeSource) textGenerators() (func() string, func() string) {
 	const paragraphLength = 4
 	const sentenceLength = 10
 
-	sentenceMaker := src.getSentenceMaker()
+	sentenceGenerator := src.getSentenceGenerator()
 
 	var messageGenerator = func() string {
 		var sentences []string
 		for i := 0; i < paragraphLength; i++ {
-			sentences = append(sentences, sentenceMaker(sentenceLength))
+			sentences = append(sentences, sentenceGenerator(sentenceLength))
 		}
 		return strings.Join(sentences, "")
 	}
 	var exceptionGenerator = func() string {
 		var sentences []string
 		for i := 0; i < paragraphLength; i++ {
-			sentences = append(sentences, sentenceMaker(sentenceLength))
+			sentences = append(sentences, sentenceGenerator(sentenceLength))
 		}
 		return strings.Join(sentences, "\\n")
 	}

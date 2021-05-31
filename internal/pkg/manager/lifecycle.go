@@ -80,7 +80,7 @@ func updateEvent(event *model.Event, col string, v gjson.Result) {
 		}
 	case schema.Message:
 		if v.Exists() {
-			event.Message = model.Message(model.PrettyJSON(v.String()))
+			event.Message = model.Message(v.String())
 		}
 	case schema.Application:
 		if v.Exists() {
@@ -104,7 +104,7 @@ func updateEvent(event *model.Event, col string, v gjson.Result) {
 		}
 	case schema.Exception:
 		if v.Exists() {
-			stackTrace := model.PrettyJSON(v.String())
+			stackTrace := v.String()
 			event.Exception = model.Exception(stackTrace)
 		}
 	}
