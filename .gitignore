@@ -48,3 +48,4 @@ _testmain.go
 *.iml
 dist/
 *.peg.go
+statik.go
