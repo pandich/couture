@@ -1,0 +1,7 @@
+# copy to ~/.config/couture/aliases.yaml
+# try: couture --tty --banner @733t @pig @pabst | less -r
+
+aliases:
+  733t: fake://?style=hacker&@seed
+  pig: fake://?style=lorem&@seed
+  pabst: fake://?style=hipster&@seed

@@ -1,5 +1,6 @@
 package cmd
 
+// TODO alias groups
 // TODO cleanup alias code
 
 import (
