@@ -1,5 +1,7 @@
 package column
 
+// TODO https://github.com/ozgio/strutil or https://github.com/huandu/xstrings
+
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink/pretty/config"

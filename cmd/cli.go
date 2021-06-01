@@ -13,6 +13,7 @@ import (
 //nolint:lll
 var cli struct {
 	OutputFormat     string `group:"display" hidden:"true" help:"The output format: ${enum}." enum:"${outputFormats}" default:"${defaultOutputFormat}" placeholder:"format" short:"f" required:"true" env:"COUTURE_DEFAULT_FORMAT"`
+	Banner           bool   `group:"display" hidden:"true" help:"Show a useful banner." default:"false" negatable:"true" env:"COUTURE_SHOW_BANNER"`
 	Wrap             bool   `group:"display" help:"Wrap the output tp the terminal width, or that specified by --width." short:"w" default:"false" negatable:"true"`
 	Width            uint   `group:"display" help:"Wrap width." placeholder:"width" short:"W"`
 	Theme            string `group:"display" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"${defaultTheme}" enum:"${themeNames}" env:"COUTURE_THEME"`

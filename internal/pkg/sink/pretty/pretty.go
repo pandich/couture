@@ -7,8 +7,11 @@ import (
 	"couture/internal/pkg/sink/pretty/column"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/source"
+	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
+	"github.com/lucasb-eyer/go-colorful"
 	"github.com/mattn/go-isatty"
+	"github.com/muesli/gamut"
 	"os"
 )
 
@@ -46,8 +49,29 @@ func New(cfg config.Config) *sink.Sink {
 
 // Init ...
 func (snk *prettySink) Init(sources []*source.Source) {
+	const minSourceWidth = 40
+
+	var sourceColors = map[model.SourceURL]string{}
 	for _, src := range sources {
-		column.RegisterSource(snk.config.Theme, snk.config.ConsistentColors, *src)
+		sourceColors[(*src).URL()] = column.RegisterSource(snk.config.Theme, snk.config.ConsistentColors, *src)
+	}
+	if snk.config.Banner {
+		_, _ = cfmt.Println("{{〖 Legend 〗}}::bold|underline|white\n")
+		for _, src := range sources {
+			bg := sourceColors[(*src).URL()]
+			fg, _ := colorful.MakeColor(gamut.Contrast(gamut.Hex(bg)))
+
+			sigil := string((*src).Sigil())
+			var width = int(float64(config.TerminalWidth()) * 0.5)
+			if width < minSourceWidth {
+				width = minSourceWidth
+			}
+			sourceURLFormat := fmt.Sprintf("{{%1.1[1]s➥ %%-%[2]d.%[2]ds}}::%[3]s|bg%[4]s", sigil, width, fg.Hex(), bg)
+			sourceURLString := (*src).URL().String()
+			sourceURLBanner := fmt.Sprintf(sourceURLFormat, sourceURLString)
+			_, _ = cfmt.Println(sourceURLBanner)
+		}
+		_, _ = cfmt.Println("{{▾}}::bold|white")
 	}
 }
 

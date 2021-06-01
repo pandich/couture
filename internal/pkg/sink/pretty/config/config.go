@@ -8,6 +8,7 @@ import (
 // Config ...
 type Config struct {
 	AutoResize       bool
+	Banner           bool
 	Columns          []string
 	ConsistentColors bool
 	ExpandJSON       bool
@@ -25,12 +26,13 @@ func (cfg Config) EffectiveTerminalWidth() uint {
 		return cfg.Width
 	}
 	if cfg.Wrap {
-		return uint(terminalWidth())
+		return uint(TerminalWidth())
 	}
 	return 0
 }
 
-func terminalWidth() int {
+// TerminalWidth ...
+func TerminalWidth() int {
 	var terminalWidth = 0
 	if size, err := ts.GetSize(); err == nil {
 		terminalWidth = size.Col()

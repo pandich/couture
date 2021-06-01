@@ -67,6 +67,7 @@ func getOptions() ([]interface{}, error) {
 		case "pretty":
 			return pretty.New(config.Config{
 				AutoResize:       cli.AutoResize,
+				Banner:           cli.Banner,
 				Columns:          cli.Column,
 				ConsistentColors: cli.ConsistentColors,
 				ExpandJSON:       cli.ExpandJSON,
