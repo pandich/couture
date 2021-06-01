@@ -49,7 +49,9 @@ func New(cfg config.Config) *sink.Sink {
 
 // Init ...
 func (snk *prettySink) Init(sources []*source.Source) {
+	const oneHalf = 0.5
 	const minSourceWidth = 30
+	const maxSourceWidth = minSourceWidth * 2
 
 	var sourceColors = map[model.SourceURL]string{}
 	for _, src := range sources {
@@ -62,19 +64,17 @@ func (snk *prettySink) Init(sources []*source.Source) {
 			fg, _ := colorful.MakeColor(gamut.Contrast(gamut.Hex(bg)))
 
 			sigil := string((*src).Sigil())
-			var width = int(float64(config.TerminalWidth()) * 0.5)
+			var width = int(oneHalf * float64(config.TerminalWidth()))
 			if width < minSourceWidth {
 				width = minSourceWidth
+			} else if width > maxSourceWidth {
+				width = maxSourceWidth
 			}
-			if width > minSourceWidth*2 {
-				width = minSourceWidth * 2
-			}
-			sourceURLFormat := fmt.Sprintf("{{%1.1[1]s ➥ %%-%[2]d.%[2]ds}}::%[3]s|bg%[4]s", sigil, width, fg.Hex(), bg)
+			sourceURLFormat := fmt.Sprintf("{{%1.1[1]s ➥ %%-%[2]d.%[2]ds}}::%[3]s|bg%[4]s\n", sigil, width, fg.Hex(), bg)
 			sourceURLString := (*src).URL().String()
-			sourceURLBanner := fmt.Sprintf(sourceURLFormat, sourceURLString)
-			_, _ = cfmt.Println(sourceURLBanner)
+			_, _ = cfmt.Printf(sourceURLFormat, sourceURLString)
 		}
-		_, _ = cfmt.Println("\n")
+		_, _ = cfmt.Println("")
 		os.Exit(0)
 	}
 }
