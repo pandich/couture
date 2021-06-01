@@ -13,11 +13,12 @@ require (
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/bnkamalesh/errors v0.3.5
 	github.com/brianvoe/gofakeit/v6 v6.4.1
+	github.com/coreos/etcd v3.3.13+incompatible
+	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e // indirect
+	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/i582/cfmt v1.3.0
 	github.com/joomcode/errorx v1.0.3
-	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mattn/go-isatty v0.0.12
 	github.com/melbahja/goph v1.2.1
@@ -29,8 +30,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/posener/complete v1.2.3
 	github.com/rakyll/statik v0.1.7
-	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.7.1
 	github.com/tidwall/gjson v1.8.0
 	github.com/tidwall/pretty v1.1.0
 	github.com/willabides/kongplete v0.2.0
@@ -38,7 +37,6 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea // indirect
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/multierror.v1 v1.0.2
 	gopkg.in/olivere/elastic.v3 v3.0.75
 	gopkg.in/yaml.v2 v2.4.0 // indirect

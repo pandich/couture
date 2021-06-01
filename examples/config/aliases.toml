@@ -1,0 +1,10 @@
+[aliases]
+"733t" = "fake://?style=hacker&@seed"
+pig = "fake://?style=lorem&@seed"
+hip = "fake://?style=hipster&@seed"
+staging = "es+http://logging.staging.gaggle.services:9200/logstash-{{yyyy}}.{{mm}}.{{dd}}"
+gewi = "ssh://hotfix1/var/log/gaggle/gewi/logstash.log"
+lf-gewi = "file:///tmp/logstash.log"
+
+[groups]
+fake = ["pig", "hip", "733t"]

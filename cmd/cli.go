@@ -22,10 +22,10 @@ var cli struct {
 	AutoResize bool `group:"terminal" help:"Auto-resize columns when the terminal resizes." negatable:"true" default:"true"`
 
 	Theme            string `group:"display" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"${defaultTheme}" enum:"${themeNames}" env:"COUTURE_THEME"`
-	Multiline        bool   `group:"display" help:"Display each log event in multiline format. (Enabled by --expand-json)" negatable:"true" default:"false" xor:"line"`
+	Multiline        bool   `group:"display" help:"Display each log event in multiline format. (Enabled by --expand-json)" negatable:"true" default:"false"`
 	Highlight        bool   `group:"display" help:"Highlight matches from the patterns specified in --include." negatable:"true" default:"true"`
 	ConsistentColors bool   `group:"display" help:"Maintain consistent source URL colors between runs." negatable:"true" default:"true"`
-	ExpandJSON       bool   `group:"display" help:"Example JSON message bodies. Warning: has a significant performance impact." negatable:"true" default:"false" xor:"line"`
+	ExpandJSON       bool   `group:"display" help:"Example JSON message bodies. Warning: has a significant performance impact." negatable:"true" default:"false"`
 
 	Column     []string   `group:"content" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}" env:"COUTURE_DEFAULT_COLUMN_NAMES"`
 	TimeFormat timeFormat `group:"content" help:"Go-standard time format string or a named format: ${timeFormatNames}." short:"t" default:"stamp" env:"COUTURE_DEFAULT_TIME_FORMAT"`

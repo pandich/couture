@@ -6,61 +6,81 @@ package cmd
 import (
 	"couture/internal/pkg/couture"
 	"fmt"
+	"github.com/BurntSushi/toml"
 	"github.com/aymerick/raymond"
+	"github.com/coreos/etcd/pkg/fileutil"
 	errors2 "github.com/pkg/errors"
-	"github.com/spf13/viper"
+	"io/ioutil"
 	"net/url"
+	"os"
+	"path"
 	"regexp"
 	"time"
 )
 
-func loadAliasConfig() error {
-	errConfigNotFound := &viper.ConfigFileNotFoundError{}
-	viper.SetConfigName("aliases")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("$HOME/.config/" + couture.Name)
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
-	if err != nil && !errors2.As(err, errConfigNotFound) {
-		return err
-	}
-	return nil
+type aliasConfig struct {
+	Groups  map[string][]string `json:"groups"`
+	Aliases map[string]string   `json:"aliasConfig"`
 }
 
-func aliasConfig() map[string]string {
-	const aliasesConfigKey = "aliases"
-	return viper.GetStringMapString(aliasesConfigKey)
-}
-
-func expandAliases(args []string) ([]string, error) {
-	err := loadAliasConfig()
+func loadAliasConfig() (*aliasConfig, error) {
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
 	}
+	aliasFilename := path.Join(home, ".config", couture.Name, "aliases.toml")
+	if !fileutil.Exist(aliasFilename) {
+		return nil, nil
+	}
+	aliasFile, err := os.Open(aliasFilename)
+	if err != nil {
+		return nil, err
+	}
+	defer aliasFile.Close()
+	s, err := ioutil.ReadAll(aliasFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var cfg aliasConfig
+	err = toml.Unmarshal(s, &cfg)
+	if err != nil {
+		return nil, err
+	}
+	return &cfg, nil
+}
+
+func expandAliases(args []string) ([]string, error) {
+	cfg, err := loadAliasConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	var expandedArgs []string
 	for i := range args {
 		var arg = args[i]
-		arg = expandSchemeShortForm(arg)
-		u, err := url.Parse(arg)
+		expandedArgs = append(expandedArgs, expandSchemeShortForm(*cfg, arg)...)
+	}
+	for i := range expandedArgs {
+		u, err := url.Parse(expandedArgs[i])
 		if err == nil {
 			if u.Scheme == "alias" {
-				value, err := expandAlias(u)
+				value, err := expandAlias(*cfg, u)
 				if err != nil {
 					return nil, err
 				}
 				if value != "" {
-					args[i] = value
+					expandedArgs[i] = value
 				}
 			}
 		}
 	}
-	return args, nil
+	return expandedArgs, nil
 }
 
-func expandAlias(aliasURL *url.URL) (string, error) {
+func expandAlias(cfg aliasConfig, aliasURL *url.URL) (string, error) {
 	simpleArgs := regexp.MustCompile(`@(?P<name>\w+)`)
-
-	aliases := aliasConfig()
-	alias, ok := aliases[aliasURL.Host]
+	alias, ok := cfg.Aliases[aliasURL.Host]
 	if !ok {
 		return "", errors2.Errorf("unknown alias: %s", aliasURL.Host)
 	}
@@ -82,11 +102,22 @@ func aliasContext(aliasURL *url.URL) map[string][]string {
 	return context
 }
 
-func expandSchemeShortForm(arg string) string {
-	if len(arg) > 0 && arg[0] == '@' {
-		arg = "alias://" + arg[1:]
+func expandSchemeShortForm(cfg aliasConfig, arg string) []string {
+	const aliasURLPrefix = "alias://"
+	if len(arg) > 1 && arg[0:2] == "@@" {
+		group, ok := cfg.Groups[arg[2:]]
+		if !ok {
+			return nil
+		}
+		var aliases []string
+		for _, alias := range group {
+			aliases = append(aliases, aliasURLPrefix+alias)
+		}
+		return aliases
+	} else if len(arg) > 0 && arg[0] == '@' {
+		arg = aliasURLPrefix + arg[1:]
 	}
-	return arg
+	return []string{arg}
 }
 
 func addURLAliasVars(context map[string][]string, aliasURL *url.URL) {
