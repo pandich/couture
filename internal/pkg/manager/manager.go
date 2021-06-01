@@ -63,11 +63,8 @@ func (mgr *publishingManager) Register(registrants ...interface{}) error {
 
 // Config ...
 type Config struct {
-	Level level.Level
-	// Since
-	// TODO is largely (completely) unused?
-	// 		Each source.Source will need to implement an approach.
-	Since          *time.Time
+	Level          level.Level
+	Since          *time.Time // TODO use since
 	IncludeFilters []regexp.Regexp
 	ExcludeFilters []regexp.Regexp
 	Schemas        []schema.Schema

@@ -52,6 +52,7 @@ func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
 	return nil
 }
 
+// TODO include/exclude logic: process them one by one in order on command line, and short-circuit on first true
 func (mgr publishingManager) shouldInclude(evt *model.Event) bool {
 	if !evt.Level.IsAtLeast(mgr.config.Level) {
 		return false

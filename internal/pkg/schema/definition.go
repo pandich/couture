@@ -3,12 +3,13 @@ package schema
 import (
 	"couture/internal/pkg/couture"
 	"github.com/BurntSushi/toml"
+	"github.com/coreos/etcd/pkg/fileutil"
 	"io"
 	"io/ioutil"
+	"os"
+	"path"
 	"sort"
 )
-
-var schemataFile = couture.MustOpen("/schemata.toml")
 
 type definition struct {
 	Format     format            `json:"format"`
@@ -19,14 +20,34 @@ type definition struct {
 
 // LoadSchemas ...
 func LoadSchemas() ([]Schema, error) {
+	const schemataFilename = "schemata.toml"
+
 	var schemas []Schema
-	bundledSchemas, err := loadSchemaFile(schemataFile)
+
+	bundledConfig := couture.MustOpen("/" + schemataFilename)
+	bundledConfigFile, err := loadSchemaFile(bundledConfig)
 	if err != nil {
 		return nil, err
 	}
-	schemas = append(schemas, bundledSchemas...)
+	schemas = append(schemas, bundledConfigFile...)
 
-	// TODO load ~/.config/couture/schemata.toml
+	userDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+	userConfigFilename := path.Join(userDir, ".config", couture.Name, schemataFilename)
+	if fileutil.Exist(userConfigFilename) {
+		userConfigFile, err := os.Open(userConfigFilename)
+		if err != nil {
+			return nil, err
+		}
+		defer userConfigFile.Close()
+		userSchemas, err := loadSchemaFile(userConfigFile)
+		if err != nil {
+			return nil, err
+		}
+		schemas = append(schemas, userSchemas...)
+	}
 
 	return schemas, nil
 }

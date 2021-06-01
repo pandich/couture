@@ -1,7 +1,5 @@
 package column
 
-// TODO get rid of cfmt for this section - this is too complex for it
-
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"

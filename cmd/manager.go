@@ -1,21 +1,32 @@
 package cmd
 
 import (
+	"couture/internal/pkg/couture"
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink/pretty"
 	"couture/internal/pkg/sink/pretty/config"
-	"couture/internal/pkg/sink/pretty/theme"
+	"github.com/BurntSushi/toml"
+	"github.com/coreos/etcd/pkg/fileutil"
 	errors2 "github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
+	"io/ioutil"
 	"os"
+	"path"
 )
+
+var prettyConfig = config.Config{
+	Out: os.Stdout,
+}
 
 // Run runs the manager using the CLI arguments.
 func Run() {
 	var args = os.Args[1:]
 	args, err := expandAliases(args)
+	maybeDie(err)
+
+	err = loadConfig()
 	maybeDie(err)
 
 	_, err = parser.Parse(args)
@@ -65,20 +76,7 @@ func getOptions() ([]interface{}, error) {
 	sinkFlag := func() (interface{}, error) {
 		switch cli.OutputFormat {
 		case "pretty":
-			return pretty.New(config.Config{
-				AutoResize:       cli.AutoResize,
-				Banner:           cli.Banner,
-				Columns:          cli.Column,
-				ConsistentColors: cli.ConsistentColors,
-				ExpandJSON:       cli.ExpandJSON,
-				Highlight:        cli.Highlight,
-				Multiline:        cli.Multiline || cli.ExpandJSON,
-				Theme:            theme.Registry[cli.Theme],
-				TimeFormat:       string(cli.TimeFormat),
-				TTY:              cli.TTY,
-				Width:            cli.Width,
-				Wrap:             cli.Wrap,
-			}), nil
+			return pretty.New(prettyConfig), nil
 		default:
 			return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
 		}
@@ -98,4 +96,29 @@ func getOptions() ([]interface{}, error) {
 	options = append(options, sources...)
 
 	return options, nil
+}
+
+func loadConfig() error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	aliasFilename := path.Join(home, ".config", couture.Name, "config.toml")
+	if !fileutil.Exist(aliasFilename) {
+		return nil
+	}
+
+	f, err := os.Open(aliasFilename)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+	text, err := ioutil.ReadAll(f)
+	if err != nil {
+		return err
+	}
+
+	return toml.Unmarshal(text, &prettyConfig)
 }

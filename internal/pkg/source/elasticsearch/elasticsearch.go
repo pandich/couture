@@ -48,7 +48,7 @@ type elasticSearch struct {
 	scroll *elastic.ScrollService
 }
 
-// FIXME sorting by time
+// FIXME sorting by time...how to get the sort field into this method
 func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	const eventsPerFetch = 100
 	const keepAliveOneMinute = "1m"

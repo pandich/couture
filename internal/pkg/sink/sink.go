@@ -1,7 +1,5 @@
 package sink
 
-// FEATURE JSON sink for easy aggregation? Alternatively, more formally make pretty.Sink the only one,
-
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/source"

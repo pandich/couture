@@ -10,9 +10,6 @@ import (
 	"strconv"
 )
 
-// FEATURE rsa key configurable
-// FEATURE ability to use PEM key
-
 func getClient(sourceURL model.SourceURL) (*goph.Client, error) {
 	auth, err := getAuth(sourceURL)
 	if err != nil {
@@ -37,6 +34,8 @@ func getClient(sourceURL model.SourceURL) (*goph.Client, error) {
 		}
 		port = uint(i)
 	}
+	// FEATURE rsa key configurable and ability to use PEM key
+	// client.Config.Auth, err = goph.Key()
 	client.Config.Port = port
 	return client, err
 }
