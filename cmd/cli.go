@@ -9,17 +9,21 @@ import (
 )
 
 // FEATURE use the kong config integration for all the non-alias config
+// FEATURE --paginate
 
 //nolint:lll
 var cli struct {
-	OutputFormat     string `group:"display" hidden:"true" help:"The output format: ${enum}." enum:"${outputFormats}" default:"${defaultOutputFormat}" placeholder:"format" short:"f" required:"true" env:"COUTURE_DEFAULT_FORMAT"`
-	Banner           bool   `group:"display" hidden:"true" help:"Show a useful banner." default:"false" negatable:"true" env:"COUTURE_SHOW_BANNER"`
-	Wrap             bool   `group:"display" help:"Wrap the output tp the terminal width, or that specified by --width." short:"w" default:"false" negatable:"true"`
-	Width            uint   `group:"display" help:"Wrap width." placeholder:"width" short:"W"`
+	OutputFormat string `group:"display" hidden:"true" help:"The output format: ${enum}." enum:"${outputFormats}" default:"${defaultOutputFormat}" placeholder:"format" short:"f" required:"true" env:"COUTURE_DEFAULT_FORMAT"`
+	Banner       bool   `group:"display" hidden:"true" help:"Show a useful banner." default:"false" negatable:"true" env:"COUTURE_SHOW_BANNER"`
+
+	TTY        bool `group:"terminal" help:"Force TTY mode." short:"T" default:"false" negatable:"true"`
+	Wrap       bool `group:"terminal" help:"Wrap the output tp the terminal width, or that specified by --width." short:"w" default:"false" negatable:"true"`
+	Width      uint `group:"terminal" help:"Wrap width." placeholder:"width" short:"W"`
+	AutoResize bool `group:"terminal" help:"Auto-resize columns when the terminal resizes." negatable:"true" default:"true"`
+
 	Theme            string `group:"display" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"${defaultTheme}" enum:"${themeNames}" env:"COUTURE_THEME"`
 	Multiline        bool   `group:"display" help:"Display each log event in multiline format." negatable:"true" default:"false"`
 	Highlight        bool   `group:"display" help:"Highlight matches from the patterns specified in --include." negatable:"true" default:"true"`
-	AutoResize       bool   `group:"display" help:"Auto-resize columns when the terminal resizes." negatable:"true" default:"true"`
 	ConsistentColors bool   `group:"display" help:"Maintain consistent source URL colors between runs." negatable:"true" default:"true"`
 	ExpandJSON       bool   `group:"display" help:"Example JSON message bodies. Warning: has a significant performance impact." negatable:"true" default:"false"`
 

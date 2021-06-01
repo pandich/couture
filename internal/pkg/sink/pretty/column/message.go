@@ -75,7 +75,7 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []inte
 	var message = string(event.Message)
 	if cfg.ExpandJSON {
 		if s, ok := expandJSON(message); ok {
-			message = "\n" + s
+			message = s
 		}
 	}
 	message = col.levelSprintf(col.prefix(cfg), "", lvl, message)

@@ -72,9 +72,10 @@ func getOptions() ([]interface{}, error) {
 				ConsistentColors: cli.ConsistentColors,
 				ExpandJSON:       cli.ExpandJSON,
 				Highlight:        cli.Highlight,
-				Multiline:        cli.Multiline,
+				Multiline:        cli.Multiline || cli.ExpandJSON,
 				Theme:            theme.Registry[cli.Theme],
 				TimeFormat:       string(cli.TimeFormat),
+				TTY:              cli.TTY,
 				Width:            cli.Width,
 				Wrap:             cli.Wrap,
 			}), nil

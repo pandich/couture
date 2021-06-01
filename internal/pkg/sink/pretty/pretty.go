@@ -12,6 +12,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/mattn/go-isatty"
 	"github.com/muesli/gamut"
+	"github.com/muesli/reflow/padding"
 	"os"
 )
 
@@ -28,7 +29,7 @@ type prettySink struct {
 
 // New provides a configured prettySink sink.
 func New(cfg config.Config) *sink.Sink {
-	isTTY := isatty.IsTerminal(os.Stdout.Fd())
+	isTTY := cfg.TTY || isatty.IsTerminal(os.Stdout.Fd())
 	isBlackOrWhite := cfg.Theme.BaseColor == "#ffffff"
 	if !isTTY || isBlackOrWhite {
 		cfmt.DisableColors()
@@ -49,33 +50,36 @@ func New(cfg config.Config) *sink.Sink {
 
 // Init ...
 func (snk *prettySink) Init(sources []*source.Source) {
-	const oneHalf = 0.5
-	const minSourceWidth = 30
-	const maxSourceWidth = minSourceWidth * 2
-
 	var sourceColors = map[model.SourceURL]string{}
 	for _, src := range sources {
 		sourceColors[(*src).URL()] = column.RegisterSource(snk.config.Theme, snk.config.ConsistentColors, *src)
 	}
 	if snk.config.Banner {
-		_, _ = cfmt.Println("{{ Legend: }}::bold|bgWhite|black")
+		const oneHalf = 0.5
+		const extraCharCount = uint(4)
+		const minSourceWidth = uint(40)
+		const maxSourceWidth = uint(float64(minSourceWidth) * 1.5)
+
+		var width = uint(oneHalf * float64(config.TerminalWidth()))
+		if width < minSourceWidth {
+			width = minSourceWidth
+		} else if width > maxSourceWidth {
+			width = maxSourceWidth
+		}
+		actualWidth := width + extraCharCount
+
+		fmt.Println(cfmt.Sprintf("{{%s}}::bold|white|bgGray", padding.String("Legend:", actualWidth)))
 		for _, src := range sources {
 			bg := sourceColors[(*src).URL()]
 			fg, _ := colorful.MakeColor(gamut.Contrast(gamut.Hex(bg)))
 
 			sigil := string((*src).Sigil())
-			var width = int(oneHalf * float64(config.TerminalWidth()))
-			if width < minSourceWidth {
-				width = minSourceWidth
-			} else if width > maxSourceWidth {
-				width = maxSourceWidth
-			}
 			sourceURLFormat := fmt.Sprintf("{{%1.1[1]s ➥ %%-%[2]d.%[2]ds}}::%[3]s|bg%[4]s\n", sigil, width, fg.Hex(), bg)
 			sourceURLString := (*src).URL().String()
 			_, _ = cfmt.Printf(sourceURLFormat, sourceURLString)
 		}
-		_, _ = cfmt.Println("")
-		os.Exit(0)
+		fmt.Println(cfmt.Sprintf("{{%s}}::bold|white|bgGray", padding.String("꛳", actualWidth)))
+		fmt.Println()
 	}
 }
 

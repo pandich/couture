@@ -16,6 +16,7 @@ type Config struct {
 	Multiline        bool
 	Theme            theme.Theme
 	TimeFormat       string
+	TTY              bool
 	Width            uint
 	Wrap             bool
 }

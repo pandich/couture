@@ -57,9 +57,10 @@ var parser = kong.Must(&cli,
 		"defaultOutputFormat": pretty.Name,
 	},
 	kong.Groups{
-		"display": "Display Config",
-		"content": "Content Config",
-		"filter":  "Filter Config",
+		"terminal": "Terminal Options",
+		"display":  "Display Options",
+		"content":  "Content Options",
+		"filter":   "Filter Options",
 	},
 	kong.PostBuild(completionsHook()),
 )
