@@ -49,14 +49,14 @@ func New(cfg config.Config) *sink.Sink {
 
 // Init ...
 func (snk *prettySink) Init(sources []*source.Source) {
-	const minSourceWidth = 40
+	const minSourceWidth = 30
 
 	var sourceColors = map[model.SourceURL]string{}
 	for _, src := range sources {
 		sourceColors[(*src).URL()] = column.RegisterSource(snk.config.Theme, snk.config.ConsistentColors, *src)
 	}
 	if snk.config.Banner {
-		_, _ = cfmt.Println("{{〖 Legend 〗}}::bold|underline|white\n")
+		_, _ = cfmt.Println("{{ Legend: }}::bold|bgWhite|black")
 		for _, src := range sources {
 			bg := sourceColors[(*src).URL()]
 			fg, _ := colorful.MakeColor(gamut.Contrast(gamut.Hex(bg)))
@@ -66,12 +66,16 @@ func (snk *prettySink) Init(sources []*source.Source) {
 			if width < minSourceWidth {
 				width = minSourceWidth
 			}
-			sourceURLFormat := fmt.Sprintf("{{%1.1[1]s➥ %%-%[2]d.%[2]ds}}::%[3]s|bg%[4]s", sigil, width, fg.Hex(), bg)
+			if width > minSourceWidth*2 {
+				width = minSourceWidth * 2
+			}
+			sourceURLFormat := fmt.Sprintf("{{%1.1[1]s ➥ %%-%[2]d.%[2]ds}}::%[3]s|bg%[4]s", sigil, width, fg.Hex(), bg)
 			sourceURLString := (*src).URL().String()
 			sourceURLBanner := fmt.Sprintf(sourceURLFormat, sourceURLString)
 			_, _ = cfmt.Println(sourceURLBanner)
 		}
-		_, _ = cfmt.Println("{{▾}}::bold|white")
+		_, _ = cfmt.Println("\n")
+		os.Exit(0)
 	}
 }
 
