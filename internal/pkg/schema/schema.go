@@ -49,7 +49,6 @@ const (
 type (
 	predicate func(s string) bool
 
-	// priority ...
 	priority = uint8
 
 	format string
