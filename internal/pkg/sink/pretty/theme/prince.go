@@ -2,7 +2,6 @@ package theme
 
 import (
 	"couture/internal/pkg/model/level"
-	"github.com/charmbracelet/lipgloss"
 )
 
 var prince = "prince"
@@ -11,6 +10,7 @@ var prince = "prince"
 //nolint:funlen
 func init() {
 	register(prince, Theme{
+		Legend:          style("#ffffff", "#808080"),
 		Timestamp:       style("#b2a73e", "#0c0a05"),
 		Application:     style("#587585", "#060708"),
 		Thread:          style("#594768", "#060507"),
@@ -19,21 +19,22 @@ func init() {
 		Method:          style("#493858", "#202020"),
 		LineDelimiter:   style("#916d90", "#202020"),
 		Line:            style("#bf99bd", "#202020"),
-		Level: map[level.Level]lipgloss.Style{
+		Level: map[level.Level]columnStyle{
 			level.Trace: style("#000000", "#868686"),
 			level.Debug: style("#000000", "#f6f6f6"),
 			level.Info:  style("#000000", "#b1e200"),
 			level.Warn:  style("#000000", "#ffca00"),
 			level.Error: style("#000000", "#e66a00"),
 		},
-		Message: map[level.Level]lipgloss.Style{
+		Message: map[level.Level]columnStyle{
 			level.Trace: style("#fbfafc", "#121212"),
 			level.Debug: style("#fbfafc", "#1b1b1b"),
 			level.Info:  style("#fbfafc", "#181a0a"),
 			level.Warn:  style("#fbfafc", "#1e180a"),
 			level.Error: style("#e66a00", "#1d1005"),
 		},
-		Source: []lipgloss.Style{
+		MessageHighlight: "#565556",
+		Source: []columnStyle{
 			style("#000000", "#d5bfc2"),
 			style("#000000", "#c19089"),
 			style("#000000", "#debcb7"),

@@ -11,9 +11,28 @@ import (
 	"time"
 )
 
+var timeFormatNames = []string{
+	"c",
+	"iso8601",
+	"iso8601-nanos",
+	"kitchen",
+	"rfc1123",
+	"rfc1123-utc",
+	"rfc3339",
+	"rfc3339-nanos",
+	"rfc822",
+	"rfc822-utc",
+	"rfc850",
+	"ruby",
+	"stamp",
+	"stamp-micros",
+	"stamp-millis",
+	"stamp-nanos",
+	"unix",
+}
+
 type (
 	autoResize       bool
-	banner           bool
 	color            bool
 	columns          []string
 	consistentColors bool
@@ -30,10 +49,6 @@ type (
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v autoResize) AfterApply() error { prettyConfig.AutoResize = bool(v); return nil }
-
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v banner) AfterApply() error { prettyConfig.Banner = bool(v); return nil }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers

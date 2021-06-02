@@ -18,7 +18,7 @@ func New(config Config, opts ...interface{}) (*model.Manager, error) {
 	if runtime.GOOS == "windows" {
 		return nil, errors2.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
-	publisher := publishingManager{config: config, wg: &sync.WaitGroup{}}
+	publisher := busManager{config: config, wg: &sync.WaitGroup{}}
 	if err := publisher.Register(opts...); err != nil {
 		return nil, err
 	}
@@ -28,8 +28,8 @@ func New(config Config, opts ...interface{}) (*model.Manager, error) {
 
 // Manager ...
 type (
-	// publishingManager uses an EventBus.Bus publish events out.
-	publishingManager struct {
+	// busManager uses an EventBus.Bus publish events out.
+	busManager struct {
 		// wg wait group for the Manager and its registry.
 		wg *sync.WaitGroup
 		// running whether or not this Manager has been started.
@@ -47,7 +47,7 @@ type (
 )
 
 // Register registers a configuration option, source, or sink.
-func (mgr *publishingManager) Register(registrants ...interface{}) error {
+func (mgr *busManager) Register(registrants ...interface{}) error {
 	for _, registrant := range registrants {
 		switch v := registrant.(type) {
 		case *sink.Sink:
@@ -63,6 +63,7 @@ func (mgr *publishingManager) Register(registrants ...interface{}) error {
 
 // Config ...
 type Config struct {
+	DumpMetrics    bool
 	Level          level.Level
 	Since          *time.Time // TODO use since
 	IncludeFilters []regexp.Regexp

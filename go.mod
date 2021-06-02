@@ -13,17 +13,14 @@ require (
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/bnkamalesh/errors v0.3.5
 	github.com/brianvoe/gofakeit/v6 v6.4.1
-	github.com/charmbracelet/lipgloss v0.2.1
 	github.com/coreos/etcd v3.3.13+incompatible
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e // indirect
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/i582/cfmt v1.3.0
 	github.com/joomcode/errorx v1.0.3
-	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mattn/go-isatty v0.0.12
 	github.com/melbahja/goph v1.2.1
-	github.com/muesli/gamut v0.2.0
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.8.1
 	github.com/olekukonko/ts v0.0.0-20171002115256-78ecb04241c0
@@ -31,6 +28,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/posener/complete v1.2.3
 	github.com/rakyll/statik v0.1.7
+	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	github.com/tidwall/gjson v1.8.0
 	github.com/tidwall/pretty v1.1.0
 	github.com/willabides/kongplete v0.2.0

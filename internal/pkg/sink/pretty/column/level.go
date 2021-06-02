@@ -24,9 +24,8 @@ func newLevelColumn() levelColumn {
 // RegisterStyles ...
 func (col levelColumn) RegisterStyles(thm theme.Theme) {
 	for _, lvl := range level.Levels {
-		style := thm.LevelColor(lvl)
-		fgColor := theme.FgHex(style)
-		bgColor := theme.BgHex(style)
+		fgColor := thm.LevelColorFg(lvl)
+		bgColor := thm.LevelColorBg(lvl)
 		cfmt.RegisterStyle(col.name()+string(lvl), func(s string) string {
 			return cfmt.Sprintf("{{ %1.1s }}::bg"+bgColor+"|"+fgColor, s)
 		})

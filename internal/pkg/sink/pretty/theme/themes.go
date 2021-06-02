@@ -1,9 +1,5 @@
 package theme
 
-import (
-	"github.com/charmbracelet/lipgloss"
-)
-
 // Default ...
 var Default = prince
 
@@ -18,8 +14,9 @@ func register(name string, theme Theme) {
 	Registry[name] = theme
 }
 
-func style(fg string, bg string) lipgloss.Style {
-	return lipgloss.NewStyle().
-		Foreground(lipgloss.Color(fg)).
-		Background(lipgloss.Color(bg))
+func style(fg string, bg string) columnStyle {
+	return columnStyle{
+		Fg: fg,
+		Bg: bg,
+	}
 }

@@ -7,23 +7,35 @@ import (
 	"couture/internal/pkg/source"
 	"fmt"
 	"github.com/joomcode/errorx"
+	"github.com/rcrowley/go-metrics"
 	"os"
 )
 
-func (mgr *publishingManager) createChannels() (chan source.Event, chan model.SinkEvent, chan source.Error) {
+var errChanMeter = metrics.NewMeter()
+var snkChanMeter = metrics.NewMeter()
+var srcChanMeter = metrics.NewMeter()
+
+func init() {
+	metrics.GetOrRegister("manager.errChan.in", errChanMeter)
+	metrics.GetOrRegister("manager.snkChan.in", snkChanMeter)
+	metrics.GetOrRegister("manager.srcChan.in", srcChanMeter)
+}
+
+func (mgr *busManager) createChannels() (chan source.Event, chan model.SinkEvent, chan source.Error) {
 	errChan := mgr.makeErrChan()
 	snkChan := mgr.makeSnkChan(errChan)
 	srcChan := mgr.makeSrcChan(errChan, snkChan)
 	return srcChan, snkChan, errChan
 }
 
-func (mgr *publishingManager) makeErrChan() chan source.Error {
+func (mgr *busManager) makeErrChan() chan source.Error {
 	errChan := make(chan source.Error)
 
 	go func() {
 		defer close(errChan)
 		for {
 			incoming := <-errChan
+			errChanMeter.Mark(1)
 			if incoming.Error == nil {
 				continue
 			}
@@ -42,12 +54,13 @@ func (mgr *publishingManager) makeErrChan() chan source.Error {
 	return errChan
 }
 
-func (mgr *publishingManager) makeSrcChan(_ chan source.Error, snkChan chan model.SinkEvent) chan source.Event {
+func (mgr *busManager) makeSrcChan(_ chan source.Error, snkChan chan model.SinkEvent) chan source.Event {
 	srcChan := make(chan source.Event)
 	go func() {
 		defer close(srcChan)
 		for {
 			sourceEvent := <-srcChan
+			srcChanMeter.Mark(1)
 			sch := schema.Guess(sourceEvent.Event, mgr.config.Schemas...)
 			modelEvent := unmarshallEvent(sch, sourceEvent.Event)
 			if mgr.shouldInclude(modelEvent) {
@@ -62,12 +75,13 @@ func (mgr *publishingManager) makeSrcChan(_ chan source.Error, snkChan chan mode
 	return srcChan
 }
 
-func (mgr *publishingManager) makeSnkChan(errChan chan source.Error) chan model.SinkEvent {
+func (mgr *busManager) makeSnkChan(errChan chan source.Error) chan model.SinkEvent {
 	snkChan := make(chan model.SinkEvent)
 	go func() {
 		defer close(snkChan)
 		for {
 			event := <-snkChan
+			snkChanMeter.Mark(1)
 			for _, snk := range mgr.sinks {
 				err := (*snk).Accept(event)
 				if err != nil {

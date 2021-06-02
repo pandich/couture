@@ -3,134 +3,135 @@ package theme
 import (
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/lucasb-eyer/go-colorful"
-	"github.com/muesli/gamut"
 	"math/rand"
 )
 
-// Theme ...
 type (
+	// columnStyle ...
+	columnStyle struct {
+		Fg string
+		Bg string
+	}
+
+	// Theme ...
 	Theme struct {
-		Source          []lipgloss.Style
-		Timestamp       lipgloss.Style
-		Application     lipgloss.Style
-		Thread          lipgloss.Style
-		Class           lipgloss.Style
-		MethodDelimiter lipgloss.Style
-		Method          lipgloss.Style
-		LineDelimiter   lipgloss.Style
-		Line            lipgloss.Style
-		Level           map[level.Level]lipgloss.Style
-		Message         map[level.Level]lipgloss.Style
+		Legend           columnStyle
+		Source           []columnStyle
+		Timestamp        columnStyle
+		Application      columnStyle
+		Thread           columnStyle
+		Class            columnStyle
+		MethodDelimiter  columnStyle
+		Method           columnStyle
+		LineDelimiter    columnStyle
+		Line             columnStyle
+		Level            map[level.Level]columnStyle
+		Message          map[level.Level]columnStyle
+		MessageHighlight string
 	}
 )
 
 // ApplicationFg ...
 func (theme Theme) ApplicationFg() string {
-	return FgHex(theme.Application)
+	return fgHex(theme.Application)
 }
 
 // ApplicationBg ...
 func (theme Theme) ApplicationBg() string {
-	return BgHex(theme.Application)
+	return bgHex(theme.Application)
 }
 
 // TimestampFg ...
 func (theme Theme) TimestampFg() string {
-	return FgHex(theme.Timestamp)
+	return fgHex(theme.Timestamp)
 }
 
 // TimestampBg ...
 func (theme Theme) TimestampBg() string {
-	return BgHex(theme.Application)
+	return bgHex(theme.Application)
 }
 
-// LevelColor ...
-func (theme Theme) LevelColor(lvl level.Level) lipgloss.Style {
-	return theme.Level[lvl]
+// LevelColorFg ...
+func (theme Theme) LevelColorFg(lvl level.Level) string {
+	return theme.Level[lvl].Fg
+}
+
+// LevelColorBg ...
+func (theme Theme) LevelColorBg(lvl level.Level) string {
+	return theme.Level[lvl].Bg
 }
 
 // MessageFg ...
 func (theme Theme) MessageFg() string {
-	return FgHex(theme.Message[level.Info])
+	return fgHex(theme.Message[level.Info])
 }
 
 // MessageBg ...
 func (theme Theme) MessageBg(lvl level.Level) string {
-	return BgHex(theme.Message[lvl])
+	return bgHex(theme.Message[lvl])
 }
 
 // HighlightFg ...
 func (theme Theme) HighlightFg() string {
-	messageFg := gamut.Hex(theme.MessageFg())
-	errorFg := FgHex(theme.LevelColor(level.Error))
-	fg := gamut.Blends(messageFg, gamut.Hex(errorFg), 64)[40]
-	cf, _ := colorful.MakeColor(fg)
-	return cf.Hex()
+	return theme.MessageHighlight
 }
 
 // StackTraceFg ...
 func (theme Theme) StackTraceFg() string {
-	return FgHex(theme.Message[level.Error])
+	return fgHex(theme.Message[level.Error])
 }
 
 // ClassFg ...
 func (theme Theme) ClassFg() string {
-	return FgHex(theme.Class)
+	return fgHex(theme.Class)
 }
 
 // MethodDelimiterFg ...
 func (theme Theme) MethodDelimiterFg() string {
-	return FgHex(theme.MethodDelimiter)
+	return fgHex(theme.MethodDelimiter)
 }
 
 // MethodFg ...
 func (theme Theme) MethodFg() string {
-	return FgHex(theme.Method)
+	return fgHex(theme.Method)
 }
 
 // LineNumberDelimiterFg ...
 func (theme Theme) LineNumberDelimiterFg() string {
-	return FgHex(theme.LineDelimiter)
+	return fgHex(theme.LineDelimiter)
 }
 
 // LineNumberFg ...
 func (theme Theme) LineNumberFg() string {
-	return FgHex(theme.Line)
+	return fgHex(theme.Line)
 }
 
 // ThreadFg ...
 func (theme Theme) ThreadFg() string {
-	return FgHex(theme.Thread)
+	return fgHex(theme.Thread)
 }
 
 // CallerBg ...
 func (theme Theme) CallerBg() string {
-	return BgHex(theme.Class)
+	return bgHex(theme.Class)
 }
 
 // SourceColor returns a color for a source. When consistentColors is true, sources will get the same
 // color across invocations of the application. Otherwise, the color selection randomized for each run.
-func (theme Theme) SourceColor(consistentColors bool, src source.Source) lipgloss.Style {
+func (theme Theme) SourceColor(consistentColors bool, src source.Source) (string, string) {
 	//nolint:gosec
 	var index = rand.Intn(len(theme.Source))
 	if consistentColors {
 		index = src.URL().Hash() % len(theme.Source)
 	}
-	return theme.Source[index]
+	c := theme.Source[index]
+	return c.Fg, c.Bg
 }
 
-// FgHex ...
-func FgHex(style lipgloss.Style) string {
-	c := style.GetForeground()
-	cf, _ := colorful.MakeColor(c)
-	return cf.Hex()
+func fgHex(style columnStyle) string {
+	return style.Fg
 }
 
-// BgHex ...
-func BgHex(style lipgloss.Style) string {
-	c := style.GetBackground()
-	cf, _ := colorful.MakeColor(c)
-	return cf.Hex()
+func bgHex(style columnStyle) string {
+	return style.Bg
 }

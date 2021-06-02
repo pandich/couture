@@ -9,7 +9,6 @@ import (
 	"couture/internal/pkg/sink/pretty/config"
 	"github.com/BurntSushi/toml"
 	"github.com/coreos/etcd/pkg/fileutil"
-	errors2 "github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
 	"io/ioutil"
 	"os"
@@ -35,6 +34,7 @@ func Run() {
 	schemas, err := schema.LoadSchemas()
 	maybeDie(err)
 	cfg := manager.Config{
+		DumpMetrics:    cli.Metrics,
 		Level:          cli.Level,
 		Since:          &cli.Since,
 		IncludeFilters: cli.Include,
@@ -73,28 +73,17 @@ func getOptions() ([]interface{}, error) {
 		return sources, nil
 	}
 
-	sinkFlag := func() (interface{}, error) {
-		switch cli.OutputFormat {
-		case "pretty":
-			return pretty.New(prettyConfig), nil
-		default:
-			return nil, errors2.Errorf("unknown output format: %s\n", cli.OutputFormat)
-		}
+	var options = []interface{}{
+		pretty.New(prettyConfig),
 	}
-
-	var options []interface{}
-	snk, err := sinkFlag()
-	if err != nil {
-		return nil, err
-	}
-	options = append(options, snk)
-
 	sources, err := sourceArgs()
 	if err != nil {
 		return nil, err
 	}
 	options = append(options, sources...)
-
+	if len(options) == 0 {
+		return nil, nil
+	}
 	return options, nil
 }
 
