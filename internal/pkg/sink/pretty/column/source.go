@@ -29,9 +29,10 @@ func (col sourceColumn) RegisterStyles(_ theme.Theme) {}
 
 // RegisterSource ...
 func RegisterSource(th theme.Theme, consistentColors bool, src source.Source) string {
-	bgColor := th.SourceColor(consistentColors, src)
-	fgColor := contrast(bgColor)
+	style := th.SourceColor(consistentColors, src)
+	fgColor := theme.FgHex(style)
 	sigilColor := fgColor
+	bgColor := theme.BgHex(style)
 	cfmt.RegisterStyle(sourceID(src.URL()), func(s string) string {
 		return cfmt.Sprintf("{{%s}}::"+sigilColor+"|bg"+bgColor+"{{ %s }}::"+fgColor+"|bg"+bgColor, string(src.Sigil()), s)
 	})

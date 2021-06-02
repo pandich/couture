@@ -1,6 +1,7 @@
 package model
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"github.com/araddon/dateparse"
 	"github.com/bnkamalesh/errors"
@@ -128,4 +129,13 @@ func (u SourceURL) ShortForm() string {
 		return fmt.Sprintf("%s[%s?%s]", u.Scheme, host, u.RawQuery)
 	}
 	return fmt.Sprintf("%s[%s/%s]", u.Scheme, host, path)
+}
+
+// Hash ...
+func (u SourceURL) Hash() int {
+	var sum int
+	for _, v := range sha256.Sum256([]byte(u.String())) {
+		sum += int(v)
+	}
+	return sum
 }

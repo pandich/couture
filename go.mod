@@ -13,6 +13,7 @@ require (
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/bnkamalesh/errors v0.3.5
 	github.com/brianvoe/gofakeit/v6 v6.4.1
+	github.com/charmbracelet/lipgloss v0.2.1
 	github.com/coreos/etcd v3.3.13+incompatible
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e // indirect
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect

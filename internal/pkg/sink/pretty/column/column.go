@@ -6,8 +6,6 @@ import (
 	"couture/internal/pkg/sink/pretty/theme"
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
-	"github.com/lucasb-eyer/go-colorful"
-	"github.com/muesli/gamut"
 )
 
 // DefaultColumns ...
@@ -98,11 +96,6 @@ func (col weightedColumn) Format(width uint, _ model.SinkEvent) string {
 // Render ...
 func (col weightedColumn) Render(_ config.Config, event model.SinkEvent) []interface{} {
 	return col.value(event)
-}
-
-func contrast(hex string) string {
-	cf, _ := colorful.MakeColor(gamut.Contrast(gamut.Hex(hex)))
-	return cf.Hex()
 }
 
 func formatStringOfWidth(width uint) string {

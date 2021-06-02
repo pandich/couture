@@ -34,6 +34,8 @@ github.com/bnkamalesh/errors v0.3.5 h1:z31PjJs3Hoge4iUN4BFXhS3FeSBws30+RfmasPqkt
 github.com/bnkamalesh/errors v0.3.5/go.mod h1:FQgYzv2aq3DI5JNr+ICLl0PbPokCJY56C/+mhZ8TpaU=
 github.com/brianvoe/gofakeit/v6 v6.4.1 h1:u4lPnxVNr648hEyoIz31A8zrQl5woUQbCgqjAj/n/Y4=
 github.com/brianvoe/gofakeit/v6 v6.4.1/go.mod h1:palrJUk4Fyw38zIFB/uBZqsgzW5VsNllhHKKwAebzew=
+github.com/charmbracelet/lipgloss v0.2.1 h1:knjqLRtlcDsxss6i0CUhNLuXrNW3TQhFDXlXII2UaZA=
+github.com/charmbracelet/lipgloss v0.2.1/go.mod h1:uiZUfrHLQN14I0lJ5591WtcHyY1X76pOIPSaRKPY6dE=
 github.com/coreos/etcd v3.3.13+incompatible h1:8F3hqu9fGYLBifCmRCJsicFqDx/D68Rt3q1JMazcgBQ=
 github.com/coreos/etcd v3.3.13+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e h1:Wf6HqHfScWJN9/ZjdUKyjop4mf3Qdd+1TvvltAvM3m8=
@@ -83,6 +85,7 @@ github.com/muesli/gamut v0.2.0 h1:IZbl/hQzChTXtqDSXL8CDtjdRt58LivY03bGCm1yDyU=
 github.com/muesli/gamut v0.2.0/go.mod h1:kz1+UJqI1thNtocJlowyqG2o0FNsN0W534VoMVsR9/Y=
 github.com/muesli/kmeans v0.2.1 h1:ja5AnwfyDCVBCANrAfXr2pOh292FQnSeu1lySACDJU0=
 github.com/muesli/kmeans v0.2.1/go.mod h1:eNyybq0tX9/iBEP6EMU4Y7dpmGK0uEhODdZpnG1a/iQ=
+github.com/muesli/reflow v0.2.1-0.20210115123740-9e1d0d53df68/go.mod h1:Xk+z4oIWdQqJzsxyjgl3P22oYZnHdZ8FFTHAQQt5BMQ=
 github.com/muesli/reflow v0.3.0 h1:IFsN6K9NfGtjeggFP+68I4chLZV2yIKsXJFNZ+eWh6s=
 github.com/muesli/reflow v0.3.0/go.mod h1:pbwTDkVPibjO2kyvBQRBxTWEEGDGq0FlB1BIKtnHY/8=
 github.com/muesli/termenv v0.8.1 h1:9q230czSP3DHVpkaPDXGp0TOfAwyjyYwXlUCQxQSaBk=
@@ -142,6 +145,7 @@ golang.org/x/sys v0.0.0-20191026070338-33540a1f6037/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20200116001909-b77594299b42/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20201119102817-f84b799fce68/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20201218084310-7d0127a74742/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea h1:+WiDlPBBaO+h9vPNZi8uJ3k4BkKQB7Iow3aqwHVA5hI=
 golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201117132131-f5c789dd3221/go.mod h1:Nr5EML6q2oocZ2LXRh80K7BxOlk5/8JxuGnuhpl+muw=

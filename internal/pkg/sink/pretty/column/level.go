@@ -22,10 +22,11 @@ func newLevelColumn() levelColumn {
 }
 
 // RegisterStyles ...
-func (col levelColumn) RegisterStyles(theme theme.Theme) {
+func (col levelColumn) RegisterStyles(thm theme.Theme) {
 	for _, lvl := range level.Levels {
-		bgColor := theme.LevelColor(lvl)
-		fgColor := contrast(bgColor)
+		style := thm.LevelColor(lvl)
+		fgColor := theme.FgHex(style)
+		bgColor := theme.BgHex(style)
 		cfmt.RegisterStyle(col.name()+string(lvl), func(s string) string {
 			return cfmt.Sprintf("{{ %1.1s }}::bg"+bgColor+"|"+fgColor, s)
 		})

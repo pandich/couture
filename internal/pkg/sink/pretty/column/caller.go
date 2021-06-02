@@ -30,20 +30,22 @@ func (col callerColumn) RegisterStyles(theme theme.Theme) {
 		prefix = " " + string(*col.sigil) + " "
 	}
 
+	bgColor := theme.CallerBg()
+
 	cfmt.RegisterStyle("Class", func(s string) string {
-		return cfmt.Sprintf("{{"+prefix+"︎%s}}::bg"+theme.CallerBg()+"|"+theme.ClassFg(), s)
+		return cfmt.Sprintf("{{"+prefix+"︎%s}}::bg"+bgColor+"|"+theme.ClassFg(), s)
 	})
 	cfmt.RegisterStyle("MethodDelimiter", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+theme.CallerBg()+"|"+theme.MethodDelimiterFg(), s)
+		return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+theme.MethodDelimiterFg(), s)
 	})
 	cfmt.RegisterStyle("Method", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+theme.CallerBg()+"|"+theme.MethodFg(), s)
+		return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+theme.MethodFg(), s)
 	})
 	cfmt.RegisterStyle("LineNumberDelimiter", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+theme.CallerBg()+"|"+theme.LineNumberDelimiterFg(), s)
+		return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+theme.LineNumberDelimiterFg(), s)
 	})
 	cfmt.RegisterStyle("Line", func(s string) string {
-		return cfmt.Sprintf("{{%s }}::bg"+theme.CallerBg()+"|"+theme.LineNumberFg(), s)
+		return cfmt.Sprintf("{{%s }}::bg"+bgColor+"|"+theme.LineNumberFg(), s)
 	})
 }
 
