@@ -5,6 +5,7 @@ import (
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/aws/cloudformation"
 	"couture/internal/pkg/source/aws/cloudwatch"
+	"couture/internal/pkg/source/aws/s3"
 	"couture/internal/pkg/source/elasticsearch"
 	"couture/internal/pkg/source/fake"
 	"couture/internal/pkg/source/pipe/local"
@@ -18,6 +19,7 @@ var AvailableSources = []source.Metadata{
 	cloudwatch.Metadata(),
 	cloudformation.Metadata(),
 	elasticsearch.Metadata(),
+	s3.Metadata(),
 	local.Metadata(),
 	ssh.Metadata(),
 }
