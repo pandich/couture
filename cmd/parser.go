@@ -51,7 +51,7 @@ func helpDescription() string {
 	var lines = []string{
 		helpSummary,
 		"",
-		"Examples Sources:",
+		"Example Sources:",
 		"",
 	}
 	for _, src := range manager.AvailableSources {
