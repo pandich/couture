@@ -1,4 +1,6 @@
 # TODO @Jim fix any problems in here, and add missing formats
+# see: https://docs.fluentd.org/v/0.12/articles/common-log-formats
+# see: https://www.graylog.org/post/log-formats-a-complete-guide
 
 [logstash]
 format = "json"
