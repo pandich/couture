@@ -78,10 +78,10 @@ metrics: scc
 	@scc --wide --by-file --no-gen --sort lines $(SOURCES)
 
 # Utility
-.PHONY: setup-env install-completions
+.PHONY: setup-env install-shell-completions
 setup-env: golangci-lint goreleaser scc gocmt statik gocomplete
 	@git config --local core.hooksPath .githooks
-install-completions: gocomplete
+install-shell-completions: gocomplete
 	@echo installing completions
 	@echo y | COMP_UNINSTALL=1 $(APPLICATION) > /dev/null
 	@echo y | COMP_INSTALL=1 $(APPLICATION) > /dev/null
