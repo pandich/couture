@@ -1,51 +1,50 @@
 package cmd
 
 import (
-	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/sink/pretty/column"
-	"couture/internal/pkg/sink/pretty/theme"
-	"fmt"
+	"couture/internal/pkg/couture"
 	"github.com/alecthomas/kong"
-	"github.com/posener/complete"
-	"github.com/posener/complete/cmd/install"
-	"github.com/willabides/kongplete"
-	"os"
+	"github.com/iancoleman/strcase"
+	"github.com/posener/complete/v2"
+	"github.com/posener/complete/v2/predict"
+	"reflect"
+	"strings"
 )
 
-// 	FIXME completions are not working properly:
-// 	 all help text gets include, numerous error messages, etc.
-func completionsHook() func(k *kong.Kong) error {
-	return func(ctx *kong.Kong) error {
-		var levelNames []string
-		for _, lvl := range level.Levels {
-			levelNames = append(levelNames, string(lvl))
+func completionsHook(_ *kong.Kong) error {
+	cliVal := reflect.ValueOf(cli)
+	flagPredictors := map[string]complete.Predictor{}
+	for i := 0; i < cliVal.NumField(); i++ {
+		fieldValue := cliVal.Field(i)
+		field := cliVal.Type().Field(i)
+		if field.Tag.Get("arg") == "true" {
+			continue
 		}
-		commandName := ctx.Model.Name
-		doInstall := os.Getenv("COMP_INSTALL") == "1"
-		doUninstall := os.Getenv("COMP_UNINSTALL") == "1"
-		if doInstall || doUninstall {
-			kongplete.Complete(
-				ctx,
-				kongplete.WithPredictor("sources", complete.PredictNothing),
-				kongplete.WithPredictor("time_format", complete.PredictSet(timeFormatNames...)),
-				kongplete.WithPredictor("column_names", complete.PredictSet(column.Names()...)),
-				kongplete.WithPredictor("themes", complete.PredictSet(theme.Names...)),
-				kongplete.WithPredictor("width", complete.PredictSet("72", "80", "120", "132")),
-				kongplete.WithPredictor("level", complete.PredictSet(levelNames...)),
-			)
-			if !doInstall || (doInstall && install.IsInstalled(commandName)) {
-				_ = install.Uninstall(commandName)
-				fmt.Println("completions uninstalled")
-			}
-			if doInstall {
-				err := install.Install(commandName)
-				if err != nil {
-					return err
+		fieldName := field.Name
+		flagName := strcase.ToKebab(fieldName)
+		var enum = field.Tag.Get("enum")
+
+		switch {
+		case fieldValue.Type().Kind() == reflect.Bool:
+			flagPredictors[flagName] = predict.Nothing
+		case enum == "":
+			flagPredictors[flagName+"="] = predict.Nothing
+		default:
+			if enum[0] == '$' {
+				enum = enum[2 : len(enum)-1]
+				if s, ok := parserVars[enum]; ok {
+					enum = s
 				}
-				fmt.Println("completions installed")
 			}
-			os.Exit(0)
+			for _, s := range strings.Split(enum, ",") {
+				flagPredictors[flagName+"="+s] = predict.Nothing
+			}
 		}
-		return nil
 	}
+	delete(flagPredictors, "time-format=")
+	for _, n := range timeFormatNames {
+		flagPredictors["time-format="+n] = predict.Nothing
+	}
+	cmd := &complete.Command{Flags: flagPredictors}
+	cmd.Complete(couture.Name)
+	return nil
 }

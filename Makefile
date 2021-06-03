@@ -20,7 +20,7 @@ default: all
 #
 # External Commands
 
-.PHONY: golangci-lint goreleaser gocmt scc statik
+.PHONY: golangci-lint goreleaser gocmt scc statik gocomplete
 golangci-lint:
 	@command -v $@ > /dev/null || $(GO_GET) github.com/golangci/golangci-lint/cmd/golangci-lint
 goreleaser:
@@ -31,6 +31,8 @@ scc:
 	@command -v $@ > /dev/null || $(GO_GET) github.com/boyter/scc
 statik:
 	@command -v $@ > /dev/null || $(GO_GET) github.com/rakyll/statik
+gocomplete:
+	@command -v $@ > /dev/null || $(GO_GET) github.com/posener/complete/v2/gocomplete
 #
 # Targets
 
@@ -76,5 +78,10 @@ metrics: scc
 	@scc --wide --by-file --no-gen --sort lines $(SOURCES)
 
 # Utility
-setup-env: golangci-lint goreleaser scc gocmt statik
+.PHONY: setup-env install-completions
+setup-env: golangci-lint goreleaser scc gocmt statik gocomplete
 	@git config --local core.hooksPath .githooks
+install-completions: gocomplete
+	@echo installing completions
+	@echo y | COMP_UNINSTALL=1 $(APPLICATION) > /dev/null
+	@echo y | COMP_INSTALL=1 $(APPLICATION) > /dev/null

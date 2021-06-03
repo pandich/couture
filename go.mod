@@ -18,6 +18,7 @@ require (
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/i582/cfmt v1.3.0
+	github.com/iancoleman/strcase v0.1.3
 	github.com/joomcode/errorx v1.0.3
 	github.com/mattn/go-isatty v0.0.12
 	github.com/melbahja/goph v1.2.1
@@ -26,12 +27,11 @@ require (
 	github.com/olekukonko/ts v0.0.0-20171002115256-78ecb04241c0
 	github.com/oriser/regroup v0.0.0-20201024192559-010c434ff8f3
 	github.com/pkg/errors v0.9.1
-	github.com/posener/complete v1.2.3
+	github.com/posener/complete/v2 v2.0.1-alpha.13
 	github.com/rakyll/statik v0.1.7
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	github.com/tidwall/gjson v1.8.0
 	github.com/tidwall/pretty v1.1.0
-	github.com/willabides/kongplete v0.2.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea // indirect

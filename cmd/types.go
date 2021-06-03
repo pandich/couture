@@ -151,11 +151,10 @@ func filterDecoder() kong.MapperFunc {
 		if err != nil {
 			return err
 		}
-		f := model.Filter{
+		target.Set(reflect.ValueOf(model.Filter{
 			Pattern:       *re,
 			ShouldInclude: flag == include,
-		}
-		target.Set(reflect.ValueOf(f))
+		}))
 		return nil
 	}
 }
