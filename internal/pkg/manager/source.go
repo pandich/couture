@@ -57,5 +57,5 @@ func (mgr busManager) shouldInclude(evt *model.Event) bool {
 	if !evt.Level.IsAtLeast(mgr.config.Level) {
 		return false
 	}
-	return evt.Message.Matches(mgr.config.IncludeFilters, mgr.config.ExcludeFilters)
+	return evt.Message.Matches(mgr.config.Filters)
 }

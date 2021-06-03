@@ -67,7 +67,7 @@ func (mgr *busManager) makeSrcChan(_ chan source.Error, snkChan chan model.SinkE
 				snkChan <- model.SinkEvent{
 					SourceURL: sourceEvent.Source.URL(),
 					Event:     *modelEvent,
-					Filters:   mgr.config.IncludeFilters,
+					Filters:   mgr.config.Filters,
 				}
 			}
 		}

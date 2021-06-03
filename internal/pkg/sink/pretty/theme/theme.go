@@ -6,6 +6,17 @@ import (
 	"math/rand"
 )
 
+var (
+	// Default ...
+	Default = prince
+
+	// Registry is the registry of theme names to their structs.
+	Registry = map[string]Theme{}
+
+	// Names ...
+	Names []string
+)
+
 type (
 	// columnStyle ...
 	columnStyle struct {
@@ -15,19 +26,18 @@ type (
 
 	// Theme ...
 	Theme struct {
-		Legend           columnStyle
-		Source           []columnStyle
-		Timestamp        columnStyle
-		Application      columnStyle
-		Thread           columnStyle
-		Class            columnStyle
-		MethodDelimiter  columnStyle
-		Method           columnStyle
-		LineDelimiter    columnStyle
-		Line             columnStyle
-		Level            map[level.Level]columnStyle
-		Message          map[level.Level]columnStyle
-		MessageHighlight string
+		Legend          columnStyle
+		Source          []columnStyle
+		Timestamp       columnStyle
+		Application     columnStyle
+		Thread          columnStyle
+		Class           columnStyle
+		MethodDelimiter columnStyle
+		Method          columnStyle
+		LineDelimiter   columnStyle
+		Line            columnStyle
+		Level           map[level.Level]columnStyle
+		Message         map[level.Level]columnStyle
 	}
 )
 
@@ -72,8 +82,13 @@ func (theme Theme) MessageBg(lvl level.Level) string {
 }
 
 // HighlightFg ...
-func (theme Theme) HighlightFg() string {
-	return theme.MessageHighlight
+func (theme Theme) HighlightFg(lvl level.Level) string {
+	return theme.MessageBg(lvl)
+}
+
+// HighlightBg ...
+func (theme Theme) HighlightBg() string {
+	return theme.MessageFg()
 }
 
 // StackTraceFg ...
@@ -134,4 +149,16 @@ func fgHex(style columnStyle) string {
 
 func bgHex(style columnStyle) string {
 	return style.Bg
+}
+
+func register(name string, theme Theme) {
+	Names = append(Names, name)
+	Registry[name] = theme
+}
+
+func style(fg string, bg string) columnStyle {
+	return columnStyle{
+		Fg: fg,
+		Bg: bg,
+	}
 }

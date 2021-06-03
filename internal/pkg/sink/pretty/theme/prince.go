@@ -33,7 +33,6 @@ func init() {
 			level.Warn:  style("#fbfafc", "#1e180a"),
 			level.Error: style("#e66a00", "#1d1005"),
 		},
-		MessageHighlight: "#565556",
 		Source: []columnStyle{
 			style("#000000", "#d5bfc2"),
 			style("#000000", "#c19089"),

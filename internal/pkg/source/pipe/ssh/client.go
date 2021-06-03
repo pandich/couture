@@ -34,7 +34,7 @@ func getClient(sourceURL model.SourceURL) (*goph.Client, error) {
 		}
 		port = uint(i)
 	}
-	// FEATURE rsa key configurable and ability to use PEM key
+	// FEATURE rsa key configurable and ability to use PEM key @Jim
 	// client.Config.Auth, err = goph.Key()
 	client.Config.Port = port
 	return client, err

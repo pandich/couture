@@ -2,7 +2,6 @@ package model
 
 import (
 	"couture/internal/pkg/model/level"
-	"regexp"
 )
 
 // Event a log event
@@ -31,5 +30,5 @@ type Event struct {
 type SinkEvent struct {
 	Event
 	SourceURL SourceURL
-	Filters   []regexp.Regexp
+	Filters   []Filter
 }

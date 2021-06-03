@@ -1,5 +1,9 @@
 package model
 
+import (
+	"regexp"
+)
+
 // Manager manages the lifecycle of registry, and the routing of their events to the sinks.
 type Manager interface {
 	// Run ...
@@ -14,4 +18,10 @@ type Manager interface {
 	Register(opts ...interface{}) error
 	// TrapSignals ...
 	TrapSignals()
+}
+
+// Filter ...
+type Filter struct {
+	Pattern       regexp.Regexp
+	ShouldInclude bool
 }

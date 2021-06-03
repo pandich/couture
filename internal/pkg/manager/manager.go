@@ -7,7 +7,6 @@ import (
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	errors2 "github.com/pkg/errors"
-	"regexp"
 	"runtime"
 	"sync"
 	"time"
@@ -24,9 +23,8 @@ func New(config Config, opts ...interface{}) (*model.Manager, error) {
 	}
 	var mgr model.Manager = &publisher
 	return &mgr, nil
-}
+} // Manager ...
 
-// Manager ...
 type (
 	// busManager uses an EventBus.Bus publish events out.
 	busManager struct {
@@ -44,6 +42,15 @@ type (
 		// sinks contains all registered sink.Sink instances.
 		sinks []*sink.Sink
 	}
+
+	// Config ...
+	Config struct {
+		DumpMetrics bool
+		Level       level.Level
+		Since       *time.Time // TODO use since @Jim
+		Filters     []model.Filter
+		Schemas     []schema.Schema
+	}
 )
 
 // Register registers a configuration option, source, or sink.
@@ -59,14 +66,4 @@ func (mgr *busManager) Register(registrants ...interface{}) error {
 		}
 	}
 	return nil
-}
-
-// Config ...
-type Config struct {
-	DumpMetrics    bool
-	Level          level.Level
-	Since          *time.Time // TODO use since
-	IncludeFilters []regexp.Regexp
-	ExcludeFilters []regexp.Regexp
-	Schemas        []schema.Schema
 }

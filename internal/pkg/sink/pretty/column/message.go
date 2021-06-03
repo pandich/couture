@@ -50,7 +50,7 @@ func (col messageColumn) RegisterStyles(theme theme.Theme) {
 		)
 		cfmt.RegisterStyle(
 			col.levelStyleName(highlightSuffix, lvl),
-			colorFormat(theme.HighlightFg(), bg),
+			colorFormat(theme.HighlightFg(lvl), theme.HighlightBg()),
 		)
 		cfmt.RegisterStyle(
 			col.levelStyleName(errorSuffix, lvl),
@@ -93,7 +93,7 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []inte
 
 	if cfg.Highlight {
 		for _, filter := range event.Filters {
-			message = filter.ReplaceAllStringFunc(message, func(s string) string {
+			message = filter.Pattern.ReplaceAllStringFunc(message, func(s string) string {
 				return col.levelSprintf("", highlightSuffix, lvl, s) + col.bgColorSeq[lvl]
 			})
 		}

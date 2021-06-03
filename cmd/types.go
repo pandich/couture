@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink/pretty/theme"
 	"github.com/alecthomas/kong"
 	"github.com/araddon/dateparse"
@@ -136,17 +137,25 @@ func (t *timeFormat) AfterApply() error {
 	return nil
 }
 
-func regexpDecoder() kong.MapperFunc {
+func filterDecoder() kong.MapperFunc {
+	const include = "+"
+	const exclude = "-"
+
 	return func(ctx *kong.DecodeContext, target reflect.Value) error {
-		var value string
-		if err := ctx.Scan.PopValueInto("regex", &value); err != nil {
-			return err
+		var value = ctx.Scan.Pop().String()
+		flag, pattern := string(value[0]), value[1:]
+		if flag != include && flag != exclude {
+			return errors2.Errorf("invalid filter flag: %s - %s", flag, value)
 		}
-		r, err := regexp.Compile(value)
+		re, err := regexp.Compile(pattern)
 		if err != nil {
 			return err
 		}
-		target.Set(reflect.ValueOf(*r))
+		f := model.Filter{
+			Pattern:       *re,
+			ShouldInclude: flag == include,
+		}
+		target.Set(reflect.ValueOf(f))
 		return nil
 	}
 }

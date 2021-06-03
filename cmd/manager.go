@@ -34,12 +34,11 @@ func Run() {
 	schemas, err := schema.LoadSchemas()
 	maybeDie(err)
 	cfg := manager.Config{
-		DumpMetrics:    cli.Metrics,
-		Level:          cli.Level,
-		Since:          &cli.Since,
-		IncludeFilters: cli.Include,
-		ExcludeFilters: cli.Exclude,
-		Schemas:        schemas,
+		DumpMetrics: cli.Metrics,
+		Level:       cli.Level,
+		Since:       &cli.Since,
+		Filters:     cli.Filter,
+		Schemas:     schemas,
 	}
 
 	options, err := getOptions()
