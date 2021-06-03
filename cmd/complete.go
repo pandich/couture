@@ -12,7 +12,8 @@ import (
 	"os"
 )
 
-// 	FIXME completions are not working properly
+// 	FIXME completions are not working properly:
+// 	 all help text gets include, numerous error messages, etc.
 func completionsHook() func(k *kong.Kong) error {
 	return func(ctx *kong.Kong) error {
 		var levelNames []string

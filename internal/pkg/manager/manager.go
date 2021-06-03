@@ -47,7 +47,7 @@ type (
 	Config struct {
 		DumpMetrics bool
 		Level       level.Level
-		Since       *time.Time // TODO use since @Jim
+		Since       *time.Time // TODO use since: per-source implementation
 		Filters     []model.Filter
 		Schemas     []schema.Schema
 	}

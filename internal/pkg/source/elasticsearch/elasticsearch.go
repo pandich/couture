@@ -48,7 +48,8 @@ type elasticSearch struct {
 	scroll *elastic.ScrollService
 }
 
-// FIXME sorting by time...how to get the sort field into this method
+// TODO test elasticsearch query "q" param
+// TODO test elasticsearch "timestamp" param
 func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	const eventsPerFetch = 100
 	const keepAliveOneMinute = "1m"
@@ -61,12 +62,14 @@ func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 	}
 
 	indexName := strings.Trim(sourceURL.Path, "/")
-
 	scroll := esClient.Scroll(indexName).
 		KeepAlive(keepAliveOneMinute).
 		Size(eventsPerFetch)
-	if sourceURL.RawQuery != "" {
-		scroll.Query(elastic.NewQueryStringQuery(sourceURL.RawQuery))
+	if q, ok := sourceURL.QueryKey("q"); ok {
+		scroll.Query(elastic.NewQueryStringQuery(q))
+	}
+	if fieldName, ok := sourceURL.QueryKey("timestamp"); ok {
+		scroll.SortBy(elastic.NewFieldSort(fieldName))
 	}
 	var src source.Source = elasticSearch{
 		BaseSource: source.New('፨', sourceURL),

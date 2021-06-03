@@ -1,4 +1,4 @@
-# TODO fix any problems in here, and add missing formats @Jim
+# TODO @Jim fix any problems in here, and add missing formats
 
 [logstash]
 format = "json"
