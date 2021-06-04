@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"couture/internal/pkg/couture"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/source"
@@ -11,20 +10,26 @@ import (
 	"os"
 )
 
+const (
+	errChanMeterame  = "manager.errChan.in"
+	srcChanMeterName = "manager.srcChan.in"
+	snkChanMeterName = "manager.snkChan.in"
+)
+
 var errChanMeter = metrics.NewMeter()
 var snkChanMeter = metrics.NewMeter()
 var srcChanMeter = metrics.NewMeter()
 
 func init() {
-	metrics.GetOrRegister("manager.errChan.in", errChanMeter)
-	metrics.GetOrRegister("manager.snkChan.in", snkChanMeter)
-	metrics.GetOrRegister("manager.srcChan.in", srcChanMeter)
+	metrics.GetOrRegister(errChanMeterame, errChanMeter)
+	metrics.GetOrRegister(snkChanMeterName, snkChanMeter)
+	metrics.GetOrRegister(srcChanMeterName, srcChanMeter)
 }
 
 func (mgr *busManager) createChannels() (chan source.Event, chan model.SinkEvent, chan source.Error) {
 	errChan := mgr.makeErrChan()
 	snkChan := mgr.makeSnkChan(errChan)
-	srcChan := mgr.makeSrcChan(errChan, snkChan)
+	srcChan := mgr.makeSrcChan(snkChan)
 	return srcChan, snkChan, errChan
 }
 
@@ -35,13 +40,15 @@ func (mgr *busManager) makeErrChan() chan source.Error {
 		defer close(errChan)
 		for {
 			incoming := <-errChan
+			sourceName := incoming.SourceURL.String()
+			var errChanSrcMeter = metrics.GetOrRegister(
+				errChanMeterame+"."+sourceName,
+				metrics.NewMeter(),
+			).(metrics.Meter)
+			errChanSrcMeter.Mark(1)
 			errChanMeter.Mark(1)
 			if incoming.Error == nil {
 				continue
-			}
-			var sourceName = incoming.SourceURL.String()
-			if sourceName == "" {
-				sourceName = couture.Name
 			}
 			outgoing := errorx.Decorate(incoming.Error, "source: %s", sourceName)
 			_, err := fmt.Fprintf(os.Stderr, "\nError: %+v\n", outgoing)
@@ -54,18 +61,24 @@ func (mgr *busManager) makeErrChan() chan source.Error {
 	return errChan
 }
 
-func (mgr *busManager) makeSrcChan(_ chan source.Error, snkChan chan model.SinkEvent) chan source.Event {
+func (mgr *busManager) makeSrcChan(snkChan chan model.SinkEvent) chan source.Event {
 	srcChan := make(chan source.Event)
 	go func() {
 		defer close(srcChan)
 		for {
 			sourceEvent := <-srcChan
 			srcChanMeter.Mark(1)
+			sourceURL := sourceEvent.Source.URL()
+			var srcChanSrcMeter = metrics.GetOrRegister(
+				srcChanMeterName+"."+sourceURL.String(),
+				metrics.NewMeter(),
+			).(metrics.Meter)
+			srcChanSrcMeter.Mark(1)
 			sch := schema.Guess(sourceEvent.Event, mgr.config.Schemas...)
 			modelEvent := unmarshallEvent(sch, sourceEvent.Event)
 			if mgr.shouldInclude(modelEvent) {
 				snkChan <- model.SinkEvent{
-					SourceURL: sourceEvent.Source.URL(),
+					SourceURL: sourceURL,
 					Event:     *modelEvent,
 					Filters:   mgr.config.Filters,
 				}
@@ -83,8 +96,7 @@ func (mgr *busManager) makeSnkChan(errChan chan source.Error) chan model.SinkEve
 			event := <-snkChan
 			snkChanMeter.Mark(1)
 			for _, snk := range mgr.sinks {
-				err := (*snk).Accept(event)
-				if err != nil {
+				if err := (*snk).Accept(event); err != nil {
 					errChan <- source.Error{SourceURL: event.SourceURL, Error: err}
 				}
 			}

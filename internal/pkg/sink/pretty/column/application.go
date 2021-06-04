@@ -18,7 +18,7 @@ func newApplicationColumn() applicationColumn {
 		weight,
 		func(th theme.Theme) string { return th.ApplicationFg() + "|bg" + th.ApplicationBg() },
 		func(event model.SinkEvent) []interface{} {
-			return []interface{}{string(event.Application)}
+			return []interface{}{orNoValue(string(event.Application))}
 		},
 	)}
 }

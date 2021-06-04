@@ -32,7 +32,7 @@ func RegisterSource(th theme.Theme, consistentColors bool, src source.Source) st
 	fgColor, bgColor := th.SourceColor(consistentColors, src)
 	sigilColor := fgColor
 	cfmt.RegisterStyle(sourceID(src.URL()), func(s string) string {
-		return cfmt.Sprintf("{{%s}}::"+sigilColor+"|bg"+bgColor+"{{ %s }}::"+fgColor+"|bg"+bgColor, string(src.Sigil()), s)
+		return cfmt.Sprintf("{{%s }}::"+sigilColor+"|bg"+bgColor+"{{ %s }}::"+fgColor+"|bg"+bgColor, string(src.Sigil()), s)
 	})
 	return bgColor
 }

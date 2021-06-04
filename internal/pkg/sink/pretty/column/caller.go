@@ -50,10 +50,17 @@ func (col callerColumn) RegisterStyles(theme theme.Theme) {
 }
 
 // Format ...
-func (col callerColumn) Format(_ uint, _ model.SinkEvent) string {
-	return "{{%s}}::Class" +
-		"{{∕}}::MethodDelimiter" + "{{%s}}::Method" +
-		"{{#}}::LineNumberDelimiter" + "{{%s}}::Line"
+func (col callerColumn) Format(_ uint, evt model.SinkEvent) string {
+	var s = "{{%s}}::Class"
+	if evt.Method != "" {
+		s += "{{∕}}::MethodDelimiter"
+	}
+	s += "{{%s}}::Method"
+	if evt.Line != 0 {
+		s += "{{#}}::LineNumberDelimiter"
+	}
+	s += "{{%s}}::Line"
+	return s
 }
 
 // Render ...
@@ -62,9 +69,12 @@ func (col callerColumn) Render(_ config.Config, event model.SinkEvent) []interfa
 	const maxWidth = 60
 
 	var padding = ""
-	className := string(event.Class.Abbreviate(maxClassNameWidth))
+	var className = orNoValue(string(event.Class.Abbreviate(maxClassNameWidth)))
 	var methodName = string(event.Method)
-	lineNumber := fmt.Sprintf("%4d", event.Line)
+	var lineNumber = ""
+	if event.Line != 0 {
+		lineNumber = fmt.Sprintf("%4d", event.Line)
+	}
 	totalLength := len(className) + len(methodName) + len(lineNumber)
 	for i := totalLength; i < maxWidth; i++ {
 		padding += " "

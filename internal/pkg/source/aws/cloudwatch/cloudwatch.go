@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	errors2 "github.com/pkg/errors"
+	"path"
 	"reflect"
 	"sync"
 	"time"
@@ -41,11 +42,6 @@ func Metadata() source.Metadata {
 }
 
 const (
-	// lookbackTimeFlag is the url.URL query parameter (optionally) defining how far to look back.
-	lookbackTimeFlag = "since"
-)
-
-const (
 	scheme              = "cloudwatch"
 	schemeAliasLambda   = "lambda"
 	schemeAliasShort    = "cw"
@@ -66,17 +62,13 @@ type cloudwatchSource struct {
 }
 
 // newFromURL Cloudwatch source.
-func newFromURL(sourceURL model.SourceURL) (*source.Source, error) {
+func newFromURL(since *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
 	normalizeURL(&sourceURL)
 	awsSource, err := aws.New('☂', &sourceURL)
 	if err != nil {
 		return nil, errors2.Wrapf(err, "bad CloudWatch URL: %+v\n", sourceURL)
 	}
-	lookbackTime, err := sourceURL.Since(lookbackTimeFlag)
-	if err != nil {
-		return nil, err
-	}
-	return New(awsSource, lookbackTime, sourceURL.Path), nil
+	return New(awsSource, since, sourceURL.Path), nil
 }
 
 // New makes a new AWS base source.
@@ -101,7 +93,7 @@ func normalizeURL(sourceURL *model.SourceURL) {
 	switch {
 	case sourceURL.Scheme == schemeAliasLambda:
 		sourceURL.Scheme = scheme
-		sourceURL.Path = "/aws/lambda" + sourceURL.Path
+		sourceURL.Path = path.Join(aws.LambdaLogGroupPrefix, sourceURL.Path)
 	case sourceURL.Scheme == schemeAliasShort:
 	case sourceURL.Scheme == schemeAliasFriendly:
 		sourceURL.Scheme = scheme
@@ -120,6 +112,10 @@ func (src *cloudwatchSource) Start(
 	if src.lookbackTime != nil {
 		i := src.lookbackTime.Unix()
 		startTime = &i
+	}
+	_, err := src.logs.GetLogGroupFields(context.TODO(), &cloudwatchlogs.GetLogGroupFieldsInput{LogGroupName: &src.logGroupName})
+	if err != nil {
+		return err
 	}
 
 	go func() {

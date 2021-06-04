@@ -40,7 +40,7 @@ type fakeSource struct {
 	faker           *gofakeit.Faker
 }
 
-func newSource(sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
 	faker := getFakerArg(sourceURL)
 	var src source.Source = fakeSource{
 		BaseSource:      source.New('🃟', sourceURL),

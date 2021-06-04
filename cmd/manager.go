@@ -36,7 +36,7 @@ func Run() {
 	cfg := manager.Config{
 		DumpMetrics: cli.Metrics,
 		Level:       cli.Level,
-		Since:       &cli.Since,
+		Since:       cli.Since,
 		Filters:     cli.Filter,
 		Schemas:     schemas,
 	}
@@ -57,7 +57,7 @@ func getOptions() ([]interface{}, error) {
 		var violations []error
 		for _, u := range cli.Source {
 			sourceURL := model.SourceURL(u)
-			src, err := manager.GetSource(sourceURL)
+			src, err := manager.GetSource(cli.Since, sourceURL)
 			if len(err) > 0 {
 				violations = append(violations, err...)
 			} else {

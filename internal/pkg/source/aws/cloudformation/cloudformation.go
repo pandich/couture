@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	errors2 "github.com/pkg/errors"
+	"path"
 	"reflect"
 	"sync"
 	"time"
@@ -41,8 +42,6 @@ func Metadata() source.Metadata {
 }
 
 const (
-	// lookbackTimeFlag is the url.URL query parameter (optionally) defining how far to look back.
-	lookbackTimeFlag = "since"
 	// includeStackEventsFlag is the url.URL query parameter indicating whether stack events should be included.
 	includeStackEventsFlag = "events"
 )
@@ -101,17 +100,12 @@ type (
 )
 
 // newSource CloudFormation source.
-func newSource(sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
 	normalizeURL(&sourceURL)
-	stackName := sourceURL.Path
+	stackName := sourceURL.Path[1:]
 	awsSource, err := aws.New('☁', &sourceURL)
 	if err != nil {
 		return nil, errors2.Wrapf(err, "bad CloudFormation URL: %+v", sourceURL)
-	}
-
-	lookbackTime, err := sourceURL.Since(lookbackTimeFlag)
-	if err != nil {
-		return nil, err
 	}
 
 	cf := cloudformation.NewFromConfig(awsSource.Config())
@@ -123,13 +117,13 @@ func newSource(sourceURL model.SourceURL) (*source.Source, error) {
 		return nil, err
 	}
 	for _, lambdaResource := range lambdaResources {
-		logGroupName := fmt.Sprintf("/log/lambda/%s", *lambdaResource.PhysicalResourceId)
-		children = append(children, cloudwatch.New(awsSource, lookbackTime, logGroupName))
+		logGroupName := path.Join(aws.LambdaLogGroupPrefix, *lambdaResource.PhysicalResourceId)
+		children = append(children, cloudwatch.New(awsSource, since, logGroupName))
 	}
 
 	var src source.Source = cloudFormationSource{
 		Source:               awsSource,
-		lookbackTime:         lookbackTime,
+		lookbackTime:         since,
 		includeStackEvents:   sourceURL.QueryFlag(includeStackEventsFlag),
 		children:             children,
 		cf:                   cf,

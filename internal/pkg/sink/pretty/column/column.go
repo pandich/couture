@@ -8,6 +8,15 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
+func orNoValue(s string) string {
+	const noValue = "—"
+
+	if s == "" {
+		return noValue
+	}
+	return s
+}
+
 // DefaultColumns ...
 var DefaultColumns = []string{
 	"source",

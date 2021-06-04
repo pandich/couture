@@ -11,6 +11,7 @@ import (
 	errors2 "github.com/pkg/errors"
 	"reflect"
 	"sync"
+	"time"
 )
 
 const scheme = "s3"
@@ -38,7 +39,7 @@ type s3Source struct {
 }
 
 // newSource S3 source.
-func newSource(sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
 	awsSource, err := aws.New('☂', &sourceURL)
 	if err != nil {
 		return nil, errors2.Wrapf(err, "bad S3 URL: %+v\n", sourceURL)
@@ -65,17 +66,23 @@ func (src *s3Source) Start(
 
 	go func() {
 		defer wg.Done()
+
+		request := &s3.GetObjectInput{Bucket: &src.bucket, Key: &src.key}
+
 		writer := source.NewChanWriterAt(src, srcChan)
 		downloader := manager.NewDownloader(src.s3, func(d *manager.Downloader) {
 			d.PartSize = partSize
 			d.Concurrency = 1
 		})
-		request := &s3.GetObjectInput{Bucket: &src.bucket, Key: &src.key}
+
+		ctx := context.Background()
+		_, cancel := context.WithCancel(ctx)
+		defer cancel()
+		if _, err := downloader.Download(ctx, writer, request); err != nil {
+			errChan <- source.Error{SourceURL: src.URL(), Error: err}
+			return
+		}
 		for running() {
-			// TODO context.Background()? interrupt it when running() goes false?
-			if _, err := downloader.Download(context.TODO(), writer, request); err != nil {
-				errChan <- source.Error{SourceURL: src.URL(), Error: err}
-			}
 		}
 	}()
 	return nil

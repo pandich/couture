@@ -175,7 +175,8 @@ func timeLikeDecoder() kong.MapperFunc {
 				return errors2.Errorf("expected duration but got %q: %s", value, err)
 			}
 		}
-		target.Set(reflect.ValueOf(t))
+		v := reflect.ValueOf(&t)
+		target.Set(v)
 		return nil
 	}
 }

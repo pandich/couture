@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"couture/internal/pkg/couture"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/schema"
@@ -60,11 +59,11 @@ func unmarshallUnknown(msg string) *model.Event {
 		Timestamp:   model.Timestamp(time.Now()),
 		Level:       level.Warn,
 		Message:     model.Message(msg),
-		Application: couture.Name,
-		Method:      "-",
+		Application: "",
+		Method:      "",
 		Line:        0,
-		Thread:      "-",
-		Class:       "-",
+		Thread:      "",
+		Class:       "",
 		Exception:   "Warning: entry is in an unknown log format.",
 	}
 }

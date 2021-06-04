@@ -18,7 +18,7 @@ func newThreadColumn() threadColumn {
 		weight,
 		func(th theme.Theme) string { return th.ThreadFg() },
 		func(event model.SinkEvent) []interface{} {
-			return []interface{}{string(event.Thread)}
+			return []interface{}{orNoValue(string(event.Thread))}
 		},
 	)}
 }

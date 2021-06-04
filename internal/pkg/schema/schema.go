@@ -111,7 +111,8 @@ func newSchema(name string, definition definition) (*Schema, error) {
 			return true
 		}
 	case Text:
-		pattern := predicatePatterns["text"]
+		const textRootPredicate = "_"
+		pattern := predicatePatterns[textRootPredicate]
 		textPattern = regroup.MustCompile(pattern.String())
 		test = func(s string) bool {
 			return pattern.MatchString(strings.TrimRight(s, "\n"))

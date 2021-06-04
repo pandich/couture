@@ -3,52 +3,14 @@ package model
 import (
 	"crypto/sha256"
 	"fmt"
-	"github.com/araddon/dateparse"
-	"github.com/bnkamalesh/errors"
-	errors2 "github.com/pkg/errors"
 	"net"
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
-)
-
-var (
-	errBadSince = errors.New("bad value for since parameter")
 )
 
 // SourceURL ...
 type SourceURL url.URL
-
-// Since ...
-func (u SourceURL) Since(key string) (*time.Time, error) {
-	var since *time.Time
-	var c = url.URL(u)
-	for k, v := range c.Query() {
-		if k != key {
-			continue
-		}
-		if len(v) == 0 {
-			return nil, errors2.WithMessagef(errBadSince, "may not be blank")
-		}
-		arg := v[0]
-		d, err := time.ParseDuration(arg)
-		if err == nil {
-			t := time.Now().Add(-d)
-			since = &t
-		} else {
-			var t time.Time
-			t, err = dateparse.ParseAny(arg)
-			if err == nil {
-				since = &t
-			}
-		}
-		if err != nil {
-			return nil, errors2.WithMessagef(errBadSince, "could not parse - %s", arg)
-		}
-	}
-	return since, nil
-}
 
 // String ...
 func (u SourceURL) String() string {

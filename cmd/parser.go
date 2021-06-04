@@ -38,7 +38,7 @@ var parser = kong.Must(&cli,
 		FlagsLast: true,
 	}),
 	kong.TypeMapper(reflect.TypeOf(model.Filter{}), filterDecoder()),
-	kong.TypeMapper(reflect.TypeOf(time.Time{}), timeLikeDecoder()),
+	kong.TypeMapper(reflect.TypeOf(&time.Time{}), timeLikeDecoder()),
 	kong.Groups{
 		"terminal": "Terminal Options",
 		"display":  "Display Options",

@@ -7,6 +7,7 @@ import (
 	"github.com/melbahja/goph"
 	"reflect"
 	"sync"
+	"time"
 )
 
 // Metadata ...
@@ -26,7 +27,7 @@ type sshSource struct {
 	filename string
 }
 
-func newSource(sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
 	client, err := getClient(sourceURL)
 	if err != nil {
 		return nil, err

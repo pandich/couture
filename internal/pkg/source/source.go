@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 ) // Source ...
 
 // Source ...
@@ -46,7 +47,7 @@ type (
 		Name        string
 		Type        reflect.Type
 		CanHandle   func(url model.SourceURL) bool
-		Creator     func(sourceURL model.SourceURL) (*Source, error)
+		Creator     func(since *time.Time, sourceURL model.SourceURL) (*Source, error)
 		ExampleURLs []string
 	}
 )

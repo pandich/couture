@@ -11,6 +11,7 @@ import (
 	"couture/internal/pkg/source/pipe/local"
 	"couture/internal/pkg/source/pipe/ssh"
 	errors2 "github.com/pkg/errors"
+	"time"
 )
 
 // AvailableSources is a list of sourceMetadata sourceMetadata.
@@ -25,7 +26,7 @@ var AvailableSources = []source.Metadata{
 }
 
 // GetSource gets a source, if possible, for the specified sourceURL.
-func GetSource(sourceURL model.SourceURL) ([]source.Source, []error) {
+func GetSource(since *time.Time, sourceURL model.SourceURL) ([]source.Source, []error) {
 	if sourceURL.Scheme == "complete" {
 		return nil, nil
 	}
@@ -33,7 +34,7 @@ func GetSource(sourceURL model.SourceURL) ([]source.Source, []error) {
 	var violations []error
 	metadata := getSourceMetadata(sourceURL)
 	if metadata != nil {
-		configuredSource, err := metadata.Creator(sourceURL)
+		configuredSource, err := metadata.Creator(since, sourceURL)
 		if err != nil {
 			violations = append(violations, err)
 		} else {

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"sync"
+	"time"
 )
 
 // Metadata ...
@@ -26,7 +27,7 @@ type fileSource struct {
 	filename string
 }
 
-func newSource(sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
 	sourceURL.Normalize()
 	var src source.Source = fileSource{
 		BaseSource: source.New('⫽', sourceURL),
