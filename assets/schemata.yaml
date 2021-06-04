@@ -26,8 +26,6 @@ cloudwatch-event:
     class: logGroup
     method: logStream
     message: log
-  display:
-    message: "{{print .log .someOtherField}}"
 
 aws-billing-report:
   format: text
