@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/sink/pretty/theme"
 	"github.com/alecthomas/kong"
 	"github.com/araddon/dateparse"
@@ -38,6 +39,7 @@ type (
 	columns          []string
 	consistentColors bool
 	expandJSON       bool
+	levelLike        level.Level
 	highlight        bool
 	multiline        bool
 	themeName        string
@@ -45,7 +47,13 @@ type (
 	tty              bool
 	width            uint
 	wrap             bool
+	dumpMetrics      bool
+	rateLimit        uint
 )
+
+func init() {
+
+}
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -89,6 +97,18 @@ func (v wrap) AfterApply() error { prettyConfig.Wrap = bool(v); return nil }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (v dumpMetrics) AfterApply() error { managerConfig.DumpMetrics = bool(v); return nil }
+
+// AfterApply ...
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (v rateLimit) AfterApply() error { managerConfig.RateLimit = uint(v); return nil }
+
+// AfterApply ...
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (v levelLike) AfterApply() error { managerConfig.Level = level.Level(v); return nil }
+
+// AfterApply ...
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v themeName) AfterApply() error {
 	thm, ok := theme.Registry[string(v)]
 	if !ok {
@@ -100,39 +120,41 @@ func (v themeName) AfterApply() error {
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (t *timeFormat) AfterApply() error {
-	format := strings.ToLower(string(*t))
+func (t timeFormat) AfterApply() error {
+	format := strings.ToLower(string(t))
 	switch format {
 	case "c":
-		*t = time.ANSIC
+		prettyConfig.TimeFormat = time.ANSIC
 	case "unix":
-		*t = time.UnixDate
+		prettyConfig.TimeFormat = time.UnixDate
 	case "ruby":
-		*t = time.RubyDate
+		prettyConfig.TimeFormat = time.RubyDate
 	case "rfc822":
-		*t = time.RFC822
+		prettyConfig.TimeFormat = time.RFC822
 	case "rfc822-utc":
-		*t = time.RFC822Z
+		prettyConfig.TimeFormat = time.RFC822Z
 	case "rfc850":
-		*t = time.RFC850
+		prettyConfig.TimeFormat = time.RFC850
 	case "rfc1123":
-		*t = time.RFC1123
+		prettyConfig.TimeFormat = time.RFC1123
 	case "rfc1123-utc":
-		*t = time.RFC1123Z
+		prettyConfig.TimeFormat = time.RFC1123Z
 	case "rfc3339", "iso8601":
-		*t = time.RFC3339
+		prettyConfig.TimeFormat = time.RFC3339
 	case "rfc3339-nanos", "iso8601-nanos":
-		*t = time.RFC3339Nano
+		prettyConfig.TimeFormat = time.RFC3339Nano
 	case "kitchen":
-		*t = time.Kitchen
+		prettyConfig.TimeFormat = time.Kitchen
 	case "stamp":
-		*t = time.Stamp
+		prettyConfig.TimeFormat = time.Stamp
 	case "stamp-millis":
-		*t = time.StampMilli
+		prettyConfig.TimeFormat = time.StampMilli
 	case "stamp-micros":
-		*t = time.StampMicro
+		prettyConfig.TimeFormat = time.StampMicro
 	case "stamp-nanos":
-		*t = time.StampNano
+		prettyConfig.TimeFormat = time.StampNano
+	default:
+		prettyConfig.TimeFormat = "stamp"
 	}
 	return nil
 }

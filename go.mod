@@ -3,7 +3,6 @@ module couture
 go 1.16
 
 require (
-	github.com/BurntSushi/toml v0.3.1
 	github.com/alecthomas/kong v0.2.16
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/aws/aws-sdk-go-v2 v1.6.0
@@ -34,11 +33,12 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	github.com/tidwall/gjson v1.8.0
 	github.com/tidwall/pretty v1.1.0
+	go.uber.org/ratelimit v0.2.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea // indirect
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56 // indirect
 	gopkg.in/multierror.v1 v1.0.2
 	gopkg.in/olivere/elastic.v3 v3.0.75
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 )

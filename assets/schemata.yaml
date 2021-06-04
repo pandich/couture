@@ -1,0 +1,48 @@
+logstash:
+  format: json
+  priority: 100
+  predicates:
+    "@version": "^1$"
+  mapping:
+    timestamp: "@timestamp"
+    level: level
+    application: application
+    thread: thread_name
+    class: class
+    method: method
+    line: line_number
+    message: message
+    exception: exception.stacktrace
+
+cloudwatch-event:
+  format: json
+  predicates:
+    tag: "^cloud1-watch$"
+    eventVersion: "^1\\.\\d+$"
+  mapping:
+    timestamp: "@timestamp"
+    application: tag
+    thread: id
+    class: logGroup
+    method: logStream
+    message: log
+  display:
+    message: "{{print .log .someOtherField}}"
+
+aws-billing-report:
+  format: text
+  priority: 90
+  predicates:
+    _: "^(?P<message>REPORT (?P<class>RequestId):\\s+(?P<method>\\S+)\\s+.+)(?P<level>)(?P<thread>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<exception>)$"
+
+aws-billing-start:
+  format: text
+  priority: 90
+  predicates:
+    _: "^(?P<message>START (?P<class>RequestId):(?P<method>\\s+\\S+).+)(?P<level>)(?P<thread>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<exception>)$"
+
+aws-billing-end:
+  format: text
+  priority: 90
+  predicates:
+    _: "^(?P<message>END (?P<class>RequestId):\\s+(?P<method>\\S+)\\s+.+)(?P<level>)(?P<thread>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<exception>)$"

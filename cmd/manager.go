@@ -7,9 +7,9 @@ import (
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink/pretty"
 	"couture/internal/pkg/sink/pretty/config"
-	"github.com/BurntSushi/toml"
 	"github.com/coreos/etcd/pkg/fileutil"
 	"gopkg.in/multierror.v1"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path"
@@ -19,8 +19,25 @@ var prettyConfig = config.Config{
 	Out: os.Stdout,
 }
 
+var managerConfig = manager.Config{}
+
 // Run runs the manager using the CLI arguments.
 func Run() {
+	var err error
+
+	managerConfig.Since = cli.Since
+
+	options := parseInputs()
+	managerConfig.Schemas, err = schema.LoadSchemas()
+	maybeDie(err)
+
+	mgr, err := manager.New(managerConfig, options...)
+	maybeDie(err)
+
+	maybeDie((*mgr).Run())
+}
+
+func parseInputs() []interface{} {
 	var args = os.Args[1:]
 	args, err := expandAliases(args)
 	maybeDie(err)
@@ -31,24 +48,10 @@ func Run() {
 	_, err = parser.Parse(args)
 	maybeDie(err)
 
-	schemas, err := schema.LoadSchemas()
-	maybeDie(err)
-	cfg := manager.Config{
-		DumpMetrics: cli.Metrics,
-		Level:       cli.Level,
-		Since:       cli.Since,
-		Filters:     cli.Filter,
-		Schemas:     schemas,
-	}
-
 	options, err := getOptions()
 	maybeDie(err)
 
-	mgr, err := manager.New(cfg, options...)
-	maybeDie(err)
-
-	err = (*mgr).Run()
-	maybeDie(err)
+	return options
 }
 
 func getOptions() ([]interface{}, error) {
@@ -92,12 +95,12 @@ func loadConfig() error {
 		return err
 	}
 
-	aliasFilename := path.Join(home, ".config", couture.Name, "config.toml")
-	if !fileutil.Exist(aliasFilename) {
+	filename := path.Join(home, ".config", couture.Name, "config.yaml")
+	if !fileutil.Exist(filename) {
 		return nil
 	}
 
-	f, err := os.Open(aliasFilename)
+	f, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
@@ -108,5 +111,5 @@ func loadConfig() error {
 		return err
 	}
 
-	return toml.Unmarshal(text, &prettyConfig)
+	return yaml.Unmarshal(text, &prettyConfig)
 }

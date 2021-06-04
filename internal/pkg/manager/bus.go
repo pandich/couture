@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/joomcode/errorx"
 	"github.com/rcrowley/go-metrics"
+	"go.uber.org/ratelimit"
 	"os"
 )
 
@@ -90,10 +91,17 @@ func (mgr *busManager) makeSrcChan(snkChan chan model.SinkEvent) chan source.Eve
 
 func (mgr *busManager) makeSnkChan(errChan chan source.Error) chan model.SinkEvent {
 	snkChan := make(chan model.SinkEvent)
+	var limiter ratelimit.Limiter
+	if mgr.config.RateLimit == 0 {
+		limiter = ratelimit.NewUnlimited()
+	} else {
+		limiter = ratelimit.New(int(mgr.config.RateLimit))
+	}
 	go func() {
 		defer close(snkChan)
 		for {
 			event := <-snkChan
+			limiter.Take()
 			snkChanMeter.Mark(1)
 			for _, snk := range mgr.sinks {
 				if err := (*snk).Accept(event); err != nil {

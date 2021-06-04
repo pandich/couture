@@ -9,19 +9,19 @@ import (
 
 // Config ...
 type Config struct {
-	AutoResize       bool        `json:"auto_resize"`
-	Color            bool        `json:"color"`
-	Columns          []string    `json:"columns"`
-	ConsistentColors bool        `json:"consistent_colors"`
-	ExpandJSON       bool        `json:"expand_json"`
-	Highlight        bool        `json:"highlight"`
-	Multiline        bool        `json:"multiline"`
-	Theme            theme.Theme `json:"theme"`
-	TimeFormat       string      `json:"time_format"`
-	TTY              bool        `json:"-"`
-	Width            uint        `json:"width"`
-	Wrap             bool        `json:"wrap"`
-	Out              *os.File    `json:"-"`
+	AutoResize       bool        `yaml:"auto_resize,omitempty"`
+	Color            bool        `yaml:"color,omitempty"`
+	Columns          []string    `yaml:"columns,omitempty"`
+	ConsistentColors bool        `yaml:"consistent_colors,omitempty"`
+	ExpandJSON       bool        `yaml:"expand_json,omitempty"`
+	Highlight        bool        `yaml:"highlight,omitempty"`
+	Multiline        bool        `yaml:"multiline,omitempty"`
+	Theme            theme.Theme `yaml:"theme,omitempty"`
+	TimeFormat       string      `yaml:"time_format,omitempty"`
+	TTY              bool        `yaml:"-"`
+	Width            uint        `yaml:"width,omitempty"`
+	Wrap             bool        `yaml:"wrap,omitempty"`
+	Out              *os.File    `yaml:"-"`
 }
 
 // EffectiveTerminalWidth ...

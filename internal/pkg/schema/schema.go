@@ -2,10 +2,7 @@ package schema
 
 import (
 	"github.com/oriser/regroup"
-	errors2 "github.com/pkg/errors"
-	"github.com/tidwall/gjson"
 	"regexp"
-	"strings"
 )
 
 // Guess ..
@@ -60,6 +57,7 @@ type (
 		Priority() priority
 		Fields() []string
 		Column(field string) (string, bool)
+		Template(field string) (string, bool)
 		CanHandle(s string) bool
 		TextPattern() *regroup.ReGroup
 	}
@@ -69,6 +67,7 @@ type (
 		format            format
 		priority          priority
 		mapping           map[string]string
+		templates         map[string]string
 		inputFields       []string
 		predicate         predicate
 		predicatePatterns map[string]*regexp.Regexp
@@ -76,67 +75,24 @@ type (
 	}
 )
 
-func newSchema(name string, definition definition) (*Schema, error) {
-	var predicateFields []string
-	predicatePatterns := map[string]*regexp.Regexp{}
-	for fieldName, pattern := range definition.Predicates {
-		if pattern != "" {
-			predicatePatterns[fieldName] = regexp.MustCompile(pattern)
-		} else {
-			predicatePatterns[fieldName] = nil
-		}
-		predicateFields = append(predicateFields, fieldName)
-	}
-	var textPattern *regroup.ReGroup
-	var test predicate
-	switch definition.Format {
-	case JSON:
-		test = func(s string) bool {
-			values := gjson.GetMany(s, predicateFields...)
-			for i := range predicateFields {
-				value := values[i]
-				field := predicateFields[i]
-				pattern := predicatePatterns[field]
-				if pattern == nil {
-					if !value.Exists() {
-						return false
-					}
-				} else {
-					stringValue := value.String()
-					if !pattern.MatchString(stringValue) {
-						return false
-					}
-				}
-			}
-			return true
-		}
-	case Text:
-		const textRootPredicate = "_"
-		pattern := predicatePatterns[textRootPredicate]
-		textPattern = regroup.MustCompile(pattern.String())
-		test = func(s string) bool {
-			return pattern.MatchString(strings.TrimRight(s, "\n"))
-		}
-	default:
-		return nil, errors2.Errorf("unknown schema format: %s", definition.Format)
-	}
-	var inputFields []string
-	inverseMapping := map[string]string{}
-	for k, v := range definition.Mapping {
-		inverseMapping[v] = k
-		inputFields = append(inputFields, v)
-	}
-	var schema Schema = baseSchema{
+func newSchema(name string, definition definition) Schema {
+	return baseSchema{
 		name:              name,
 		format:            definition.Format,
 		priority:          definition.Priority,
-		mapping:           inverseMapping,
-		inputFields:       inputFields,
-		predicate:         test,
-		predicatePatterns: predicatePatterns,
-		textPattern:       textPattern,
+		mapping:           definition.inverseMapping(),
+		templates:         definition.Display,
+		inputFields:       definition.inputFields(),
+		predicate:         definition.canHandlePredicate(),
+		predicatePatterns: definition.predicatePatterns(),
+		textPattern:       definition.textPattern(),
 	}
-	return &schema, nil
+}
+
+// Template ...
+func (schema baseSchema) Template(name string) (string, bool) {
+	tmpl, ok := schema.templates[name]
+	return tmpl, ok
 }
 
 // Priority ...

@@ -48,27 +48,30 @@ type elasticSearch struct {
 	scroll *elastic.ScrollService
 }
 
-// TODO test elasticsearch query and timestamp params
-// TODO test elasticsearch "timestamp" param
 func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
 	const eventsPerFetch = 100
 	const keepAliveOneMinute = "1m"
 
 	normalizeURL(&sourceURL)
 
+	indexName := strings.Trim(sourceURL.Path, "/")
+
 	esClient, err := newElasticsearchClient(sourceURL)
 	if err != nil {
 		return nil, err
 	}
 
-	indexName := strings.Trim(sourceURL.Path, "/")
 	scroll := esClient.Scroll(indexName).
 		KeepAlive(keepAliveOneMinute).
 		Size(eventsPerFetch)
+
+	// TODO test elasticsearch query and timestamp params
 	var query elastic.Query
 	if q, ok := sourceURL.QueryKey("q"); ok {
 		query = elastic.NewQueryStringQuery(q)
 	}
+
+	// TODO test elasticsearch "timestamp" param
 	if fieldName, ok := sourceURL.QueryKey("timestamp"); ok {
 		scroll.SortBy(elastic.NewFieldSort(fieldName))
 		if since != nil {
@@ -80,13 +83,16 @@ func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, err
 			}
 		}
 	}
+
 	if query != nil {
 		scroll.Query(query)
 	}
+
 	var src source.Source = elasticSearch{
 		BaseSource: source.New('፨', sourceURL),
 		scroll:     scroll,
 	}
+
 	return &src, nil
 }
 

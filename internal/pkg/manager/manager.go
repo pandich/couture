@@ -50,6 +50,7 @@ type (
 		Since       *time.Time
 		Filters     []model.Filter
 		Schemas     []schema.Schema
+		RateLimit   uint
 	}
 )
 

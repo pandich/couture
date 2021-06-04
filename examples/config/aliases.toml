@@ -1,7 +1,0 @@
-[aliases]
-"733t" = "fake://?style=hacker&@seed"
-pig = "fake://?style=lorem&@seed"
-hip = "fake://?style=hipster&@seed"
-
-[groups]
-fake = ["pig", "hip", "733t"]

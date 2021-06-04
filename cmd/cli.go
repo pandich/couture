@@ -2,14 +2,14 @@ package cmd
 
 import (
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/level"
 	"net/url"
 	"time"
 )
 
 //nolint:lll
 var cli struct {
-	Metrics          bool             `group:"debug" hidden:"true" default:"false"`
+	Metrics          dumpMetrics      `group:"debug" hidden:"true" default:"false"`
+	RateLimit        rateLimit        `group:"debug" hidden:"true" default:"0" env:"COUTURE_RATE_LIMIT"`
 	TTY              tty              `group:"terminal" help:"Force TTY mode." short:"T" default:"false"`
 	Color            color            `group:"terminal" help:"Force Color mode." short:"T" default:"true" negatable:"true"`
 	Wrap             wrap             `group:"terminal" help:"Wrap the output tp the terminal width, or that specified by --width." short:"w" default:"false" negatable:"true"`
@@ -19,7 +19,7 @@ var cli struct {
 	ConsistentColors consistentColors `group:"display" help:"Maintain consistent source URL colors between runs." negatable:"true" default:"true"`
 	Multiline        multiline        `group:"display" help:"Display each log event in multiline format. (Enabled by --expand-json)" negatable:"true" default:"false"`
 	ExpandJSON       expandJSON       `group:"display" help:"Example JSON message bodies. Warning: has a significant performance impact." negatable:"true" default:"false"`
-	Level            level.Level      `group:"filter" help:"The minimum log level to display: ${enum}." default:"${defaultLogLevel}" placeholder:"level" short:"l" enum:"${logLevels}" env:"COUTURE_DEFAULT_LEVEL"`
+	Level            levelLike        `group:"filter" help:"The minimum log level to display: ${enum}." default:"${defaultLogLevel}" placeholder:"level" short:"l" enum:"${logLevels}" env:"COUTURE_DEFAULT_LEVEL"`
 	Since            *time.Time       `group:"filter" help:"How far back to look for events. Parses most time and duration formats including human friendly." placeholder:"(time|duration)" short:"s" env:"COUTURE_DEFAULT_SINCE"`
 	Highlight        highlight        `group:"filter" help:"Highlight matches from the patterns specified in --include." negatable:"true" default:"true"`
 	Filter           []model.Filter   `group:"filter" help:"Filter regular expressions. Format." placeholder:"+regex/-regex" short:"f" sep:"|"`

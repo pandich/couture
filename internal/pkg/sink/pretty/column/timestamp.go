@@ -34,5 +34,7 @@ func (col timestampColumn) Format(width uint, _ model.SinkEvent) string {
 
 // Render ...
 func (col timestampColumn) Render(cfg config.Config, event model.SinkEvent) []interface{} {
-	return []interface{}{orNoValue(time.Time(event.Timestamp).Format(cfg.TimeFormat))}
+	t := time.Time(event.Timestamp)
+	txt := t.Format(cfg.TimeFormat)
+	return []interface{}{orNoValue(txt)}
 }

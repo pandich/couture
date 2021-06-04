@@ -1,11 +1,13 @@
 package manager
 
 import (
+	"bytes"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/schema"
 	"github.com/araddon/dateparse"
 	"github.com/tidwall/gjson"
+	"html/template"
 	"strings"
 	"time"
 )
@@ -29,13 +31,19 @@ func unmarshallEvent(sch *schema.Schema, s string) *model.Event {
 }
 
 func unmarshallJSONEvent(sch *schema.Schema, s string) *model.Event {
-	values := gjson.GetMany(s, (*sch).Fields()...)
+	values := map[string]gjson.Result{}
+	fields := (*sch).Fields()
+	for i, value := range gjson.GetMany(s, (*sch).Fields()...) {
+		field := fields[i]
+		col, _ := (*sch).Column(field)
+		values[col] = value
+	}
+
 	event := model.Event{}
-	for i, field := range (*sch).Fields() {
-		if col, ok := (*sch).Column(field); ok {
-			value := values[i]
-			updateEvent(&event, col, value)
-		}
+	for _, field := range fields {
+		col, _ := (*sch).Column(field)
+		tmpl, _ := (*sch).Template(col)
+		updateEvent(&event, col, values, tmpl)
 	}
 	return &event
 }
@@ -56,60 +64,67 @@ func unmarshallTextEvent(sch *schema.Schema, s string) *model.Event {
 
 func unmarshallUnknown(msg string) *model.Event {
 	return &model.Event{
-		Timestamp:   model.Timestamp(time.Now()),
-		Level:       level.Warn,
-		Message:     model.Message(msg),
-		Application: "",
-		Method:      "",
-		Line:        0,
-		Thread:      "",
-		Class:       "",
-		Exception:   "Warning: entry is in an unknown log format.",
+		Timestamp: model.Timestamp(time.Now()),
+		Level:     level.Info,
+		Message:   model.Message(msg),
 	}
 }
 
-func updateEvent(event *model.Event, col string, v gjson.Result) {
+func updateEvent(event *model.Event, col string, values map[string]gjson.Result, tmpl string) {
+	rawValue := values[col]
+	value := getValue(tmpl, values, rawValue)
 	switch col {
 	case schema.Timestamp:
-		if v.Exists() {
-			t, _ := dateparse.ParseAny(v.String())
+		s := value
+		if s != "" {
+			t, _ := dateparse.ParseAny(s)
 			event.Timestamp = model.Timestamp(t)
 		}
+	case schema.Application:
+		event.Application = model.Application(value)
+	case schema.Thread:
+		event.Thread = model.Thread(value)
+	case schema.Class:
+		event.Class = model.Class(value)
+	case schema.Method:
+		event.Method = model.Method(value)
+	case schema.Line:
+		if rawValue.Exists() {
+			event.Line = model.Line(rawValue.Int())
+		}
 	case schema.Level:
+		s := value
 		const defaultLevel = level.Info
-		if v.Exists() {
-			event.Level = level.ByName(v.String(), defaultLevel)
+		if s != "" {
+			event.Level = level.ByName(s, defaultLevel)
 		} else {
 			event.Level = defaultLevel
 		}
 	case schema.Message:
-		if v.Exists() {
-			event.Message = model.Message(v.String())
-		}
-	case schema.Application:
-		if v.Exists() {
-			event.Application = model.Application(v.String())
-		}
-	case schema.Method:
-		if v.Exists() {
-			event.Method = model.Method(v.String())
-		}
-	case schema.Line:
-		if v.Exists() {
-			event.Line = model.Line(v.Int())
-		}
-	case schema.Thread:
-		if v.Exists() {
-			event.Thread = model.Thread(v.String())
-		}
-	case schema.Class:
-		if v.Exists() {
-			event.Class = model.Class(v.String())
-		}
+		event.Message = model.Message(value)
 	case schema.Exception:
-		if v.Exists() {
-			stackTrace := v.String()
-			event.Exception = model.Exception(stackTrace)
-		}
+		event.Exception = model.Exception(value)
 	}
+}
+
+func getValue(tmpl string, data interface{}, defaultValue gjson.Result) string {
+	if tmpl == "" {
+		if defaultValue.Exists() {
+			return defaultValue.String()
+		}
+		return ""
+	}
+
+	t, err := template.New("").Parse(tmpl)
+	if err != nil {
+		return "%%error:parse%%"
+	}
+
+	var txt bytes.Buffer
+	err = t.Execute(&txt, data)
+	if err != nil {
+		return "%%error:execute%%"
+	}
+
+	return txt.String()
 }

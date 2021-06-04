@@ -3,10 +3,10 @@ package cmd
 import (
 	"couture/internal/pkg/couture"
 	"fmt"
-	"github.com/BurntSushi/toml"
 	"github.com/aymerick/raymond"
 	"github.com/coreos/etcd/pkg/fileutil"
 	errors2 "github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -20,8 +20,8 @@ var now = time.Now()
 const aliasScheme = "alias"
 
 type aliasConfig struct {
-	Groups  map[string][]string `json:"groups"`
-	Aliases map[string]string   `json:"aliasConfig"`
+	Groups  map[string][]string `yaml:"groups,omitempty"`
+	Aliases map[string]string   `yaml:"aliases,omitempty"`
 }
 
 func expandAliases(args []string) ([]string, error) {
@@ -29,7 +29,7 @@ func expandAliases(args []string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	aliasFilename := path.Join(home, ".config", couture.Name, "aliases.toml")
+	aliasFilename := path.Join(home, ".config", couture.Name, "aliases.yaml")
 	if !fileutil.Exist(aliasFilename) {
 		return nil, nil
 	}
@@ -44,7 +44,7 @@ func expandAliases(args []string) ([]string, error) {
 	}
 
 	var cfg aliasConfig
-	err = toml.Unmarshal(s, &cfg)
+	err = yaml.Unmarshal(s, &cfg)
 	if err != nil {
 		return nil, err
 	}
