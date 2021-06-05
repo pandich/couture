@@ -12,7 +12,7 @@ type timestampColumn struct {
 	baseColumn
 }
 
-func newTimestampColumn() timestampColumn {
+func newTimestampColumn() column {
 	return timestampColumn{baseColumn{
 		columnName:  "timestamp",
 		widthMode:   filling,

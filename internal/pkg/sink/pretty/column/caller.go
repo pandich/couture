@@ -12,7 +12,7 @@ type callerColumn struct {
 	baseColumn
 }
 
-func newCallerColumn() callerColumn {
+func newCallerColumn() column {
 	const width = 50
 	sigil := '☎'
 	return callerColumn{baseColumn{

@@ -5,11 +5,9 @@ import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/schema"
-	"fmt"
 	"github.com/araddon/dateparse"
 	"github.com/tidwall/gjson"
 	"html/template"
-	"os"
 	"strings"
 	"time"
 )
@@ -27,12 +25,6 @@ func unmarshallEvent(sch *schema.Schema, s string) *model.Event {
 		}
 	}
 	if evt == nil {
-		const envKey = "COUTURE_DIE_ON_UNKNOWN"
-		const exitCode = 12
-		if os.Getenv(envKey) != "" {
-			fmt.Printf("unknown: %+v\n", s)
-			os.Exit(exitCode)
-		}
 		evt = unmarshallUnknown(s)
 	}
 	return evt

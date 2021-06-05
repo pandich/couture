@@ -15,7 +15,7 @@ type sourceColumn struct {
 	baseColumn
 }
 
-func newSourceColumn() sourceColumn {
+func newSourceColumn() column {
 	const weight = 40
 	return sourceColumn{baseColumn{
 		columnName:  "source",

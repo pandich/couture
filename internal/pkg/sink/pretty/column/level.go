@@ -12,7 +12,7 @@ type levelColumn struct {
 	baseColumn
 }
 
-func newLevelColumn() levelColumn {
+func newLevelColumn() column {
 	const width = 4
 	return levelColumn{baseColumn{
 		columnName:  "level",

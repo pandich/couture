@@ -9,7 +9,7 @@ type threadColumn struct {
 	weightedColumn
 }
 
-func newThreadColumn() threadColumn {
+func newThreadColumn() column {
 	const weight = 20
 	sigil := '⇶'
 	return threadColumn{newWeightedColumn(
