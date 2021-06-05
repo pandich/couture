@@ -2,6 +2,7 @@ package model
 
 import (
 	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/schema"
 )
 
 // Event a log event
@@ -31,4 +32,5 @@ type SinkEvent struct {
 	Event
 	SourceURL SourceURL
 	Filters   []Filter
+	Schema    *schema.Schema
 }

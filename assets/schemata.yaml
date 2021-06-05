@@ -1,5 +1,4 @@
 logstash:
-  sigil: "∑"
   format: json
   priority: 100
   predicates:
@@ -16,7 +15,6 @@ logstash:
     exception: exception.stacktrace
 
 cloudwatch-event:
-  sigil: "☁"
   format: json
   predicates:
     tag: "^cloud-watch$"
@@ -29,7 +27,6 @@ cloudwatch-event:
     message: log
 
 ecs:
-  sigil: "◎"
   format: json
   predictes:
     "@timestamp": "^.+$"
@@ -43,21 +40,18 @@ ecs:
     method: instance_id
 
 aws-billing-report:
-  sigil: "⟑"
   format: text
   priority: 90
   predicates:
     _: "^(?P<message>REPORT (?P<class>RequestId):\\s+(?P<method>\\S+)\\s+.+)(?P<level>)(?P<thread>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<exception>)$"
 
 aws-billing-start:
-  sigil: "⟑"
   format: text
   priority: 90
   predicates:
     _: "^(?P<message>START (?P<class>RequestId):(?P<method>\\s+\\S+).+)(?P<level>)(?P<thread>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<exception>)$"
 
 aws-billing-end:
-  sigil: "⟑"
   format: text
   priority: 90
   predicates:

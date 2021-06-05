@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	highlightSuffix = "Highlight"
 	errorSuffix     = "Error"
+	highlightSuffix = "Highlight"
+	sigilSuffix     = "Sigil"
 )
 
 type messageColumn struct {
@@ -56,6 +57,10 @@ func (col messageColumn) RegisterStyles(theme theme.Theme) {
 			col.levelStyleName(errorSuffix, lvl),
 			colorFormat(theme.StackTraceFg(), bg),
 		)
+		cfmt.RegisterStyle(
+			col.levelStyleName(sigilSuffix, lvl),
+			colorFormat(theme.HighlightFg(lvl), theme.HighlightBg()),
+		)
 	}
 }
 
@@ -66,37 +71,45 @@ func (col messageColumn) Format(_ uint, _ model.SinkEvent) string {
 
 // Render ...
 func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []interface{} {
-	var lvl = event.Level
-	if lvl == "" {
-		lvl = level.Info
+	if event.Level == "" {
+		event.Level = level.Info
 	}
+	var expanded = false
 	var message = string(event.Message)
 	if cfg.ExpandJSON {
 		if s, ok := expandJSON(message); ok {
+			expanded = true
 			message = s
 		}
 	}
-	message = col.levelSprintf(col.prefix(cfg), "", lvl, message)
+	message += col.levelSprintf("", "", event.Level, message)
+
 	var exception = string(event.Exception)
-	if exception != "" && cfg.ExpandJSON {
-		if s, ok := expandJSON(exception); ok {
-			exception = s
-		}
-	}
 	if exception != "" {
-		exception = "\n" + indent.String(
-			col.levelSprintf("", errorSuffix, lvl, exception),
-			4,
-		)
+		if cfg.ExpandJSON {
+			if s, ok := expandJSON(exception); ok {
+				exception = s
+			}
+		}
+		message += "\n" + indent.String(
+			col.levelSprintf("", errorSuffix, event.Level, exception),
+			4)
 	}
-	message += exception
 
 	if cfg.Highlight {
 		for _, filter := range event.Filters {
 			message = filter.Pattern.ReplaceAllStringFunc(message, func(s string) string {
-				return col.levelSprintf("", highlightSuffix, lvl, s) + col.bgColorSeq[lvl]
+				return col.levelSprintf("", highlightSuffix, event.Level, s) + col.bgColorSeq[event.Level]
 			})
 		}
+	}
+
+	message = col.prefix(cfg, event) + message
+
+	if cfg.Multiline || expanded {
+		message = "\n" + message
+	} else {
+		message = " " + message
 	}
 
 	return []interface{}{message}
@@ -106,17 +119,15 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []inte
 // Helpers
 //
 
-func (col messageColumn) prefix(config config.Config) string {
-	var prefix string
-	if config.Multiline {
-		prefix += "\n"
-	} else {
-		prefix += " "
-	}
+func (col messageColumn) prefix(cfg config.Config, evt model.SinkEvent) string {
+	var s = " "
 	if col.sigil != nil {
-		prefix += string(*col.sigil) + " "
+		s += string(*col.sigil) + " "
 	}
-	return prefix
+	if cfg.ShowSchema {
+		s += "[" + evt.Schema.Name + "] "
+	}
+	return " " + col.levelSprintf(s, sigilSuffix, evt.Level, "") + " "
 }
 
 func (col messageColumn) levelSprintf(prefix string, suffix string, lvl level.Level, s interface{}) string {

@@ -48,6 +48,7 @@ type (
 	width            uint
 	wrap             bool
 	dumpMetrics      bool
+	showSchema       bool
 	rateLimit        uint
 )
 
@@ -98,6 +99,10 @@ func (v wrap) AfterApply() error { prettyConfig.Wrap = bool(v); return nil }
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v dumpMetrics) AfterApply() error { managerConfig.DumpMetrics = bool(v); return nil }
+
+// AfterApply ...
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (v showSchema) AfterApply() error { prettyConfig.ShowSchema = bool(v); return nil }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers

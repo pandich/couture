@@ -10,6 +10,7 @@ import (
 // Config ...
 type Config struct {
 	AutoResize       bool        `yaml:"auto_resize,omitempty"`
+	ShowSchema       bool        `yaml:"show_schema,omitempty"`
 	Color            bool        `yaml:"color,omitempty"`
 	Columns          []string    `yaml:"columns,omitempty"`
 	ConsistentColors bool        `yaml:"consistent_colors,omitempty"`

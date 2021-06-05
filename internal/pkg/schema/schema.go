@@ -45,7 +45,6 @@ type (
 	// Schema ...
 	Schema struct {
 		Name                     string            `yaml:"-"`
-		Sigil                    string            `yaml:"sigil,omitempty"`
 		Format                   format            `yaml:"format,omitempty"`
 		Priority                 priority          `yaml:"priority,omitempty"`
 		PredicatesByField        map[string]string `yaml:"predicates,omitempty"`
