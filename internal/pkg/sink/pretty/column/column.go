@@ -46,7 +46,7 @@ type (
 	}
 )
 
-// Name ...
+// GetName ...
 func (col baseColumn) name() string {
 	return col.columnName
 }

@@ -5,9 +5,11 @@ import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/schema"
+	"fmt"
 	"github.com/araddon/dateparse"
 	"github.com/tidwall/gjson"
 	"html/template"
+	"os"
 	"strings"
 	"time"
 )
@@ -15,7 +17,7 @@ import (
 func unmarshallEvent(sch *schema.Schema, s string) *model.Event {
 	var evt *model.Event
 	if sch != nil {
-		switch (*sch).Format() {
+		switch sch.Format {
 		case schema.JSON:
 			evt = unmarshallJSONEvent(sch, s)
 		case schema.Text:
@@ -25,6 +27,12 @@ func unmarshallEvent(sch *schema.Schema, s string) *model.Event {
 		}
 	}
 	if evt == nil {
+		const envKey = "COUTURE_DIE_ON_UNKNOWN"
+		const exitCode = 12
+		if os.Getenv(envKey) != "" {
+			fmt.Printf("unknown: %+v\n", s)
+			os.Exit(exitCode)
+		}
 		evt = unmarshallUnknown(s)
 	}
 	return evt
@@ -32,30 +40,31 @@ func unmarshallEvent(sch *schema.Schema, s string) *model.Event {
 
 func unmarshallJSONEvent(sch *schema.Schema, s string) *model.Event {
 	values := map[string]gjson.Result{}
-	fields := (*sch).Fields()
-	for i, value := range gjson.GetMany(s, (*sch).Fields()...) {
-		field := fields[i]
-		col, _ := (*sch).Column(field)
-		values[col] = value
+	for i, value := range gjson.GetMany(s, sch.Fields...) {
+		field := sch.Fields[i]
+		values[field] = value
 	}
 
 	event := model.Event{}
-	for _, field := range fields {
-		col, _ := (*sch).Column(field)
-		tmpl, _ := (*sch).Template(col)
-		updateEvent(&event, col, values, tmpl)
+	for col, field := range sch.FieldByColumn {
+		updateEvent(
+			&event,
+			col,
+			field,
+			values,
+			sch.TemplateByColumn[col],
+		)
 	}
 	return &event
 }
 
 func unmarshallTextEvent(sch *schema.Schema, s string) *model.Event {
-	pattern := (*sch).TextPattern()
-	if pattern == nil {
+	if sch.TextPattern == nil {
 		return nil
 	}
 
 	event := model.Event{}
-	err := pattern.MatchToTarget(strings.TrimRight(s, "\n"), &event)
+	err := sch.TextPattern.MatchToTarget(strings.TrimRight(s, "\n"), &event)
 	if err != nil {
 		return nil
 	}
@@ -70,8 +79,8 @@ func unmarshallUnknown(msg string) *model.Event {
 	}
 }
 
-func updateEvent(event *model.Event, col string, values map[string]gjson.Result, tmpl string) {
-	rawValue := values[col]
+func updateEvent(event *model.Event, col string, field string, values map[string]gjson.Result, tmpl string) {
+	rawValue := values[field]
 	value := getValue(tmpl, values, rawValue)
 	switch col {
 	case schema.Timestamp:
