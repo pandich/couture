@@ -1,3 +1,8 @@
+# TODO @Jim fix any problems in here, and add missing formats
+#   see:  parser_*.rb definitions in https://github.com/fluent/fluentd/tree/master/lib/fluent/plugin
+#         https://docs.fluentd.org/v/0.12/articles/common-log-formats
+#   see:  more format info in https://www.graylog.org/post/log-formats-a-complete-guide
+
 logstash:
   format: json
   priority: 100
