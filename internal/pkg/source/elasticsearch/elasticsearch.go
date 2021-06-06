@@ -65,13 +65,11 @@ func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, err
 		KeepAlive(keepAliveOneMinute).
 		Size(eventsPerFetch)
 
-	// TODO test elasticsearch query and timestamp params
 	var query elastic.Query
 	if q, ok := sourceURL.QueryKey("q"); ok {
 		query = elastic.NewQueryStringQuery(q)
 	}
 
-	// TODO test elasticsearch "timestamp" param
 	if fieldName, ok := sourceURL.QueryKey("timestamp"); ok {
 		scroll.SortBy(elastic.NewFieldSort(fieldName))
 		if since != nil {

@@ -116,6 +116,7 @@ func (mgr *busManager) makeSrcChan(snkChan chan model.SinkEvent, alertChan chan 
 				snkChan <- evt
 			case model.Alert:
 				alertChan <- evt
+				snkChan <- evt
 			}
 		}
 	}()

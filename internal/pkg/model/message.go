@@ -23,8 +23,7 @@ func (msg Message) Matches(filters *[]Filter) FilterKind {
 			hasIncludes = true
 			if filter.Pattern.MatchString(string(msg)) {
 				kind := filter.Kind
-				// TODO cleanup alert/include logic
-				// this is an ugly hack to allow for an alert to fire once and then turn into a normal include
+				// downgrade the alert to an include after it fires - this feels a bit hacky
 				(*filters)[i].Kind = Include
 				return kind
 			}
