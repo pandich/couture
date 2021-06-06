@@ -6,12 +6,10 @@ import (
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/source"
 	"fmt"
-	"github.com/gen2brain/beeep"
 	"github.com/joomcode/errorx"
 	"github.com/rcrowley/go-metrics"
 	"go.uber.org/ratelimit"
 	"os"
-	"time"
 )
 
 const (
@@ -56,17 +54,11 @@ func (mgr *busManager) makeUnknownhan() chan string {
 func (mgr *busManager) makeAlertChan(errChan chan source.Error) chan model.SinkEvent {
 	alertChan := make(chan model.SinkEvent)
 	go func() {
-		const maxNotificationsPerMinute = 10
-		const noIcon = ""
-
-		limiter := ratelimit.New(maxNotificationsPerMinute, ratelimit.Per(time.Minute))
-
 		for {
 			alert := <-alertChan
-			limiter.Take()
 			title := fmt.Sprintf("%s: %s (%s)", couture.Name, alert.Application, alert.SourceURL.ShortForm())
 			message := fmt.Sprintf("[%s] %s", alert.Level, alert.Message)
-			if err := beeep.Notify(title, message, noIcon); err != nil {
+			if err := couture.NotifyOS(title, message); err != nil {
 				errChan <- source.Error{SourceURL: alert.SourceURL, Error: err}
 			}
 		}
@@ -136,9 +128,9 @@ func (mgr *busManager) makeSrcChan(
 				// do nothing
 			case model.Include:
 				snkChan <- evt
-			case model.Alert:
-				alertChan <- evt
+			case model.AlertOnce:
 				snkChan <- evt
+				alertChan <- evt
 			}
 		}
 	}()

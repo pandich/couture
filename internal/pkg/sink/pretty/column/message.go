@@ -98,9 +98,11 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []inte
 
 	if cfg.Highlight {
 		for _, filter := range event.Filters {
-			message = filter.Pattern.ReplaceAllStringFunc(message, func(s string) string {
-				return col.levelSprintf("", highlightSuffix, event.Level, s) + col.bgColorSeq[event.Level]
-			})
+			if filter.Kind.IsHighlighted() {
+				message = filter.Pattern.ReplaceAllStringFunc(message, func(s string) string {
+					return col.levelSprintf("", highlightSuffix, event.Level, s) + col.bgColorSeq[event.Level]
+				})
+			}
 		}
 	}
 

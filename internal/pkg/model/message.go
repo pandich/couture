@@ -15,17 +15,21 @@ func (msg Message) Matches(filters *[]Filter) FilterKind {
 	for i := range *filters {
 		filter := (*filters)[i]
 		switch filter.Kind {
+		case none:
+			return Include
 		case Exclude:
 			if filter.Pattern.MatchString(string(msg)) {
-				return filter.Kind
+				return Exclude
 			}
-		case Include, Alert:
+		case Include:
 			hasIncludes = true
 			if filter.Pattern.MatchString(string(msg)) {
-				kind := filter.Kind
-				// downgrade the alert to an include after it fires - this feels a bit hacky
-				(*filters)[i].Kind = Include
-				return kind
+				return Include
+			}
+		case AlertOnce:
+			if filter.Pattern.MatchString(string(msg)) {
+				(*filters)[i].Kind = none
+				return AlertOnce
 			}
 		}
 	}

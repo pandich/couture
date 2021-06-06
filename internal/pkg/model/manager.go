@@ -24,10 +24,11 @@ type Manager interface {
 type FilterKind int
 
 const (
+	none FilterKind = iota
 	// Exclude ...
-	Exclude FilterKind = iota - 1
-	// Alert ...
-	Alert
+	Exclude
+	// AlertOnce ...
+	AlertOnce
 	// Include ...
 	Include
 )
@@ -36,4 +37,9 @@ const (
 type Filter struct {
 	Pattern regexp.Regexp
 	Kind    FilterKind
+}
+
+// IsHighlighted ...
+func (f FilterKind) IsHighlighted() bool {
+	return f == Include
 }

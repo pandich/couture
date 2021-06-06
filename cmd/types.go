@@ -209,7 +209,7 @@ func (f filterLike) asFilters() ([]model.Filter, error) {
 		flag := value[0]
 		switch flag {
 		case alert:
-			if err := addPattern(value[1:], model.Alert); err != nil {
+			if err := addPattern(value[1:], model.AlertOnce); err != nil {
 				return nil, err
 			}
 		case include:
