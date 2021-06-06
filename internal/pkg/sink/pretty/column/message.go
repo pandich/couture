@@ -39,8 +39,8 @@ func newMessageColumn() messageColumn {
 	}
 }
 
-// RegisterStyles ...
-func (col messageColumn) RegisterStyles(theme theme.Theme) {
+// Init ...
+func (col messageColumn) Init(theme theme.Theme) {
 	for _, lvl := range level.Levels {
 		fg := theme.MessageFg()
 		bg := theme.MessageBg(lvl)
@@ -64,13 +64,13 @@ func (col messageColumn) RegisterStyles(theme theme.Theme) {
 	}
 }
 
-// Format ...
-func (col messageColumn) Format(_ uint, _ model.SinkEvent) string {
+// RenderFormat ...
+func (col messageColumn) RenderFormat(_ uint, _ model.SinkEvent) string {
 	return "%s"
 }
 
-// Render ...
-func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []interface{} {
+// RenderValue ...
+func (col messageColumn) RenderValue(cfg config.Config, event model.SinkEvent) []interface{} {
 	if event.Level == "" {
 		event.Level = level.Info
 	}

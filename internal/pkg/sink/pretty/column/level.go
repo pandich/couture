@@ -21,8 +21,8 @@ func newLevelColumn() column {
 	}}
 }
 
-// RegisterStyles ...
-func (col levelColumn) RegisterStyles(thm theme.Theme) {
+// Init ...
+func (col levelColumn) Init(thm theme.Theme) {
 	for _, lvl := range level.Levels {
 		fgColor := thm.LevelColorFg(lvl)
 		bgColor := thm.LevelColorBg(lvl)
@@ -32,8 +32,8 @@ func (col levelColumn) RegisterStyles(thm theme.Theme) {
 	}
 }
 
-// Format ...
-func (col levelColumn) Format(_ uint, event model.SinkEvent) string {
+// RenderFormat ...
+func (col levelColumn) RenderFormat(_ uint, event model.SinkEvent) string {
 	var lvl = event.Level
 	if lvl == "" {
 		lvl = level.Info
@@ -41,8 +41,8 @@ func (col levelColumn) Format(_ uint, event model.SinkEvent) string {
 	return formatStyleOfWidth(col.name()+string(lvl), uint(col.weight()))
 }
 
-// Render ...
-func (col levelColumn) Render(_ config.Config, event model.SinkEvent) []interface{} {
+// RenderValue ...
+func (col levelColumn) RenderValue(_ config.Config, event model.SinkEvent) []interface{} {
 	var lvl = event.Level
 	if lvl == "" {
 		lvl = level.Info

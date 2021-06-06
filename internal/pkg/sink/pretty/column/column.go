@@ -30,9 +30,9 @@ var DefaultColumns = []string{
 
 type (
 	column interface {
-		RegisterStyles(th theme.Theme)
-		Format(width uint, event model.SinkEvent) string
-		Render(cfg config.Config, event model.SinkEvent) []interface{}
+		Init(th theme.Theme)
+		RenderFormat(width uint, event model.SinkEvent) string
+		RenderValue(cfg config.Config, event model.SinkEvent) []interface{}
 		name() string
 		mode() widthMode
 		weight() widthWeight
@@ -86,8 +86,8 @@ func newWeightedColumn(
 	}
 }
 
-// RegisterStyles ...
-func (col weightedColumn) RegisterStyles(theme theme.Theme) {
+// Init ...
+func (col weightedColumn) Init(theme theme.Theme) {
 	cfmt.RegisterStyle(col.name(), func(s string) string {
 		var prefix = ""
 		if col.sigil != nil {
@@ -97,13 +97,13 @@ func (col weightedColumn) RegisterStyles(theme theme.Theme) {
 	})
 }
 
-// Format ...
-func (col weightedColumn) Format(width uint, _ model.SinkEvent) string {
+// RenderFormat ...
+func (col weightedColumn) RenderFormat(width uint, _ model.SinkEvent) string {
 	return formatColumn(col, width)
 }
 
-// Render ...
-func (col weightedColumn) Render(_ config.Config, event model.SinkEvent) []interface{} {
+// RenderValue ...
+func (col weightedColumn) RenderValue(_ config.Config, event model.SinkEvent) []interface{} {
 	return col.value(event)
 }
 

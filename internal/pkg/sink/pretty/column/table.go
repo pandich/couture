@@ -31,7 +31,7 @@ type Table struct {
 func NewTable(config config.Config) *Table {
 	for _, name := range config.Columns {
 		col := registry[name]
-		col.RegisterStyles(config.Theme)
+		col.Init(config.Theme)
 	}
 	table := Table{
 		config: config,
@@ -53,8 +53,8 @@ func (table *Table) RenderEvent(event model.SinkEvent) string {
 	var values []interface{}
 	for _, name := range table.config.Columns {
 		col := registry[name]
-		format += col.Format(table.widths[name], event)
-		values = append(values, col.Render(table.config, event)...)
+		format += col.RenderFormat(table.widths[name], event)
+		values = append(values, col.RenderValue(table.config, event)...)
 	}
 	format += resetSequence
 	var line = cfmt.Sprintf(format, values...)

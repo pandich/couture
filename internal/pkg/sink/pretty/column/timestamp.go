@@ -20,20 +20,20 @@ func newTimestampColumn() column {
 	}}
 }
 
-// RegisterStyles ...
-func (col timestampColumn) RegisterStyles(theme theme.Theme) {
+// Init ...
+func (col timestampColumn) Init(theme theme.Theme) {
 	cfmt.RegisterStyle(col.name(), func(s string) string {
 		return cfmt.Sprintf("{{ ☀︎ %s }}::bg"+theme.TimestampBg()+"|"+theme.TimestampFg(), s)
 	})
 }
 
-// Format ...
-func (col timestampColumn) Format(width uint, _ model.SinkEvent) string {
+// RenderFormat ...
+func (col timestampColumn) RenderFormat(width uint, _ model.SinkEvent) string {
 	return formatColumn(col, width)
 }
 
-// Render ...
-func (col timestampColumn) Render(cfg config.Config, event model.SinkEvent) []interface{} {
+// RenderValue ...
+func (col timestampColumn) RenderValue(cfg config.Config, event model.SinkEvent) []interface{} {
 	t := time.Time(event.Timestamp)
 	txt := t.Format(cfg.TimeFormat)
 	return []interface{}{orNoValue(txt)}

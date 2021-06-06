@@ -23,8 +23,8 @@ func newCallerColumn() column {
 	}}
 }
 
-// RegisterStyles ...
-func (col callerColumn) RegisterStyles(theme theme.Theme) {
+// Init ...
+func (col callerColumn) Init(theme theme.Theme) {
 	var prefix = ""
 	if col.sigil != nil {
 		prefix = " " + string(*col.sigil) + " "
@@ -49,8 +49,8 @@ func (col callerColumn) RegisterStyles(theme theme.Theme) {
 	})
 }
 
-// Format ...
-func (col callerColumn) Format(_ uint, evt model.SinkEvent) string {
+// RenderFormat ...
+func (col callerColumn) RenderFormat(_ uint, evt model.SinkEvent) string {
 	var s = "{{%s}}::Entity"
 	if evt.Action != "" {
 		s += "{{∕}}::ActionDelimiter"
@@ -63,8 +63,8 @@ func (col callerColumn) Format(_ uint, evt model.SinkEvent) string {
 	return s
 }
 
-// Render ...
-func (col callerColumn) Render(_ config.Config, event model.SinkEvent) []interface{} {
+// RenderValue ...
+func (col callerColumn) RenderValue(_ config.Config, event model.SinkEvent) []interface{} {
 	const maxEntityNameWidth = 30
 	const maxWidth = 60
 

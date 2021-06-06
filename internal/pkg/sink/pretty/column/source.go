@@ -24,8 +24,8 @@ func newSourceColumn() column {
 	}}
 }
 
-// RegisterStyles ...
-func (col sourceColumn) RegisterStyles(_ theme.Theme) {}
+// Init ...
+func (col sourceColumn) Init(_ theme.Theme) {}
 
 // RegisterSource ...
 func RegisterSource(th theme.Theme, consistentColors bool, src source.Source) string {
@@ -37,13 +37,13 @@ func RegisterSource(th theme.Theme, consistentColors bool, src source.Source) st
 	return bgColor
 }
 
-// Format ...
-func (col sourceColumn) Format(width uint, event model.SinkEvent) string {
+// RenderFormat ...
+func (col sourceColumn) RenderFormat(width uint, event model.SinkEvent) string {
 	return formatStyleOfWidth(sourceID(event.SourceURL), width)
 }
 
-// Render ...
-func (col sourceColumn) Render(_ config.Config, event model.SinkEvent) []interface{} {
+// RenderValue ...
+func (col sourceColumn) RenderValue(_ config.Config, event model.SinkEvent) []interface{} {
 	return []interface{}{event.SourceURL.ShortForm()}
 }
 
