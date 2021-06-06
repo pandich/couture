@@ -55,9 +55,9 @@ func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
 	return nil
 }
 
-func (mgr busManager) shouldInclude(evt *model.Event) bool {
+func (mgr *busManager) filter(evt *model.Event) model.FilterKind {
 	if !evt.Level.IsAtLeast(mgr.config.Level) {
-		return false
+		return model.Exclude
 	}
-	return evt.Message.Matches(mgr.config.Filters)
+	return evt.Message.Matches(&mgr.config.Filters)
 }

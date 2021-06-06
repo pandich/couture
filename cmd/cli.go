@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"couture/internal/pkg/model"
 	"net/url"
 	"time"
 )
@@ -23,10 +22,10 @@ var cli struct {
 	Multiline        multiline        `group:"display" help:"Display each log event in multiline format. (Enabled by --expand-json)" negatable:"true" default:"false"`
 	ExpandJSON       expandJSON       `group:"display" help:"Example JSON message bodies. Warning: has a significant performance impact." negatable:"true" default:"false"`
 
-	Level     levelLike      `group:"filter" help:"The minimum log level to display: ${enum}." default:"${defaultLogLevel}" placeholder:"level" short:"l" enum:"${logLevels}" env:"COUTURE_LEVEL"`
-	Since     *time.Time     `group:"filter" help:"How far back to look for events. Parses most time and duration formats including human friendly." placeholder:"(time|duration)" short:"s" env:"COUTURE_SINCE"`
-	Highlight highlight      `group:"filter" help:"Highlight matches from the patterns specified in --include." negatable:"true" default:"true"`
-	Filter    []model.Filter `group:"filter" help:"Filter regular expressions. Format." placeholder:"+regex/-regex" short:"f" sep:"|"`
+	Level     levelLike  `group:"filter" help:"The minimum log level to display: ${enum}." default:"${defaultLogLevel}" placeholder:"level" short:"l" enum:"${logLevels}" env:"COUTURE_LEVEL"`
+	Since     *time.Time `group:"filter" help:"How far back to look for events. Parses most time and duration formats including human friendly." placeholder:"(time|duration)" short:"s" env:"COUTURE_SINCE"`
+	Highlight highlight  `group:"filter" help:"Highlight matches from the patterns specified in --include." negatable:"true" default:"true"`
+	Filter    filterLike `group:"filter" help:"Filter regular expressions. Format." placeholder:"[+|-|!]regex" short:"f" sep:"|"`
 
 	TimeFormat timeFormat `group:"content" help:"Go-standard time format string or a named format: ${timeFormatNames}. (See https://golang.org/pkg/time/#pkg-constants)" short:"t" default:"stamp" env:"COUTURE_TIME_FORMAT"`
 	Column     columns    `group:"content" help:"Specify one or more columns to display: ${enum}." placeholder:"column" enum:"${columnNames}" env:"COUTURE_COLUMN_NAMES"`

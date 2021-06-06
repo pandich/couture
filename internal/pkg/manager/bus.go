@@ -1,14 +1,17 @@
 package manager
 
 import (
+	"couture/internal/pkg/couture"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/source"
 	"fmt"
+	"github.com/gen2brain/beeep"
 	"github.com/joomcode/errorx"
 	"github.com/rcrowley/go-metrics"
 	"go.uber.org/ratelimit"
 	"os"
+	"time"
 )
 
 const (
@@ -29,9 +32,31 @@ func init() {
 
 func (mgr *busManager) createChannels() (chan source.Event, chan model.SinkEvent, chan source.Error) {
 	errChan := mgr.makeErrChan()
+	alertChan := mgr.makeAlertChan(errChan)
 	snkChan := mgr.makeSnkChan(errChan)
-	srcChan := mgr.makeSrcChan(snkChan)
+	srcChan := mgr.makeSrcChan(snkChan, alertChan)
 	return srcChan, snkChan, errChan
+}
+
+func (mgr *busManager) makeAlertChan(errChan chan source.Error) chan model.SinkEvent {
+	alertChan := make(chan model.SinkEvent)
+	go func() {
+		const maxNotificationsPerMinute = 10
+		const noIcon = ""
+
+		limiter := ratelimit.New(maxNotificationsPerMinute, ratelimit.Per(time.Minute))
+
+		for {
+			alert := <-alertChan
+			limiter.Take()
+			title := fmt.Sprintf("%s: %s (%s)", couture.Name, alert.Application, alert.SourceURL.ShortForm())
+			message := fmt.Sprintf("[%s] %s", alert.Level, alert.Message)
+			if err := beeep.Notify(title, message, noIcon); err != nil {
+				errChan <- source.Error{SourceURL: alert.SourceURL, Error: err}
+			}
+		}
+	}()
+	return alertChan
 }
 
 func (mgr *busManager) makeErrChan() chan source.Error {
@@ -62,7 +87,7 @@ func (mgr *busManager) makeErrChan() chan source.Error {
 	return errChan
 }
 
-func (mgr *busManager) makeSrcChan(snkChan chan model.SinkEvent) chan source.Event {
+func (mgr *busManager) makeSrcChan(snkChan chan model.SinkEvent, alertChan chan model.SinkEvent) chan source.Event {
 	srcChan := make(chan source.Event)
 	go func() {
 		defer close(srcChan)
@@ -77,13 +102,20 @@ func (mgr *busManager) makeSrcChan(snkChan chan model.SinkEvent) chan source.Eve
 			srcChanSrcMeter.Mark(1)
 			sch := schema.Guess(sourceEvent.Event, mgr.config.Schemas...)
 			modelEvent := unmarshallEvent(sch, sourceEvent.Event)
-			if mgr.shouldInclude(modelEvent) {
-				snkChan <- model.SinkEvent{
-					SourceURL: sourceURL,
-					Event:     *modelEvent,
-					Filters:   mgr.config.Filters,
-					Schema:    sch,
-				}
+			filterKind := mgr.filter(modelEvent)
+			evt := model.SinkEvent{
+				SourceURL: sourceURL,
+				Event:     *modelEvent,
+				Filters:   mgr.config.Filters,
+				Schema:    sch,
+			}
+			switch filterKind {
+			case model.Exclude:
+				// do nothing
+			case model.Include:
+				snkChan <- evt
+			case model.Alert:
+				alertChan <- evt
 			}
 		}
 	}()

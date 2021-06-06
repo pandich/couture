@@ -3,7 +3,6 @@ package cmd
 import (
 	"couture/internal/pkg/couture"
 	"couture/internal/pkg/manager"
-	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/sink/pretty"
 	"couture/internal/pkg/sink/pretty/column"
@@ -37,7 +36,6 @@ var parser = kong.Must(&cli,
 		Summary:   true,
 		FlagsLast: true,
 	}),
-	kong.TypeMapper(reflect.TypeOf(model.Filter{}), filterDecoder()),
 	kong.TypeMapper(reflect.TypeOf(&time.Time{}), timeLikeDecoder()),
 	kong.Groups{
 		"diagnostic": "Diagnostic Options",

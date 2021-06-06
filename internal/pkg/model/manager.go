@@ -20,8 +20,20 @@ type Manager interface {
 	TrapSignals()
 }
 
+// FilterKind ...
+type FilterKind int
+
+const (
+	// Exclude ...
+	Exclude FilterKind = iota - 1
+	// Alert ...
+	Alert
+	// Include ...
+	Include
+)
+
 // Filter ...
 type Filter struct {
-	Pattern       regexp.Regexp
-	ShouldInclude bool
+	Pattern regexp.Regexp
+	Kind    FilterKind
 }

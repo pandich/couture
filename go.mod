@@ -18,6 +18,7 @@ require (
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e // indirect
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
+	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
 	github.com/i582/cfmt v1.3.0
 	github.com/iancoleman/strcase v0.1.3
 	github.com/joomcode/errorx v1.0.3
