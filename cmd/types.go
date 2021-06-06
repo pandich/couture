@@ -191,7 +191,7 @@ func timeLikeDecoder() kong.MapperFunc {
 }
 
 func (f filterLike) asFilters() ([]model.Filter, error) {
-	const alert = '!'
+	const alert = '@'
 	const include = '+'
 	const exclude = '-'
 
