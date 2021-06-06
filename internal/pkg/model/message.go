@@ -5,8 +5,8 @@ type (
 	// Message a message.
 	Message string
 
-	// Exception a stack trace.
-	Exception Message
+	// Error a stack trace.
+	Error Message
 )
 
 // Matches determines if an event Matches the filters criteria.

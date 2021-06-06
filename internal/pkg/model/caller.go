@@ -10,16 +10,16 @@ const (
 	NoLineNumber Line = 0
 )
 
-// Class ...
+// Entity ...
 type (
 	// Application the name of an application.
 	Application string
-	// Thread a thread name.
-	Thread string
-	// Class a class name.
-	Class string
-	// Method a method name.
-	Method string
+	// Context a context name.
+	Context string
+	// Entity a entity name.
+	Entity string
+	// Action a action name.
+	Action string
 	// Line  a line number.
 	Line uint64
 )
@@ -36,7 +36,7 @@ func (l *Line) UnmarshalJSON(bytes []byte) error {
 }
 
 // Abbreviate ...
-func (c Class) Abbreviate(maxWidth int) Class {
+func (c Entity) Abbreviate(maxWidth int) Entity {
 	var s = string(c)
 	var pieces = strings.Split(s, ".")
 	var l = len(s)
@@ -67,10 +67,10 @@ func (c Class) Abbreviate(maxWidth int) Class {
 	if l > maxWidth {
 		pieces[0] = pieces[0][len(pieces[0])-maxWidth:]
 	}
-	return Class(strings.Join(pieces, "."))
+	return Entity(strings.Join(pieces, "."))
 }
 
 // String ...
-func (threadName Thread) String() string {
-	return string(threadName)
+func (contextName Context) String() string {
+	return string(contextName)
 }

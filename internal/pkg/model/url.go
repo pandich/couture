@@ -64,7 +64,7 @@ func (u *SourceURL) QueryInt64(key string) (*int64, error) {
 }
 
 // Normalize fixes situations where scheme://some/path/list is given rather than scheme:///some/path/list.
-// In the first case this results in a hostname of some and a path of /path/list. This method rewrites it into the
+// In the first case this results in a hostname of some and a path of /path/list. This action rewrites it into the
 // proper second form.
 func (u *SourceURL) Normalize() {
 	if u.Host != "" {

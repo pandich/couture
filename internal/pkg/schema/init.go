@@ -7,11 +7,8 @@ import (
 
 func (schema *Schema) init(name string) {
 	schema.Name = name
-
 	schema.initPredicatePatterns()
-
 	schema.initCanHandle()
-
 	schema.initFields()
 }
 

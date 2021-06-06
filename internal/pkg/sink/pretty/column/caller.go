@@ -32,14 +32,14 @@ func (col callerColumn) RegisterStyles(theme theme.Theme) {
 
 	bgColor := theme.CallerBg()
 
-	cfmt.RegisterStyle("Class", func(s string) string {
-		return cfmt.Sprintf("{{"+prefix+"︎%s}}::bg"+bgColor+"|"+theme.ClassFg(), s)
+	cfmt.RegisterStyle("Entity", func(s string) string {
+		return cfmt.Sprintf("{{"+prefix+"︎%s}}::bg"+bgColor+"|"+theme.EntityFg(), s)
 	})
-	cfmt.RegisterStyle("MethodDelimiter", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+theme.MethodDelimiterFg(), s)
+	cfmt.RegisterStyle("ActionDelimiter", func(s string) string {
+		return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+theme.ActionDelimiterFg(), s)
 	})
-	cfmt.RegisterStyle("Method", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+theme.MethodFg(), s)
+	cfmt.RegisterStyle("Action", func(s string) string {
+		return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+theme.ActionFg(), s)
 	})
 	cfmt.RegisterStyle("LineNumberDelimiter", func(s string) string {
 		return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+theme.LineNumberDelimiterFg(), s)
@@ -51,11 +51,11 @@ func (col callerColumn) RegisterStyles(theme theme.Theme) {
 
 // Format ...
 func (col callerColumn) Format(_ uint, evt model.SinkEvent) string {
-	var s = "{{%s}}::Class"
-	if evt.Method != "" {
-		s += "{{∕}}::MethodDelimiter"
+	var s = "{{%s}}::Entity"
+	if evt.Action != "" {
+		s += "{{∕}}::ActionDelimiter"
 	}
-	s += "{{%s}}::Method"
+	s += "{{%s}}::Action"
 	if evt.Line != 0 {
 		s += "{{#}}::LineNumberDelimiter"
 	}
@@ -65,28 +65,28 @@ func (col callerColumn) Format(_ uint, evt model.SinkEvent) string {
 
 // Render ...
 func (col callerColumn) Render(_ config.Config, event model.SinkEvent) []interface{} {
-	const maxClassNameWidth = 30
+	const maxEntityNameWidth = 30
 	const maxWidth = 60
 
 	var padding = ""
-	var className = orNoValue(string(event.Class.Abbreviate(maxClassNameWidth)))
-	var methodName = string(event.Method)
+	var entityName = orNoValue(string(event.Entity.Abbreviate(maxEntityNameWidth)))
+	var actionName = string(event.Action)
 	var lineNumber = ""
 	if event.Line != 0 {
 		lineNumber = fmt.Sprintf("%4d", event.Line)
 	}
-	totalLength := len(className) + len(methodName) + len(lineNumber)
+	totalLength := len(entityName) + len(actionName) + len(lineNumber)
 	for i := totalLength; i < maxWidth; i++ {
 		padding += " "
 	}
 	extraChars := totalLength - maxWidth
 	if extraChars > 0 {
-		methodName = methodName[:len(methodName)-extraChars-1]
+		actionName = actionName[:len(actionName)-extraChars-1]
 	}
 
 	return []interface{}{
-		padding + className,
-		methodName,
+		padding + entityName,
+		actionName,
 		lineNumber,
 	}
 }

@@ -12,12 +12,12 @@ logstash:
     timestamp: "@timestamp"
     level: level
     application: application
-    thread: thread_name
-    class: class
-    method: method
+    context: thread_name
+    entity: class
+    action: method
     line: line_number
     message: message
-    exception: exception.stacktrace
+    error: exception.stacktrace
 
 cloudwatch-event:
   format: json
@@ -26,9 +26,9 @@ cloudwatch-event:
   mapping:
     timestamp: "@timestamp"
     application: tag
-    thread: id
-    class: logGroup
-    method: logStream
+    context: id
+    entity: logGroup
+    action: logStream
     message: log
 
 ecs:
@@ -40,24 +40,24 @@ ecs:
     timestamp: "@timestamp"
     application: container_name
     message: log
-    thread: vpc_id
-    class: environment
-    method: instance_id
+    context: vpc_id
+    entity: environment
+    action: instance_id
 
 aws-billing-report:
   format: text
   priority: 90
   predicates:
-    _: "^(?P<message>REPORT (?P<class>RequestId):\\s+(?P<method>\\S+)\\s+.+)(?P<level>)(?P<thread>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<exception>)$"
+    _: "^(?P<message>REPORT (?P<entity>RequestId):\\s+(?P<action>\\S+)\\s+.+)(?P<level>)(?P<context>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<error>)$"
 
 aws-billing-start:
   format: text
   priority: 90
   predicates:
-    _: "^(?P<message>START (?P<class>RequestId):(?P<method>\\s+\\S+).+)(?P<level>)(?P<thread>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<exception>)$"
+    _: "^(?P<message>START (?P<entity>RequestId):(?P<action>\\s+\\S+).+)(?P<level>)(?P<context>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<error>)$"
 
 aws-billing-end:
   format: text
   priority: 90
   predicates:
-    _: "^(?P<message>END (?P<class>RequestId):\\s+(?P<method>\\S+)\\s+.+)(?P<level>)(?P<thread>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<exception>)$"
+    _: "^(?P<message>END (?P<entity>RequestId):\\s+(?P<action>\\S+)\\s+.+)(?P<level>)(?P<context>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<error>)$"

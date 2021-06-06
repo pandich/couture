@@ -1,11 +1,11 @@
 package schema
 
 import (
-	"fmt"
 	"github.com/tidwall/gjson"
-	"os"
 	"strings"
 )
+
+const textRootField = "_"
 
 // Guess ..
 func Guess(s string, schemasToCheck ...Schema) *Schema {
@@ -13,12 +13,6 @@ func Guess(s string, schemasToCheck ...Schema) *Schema {
 		if schema.canHandle(s) {
 			return &schema
 		}
-	}
-	const envKey = "COUTURE_DIE_ON_UNKNOWN"
-	const exitCode = 12
-	if os.Getenv(envKey) != "" {
-		fmt.Printf("unknown: %+v\n", s)
-		os.Exit(exitCode)
 	}
 	return nil
 }

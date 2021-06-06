@@ -4,7 +4,7 @@ var allColumns = []column{
 	newSourceColumn(),
 	newTimestampColumn(),
 	newApplicationColumn(),
-	newThreadColumn(),
+	newContextColumn(),
 	newCallerColumn(),
 	newLevelColumn(),
 	newMessageColumn(),

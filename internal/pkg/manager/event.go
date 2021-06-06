@@ -83,12 +83,12 @@ func updateEvent(event *model.Event, col string, field string, values map[string
 		}
 	case schema.Application:
 		event.Application = model.Application(value)
-	case schema.Thread:
-		event.Thread = model.Thread(value)
-	case schema.Class:
-		event.Class = model.Class(value)
-	case schema.Method:
-		event.Method = model.Method(value)
+	case schema.Context:
+		event.Context = model.Context(value)
+	case schema.Entity:
+		event.Entity = model.Entity(value)
+	case schema.Action:
+		event.Action = model.Action(value)
 	case schema.Line:
 		if rawValue.Exists() {
 			event.Line = model.Line(rawValue.Int())
@@ -103,8 +103,8 @@ func updateEvent(event *model.Event, col string, field string, values map[string
 		}
 	case schema.Message:
 		event.Message = model.Message(value)
-	case schema.Exception:
-		event.Exception = model.Exception(value)
+	case schema.Error:
+		event.Error = model.Error(value)
 	}
 }
 

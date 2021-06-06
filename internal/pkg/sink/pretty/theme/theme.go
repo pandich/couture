@@ -30,10 +30,10 @@ type (
 		Source          []columnStyle
 		Timestamp       columnStyle
 		Application     columnStyle
-		Thread          columnStyle
-		Class           columnStyle
-		MethodDelimiter columnStyle
-		Method          columnStyle
+		Context         columnStyle
+		Entity          columnStyle
+		ActionDelimiter columnStyle
+		Action          columnStyle
 		LineDelimiter   columnStyle
 		Line            columnStyle
 		Level           map[level.Level]columnStyle
@@ -96,19 +96,19 @@ func (theme Theme) StackTraceFg() string {
 	return fgHex(theme.Message[level.Error])
 }
 
-// ClassFg ...
-func (theme Theme) ClassFg() string {
-	return fgHex(theme.Class)
+// EntityFg ...
+func (theme Theme) EntityFg() string {
+	return fgHex(theme.Entity)
 }
 
-// MethodDelimiterFg ...
-func (theme Theme) MethodDelimiterFg() string {
-	return fgHex(theme.MethodDelimiter)
+// ActionDelimiterFg ...
+func (theme Theme) ActionDelimiterFg() string {
+	return fgHex(theme.ActionDelimiter)
 }
 
-// MethodFg ...
-func (theme Theme) MethodFg() string {
-	return fgHex(theme.Method)
+// ActionFg ...
+func (theme Theme) ActionFg() string {
+	return fgHex(theme.Action)
 }
 
 // LineNumberDelimiterFg ...
@@ -121,14 +121,14 @@ func (theme Theme) LineNumberFg() string {
 	return fgHex(theme.Line)
 }
 
-// ThreadFg ...
-func (theme Theme) ThreadFg() string {
-	return fgHex(theme.Thread)
+// ContextFg ...
+func (theme Theme) ContextFg() string {
+	return fgHex(theme.Context)
 }
 
 // CallerBg ...
 func (theme Theme) CallerBg() string {
-	return bgHex(theme.Class)
+	return bgHex(theme.Entity)
 }
 
 // SourceColor returns a color for a source. When consistentColors is true, sources will get the same

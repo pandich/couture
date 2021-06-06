@@ -33,9 +33,24 @@ func init() {
 func (mgr *busManager) createChannels() (chan source.Event, chan model.SinkEvent, chan source.Error) {
 	errChan := mgr.makeErrChan()
 	alertChan := mgr.makeAlertChan(errChan)
+	unknownChan := mgr.makeUnknownhan()
 	snkChan := mgr.makeSnkChan(errChan)
-	srcChan := mgr.makeSrcChan(snkChan, alertChan)
+	srcChan := mgr.makeSrcChan(snkChan, alertChan, unknownChan)
 	return srcChan, snkChan, errChan
+}
+
+func (mgr *busManager) makeUnknownhan() chan string {
+	unknownChan := make(chan string)
+	go func() {
+		enabled := os.Getenv("COUTURE_LOG_UNKNOWN") != ""
+		for {
+			s := <-unknownChan
+			if enabled {
+				fmt.Fprintln(os.Stderr, s)
+			}
+		}
+	}()
+	return unknownChan
 }
 
 func (mgr *busManager) makeAlertChan(errChan chan source.Error) chan model.SinkEvent {
@@ -87,7 +102,11 @@ func (mgr *busManager) makeErrChan() chan source.Error {
 	return errChan
 }
 
-func (mgr *busManager) makeSrcChan(snkChan chan model.SinkEvent, alertChan chan model.SinkEvent) chan source.Event {
+func (mgr *busManager) makeSrcChan(
+	snkChan chan model.SinkEvent,
+	alertChan chan model.SinkEvent,
+	unknownChan chan string,
+) chan source.Event {
 	srcChan := make(chan source.Event)
 	go func() {
 		defer close(srcChan)
@@ -101,6 +120,9 @@ func (mgr *busManager) makeSrcChan(snkChan chan model.SinkEvent, alertChan chan 
 			).(metrics.Meter)
 			srcChanSrcMeter.Mark(1)
 			sch := schema.Guess(sourceEvent.Event, mgr.config.Schemas...)
+			if sch == nil {
+				unknownChan <- sourceEvent.Event
+			}
 			modelEvent := unmarshallEvent(sch, sourceEvent.Event)
 			filterKind := mgr.filter(modelEvent)
 			evt := model.SinkEvent{

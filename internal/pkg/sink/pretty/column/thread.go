@@ -5,20 +5,20 @@ import (
 	"couture/internal/pkg/sink/pretty/theme"
 )
 
-type threadColumn struct {
+type contextColumn struct {
 	weightedColumn
 }
 
-func newThreadColumn() column {
+func newContextColumn() column {
 	const weight = 20
 	sigil := '⇶'
-	return threadColumn{newWeightedColumn(
-		"thread",
+	return contextColumn{newWeightedColumn(
+		"context",
 		&sigil,
 		weight,
-		func(th theme.Theme) string { return th.ThreadFg() },
+		func(th theme.Theme) string { return th.ContextFg() },
 		func(event model.SinkEvent) []interface{} {
-			return []interface{}{orNoValue(string(event.Thread))}
+			return []interface{}{orNoValue(string(event.Context))}
 		},
 	)}
 }

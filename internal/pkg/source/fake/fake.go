@@ -72,20 +72,20 @@ func (src fakeSource) Start(
 	const maxLineNumber = 200
 	nonErrorLevels := []level.Level{level.Trace, level.Debug, level.Info, level.Warn}
 
-	messageGenerator, exceptionGenerator := src.textGenerators()
-	jsonMessageGenerater, jsonExceptionGenerator := src.jsonGenerators()
+	messageGenerator, errorGenerator := src.textGenerators()
+	jsonMessageGenerater, jsonErrorGenerator := src.jsonGenerators()
 
 	go func() {
 		defer wg.Done()
 		for running() {
-			var exception string
+			var errString string
 			index := rand.Intn(len(nonErrorLevels))
 			var lvl = nonErrorLevels[index]
 			if rand.Intn(maxPercent) > errorThresholdPercent {
 				if rand.Intn(10) > 2 {
-					exception = jsonExceptionGenerator()
+					errString = jsonErrorGenerator()
 				} else {
-					exception = exceptionGenerator()
+					errString = errorGenerator()
 				}
 				lvl = level.Error
 			}
@@ -95,11 +95,11 @@ func (src fakeSource) Start(
 			} else {
 				message = messageGenerator()
 			}
-			hasException := exception != ""
+			hasError := errString != ""
 			event := source.Event{
 				Source: src,
 				Event: fmt.Sprintf(
-					src.getFormat(hasException),
+					src.getFormat(hasError),
 					time.Now().Format(time.RFC3339),
 					lvl,
 					message,
@@ -108,7 +108,7 @@ func (src fakeSource) Start(
 					rand.Uint64()%maxLineNumber,
 					src.faker.Adverb(),
 					src.faker.AppName(),
-					exception,
+					errString,
 				),
 			}
 			srcChan <- event
@@ -151,7 +151,7 @@ func (src fakeSource) jsonGenerators() (func() string, func() string) {
 
 		return strings.ReplaceAll(string(ba), `"`, `\"`)
 	}
-	exceptionGenerator := func() string {
+	errorGenerator := func() string {
 		ba, err := src.faker.JSON(&gofakeit.JSONOptions{
 			Type:     "object",
 			RowCount: 10,
@@ -166,10 +166,10 @@ func (src fakeSource) jsonGenerators() (func() string, func() string) {
 		}
 		return strings.ReplaceAll(string(ba), `"`, `\"`)
 	}
-	return messageGenerator, exceptionGenerator
+	return messageGenerator, errorGenerator
 }
 
-func (src fakeSource) getFormat(hasException bool) string {
+func (src fakeSource) getFormat(hasError bool) string {
 	var format = "{" +
 		`"@version":1,` +
 		`"@timestamp":"%s",` +
@@ -180,7 +180,7 @@ func (src fakeSource) getFormat(hasException bool) string {
 		`"line_number":%d,` +
 		`"thread_name":"%s",` +
 		`"class":"%s"`
-	if hasException {
+	if hasError {
 		format += `,"exception":{"stacktrace":"%s"}`
 	} else {
 		format += "%s"
@@ -201,14 +201,14 @@ func (src fakeSource) textGenerators() (func() string, func() string) {
 		}
 		return strings.Join(sentences, "")
 	}
-	var exceptionGenerator = func() string {
+	var errorGenerator = func() string {
 		var sentences []string
 		for i := 0; i < paragraphLength; i++ {
 			sentences = append(sentences, sentenceGenerator(sentenceLength))
 		}
 		return strings.Join(sentences, "\\n")
 	}
-	return messageGenerator, exceptionGenerator
+	return messageGenerator, errorGenerator
 }
 
 func getFakerArg(sourceURL model.SourceURL) *gofakeit.Faker {

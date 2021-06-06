@@ -15,16 +15,16 @@ type Event struct {
 	Message Message `json:"message" regroup:"message"`
 	// Application is the name of the application that generated this event. This field is optional.
 	Application Application `json:"application" regroup:"application"`
-	// Method the method name. This field is optional.
-	Method Method `json:"method" regroup:"method"`
+	// Action the action name. This field is optional.
+	Action Action `json:"action" regroup:"action"`
 	// Line the line number. This field is optional.
 	Line Line `json:"line" regroup:"line"`
-	// Thread the thread name. This field is optional.
-	Thread Thread `json:"thread" regroup:"thread"`
-	// Class the class name. This field is optional.
-	Class Class `json:"class" regroup:"class"`
-	// Exception the exception. This field is optional.
-	Exception Exception `json:"exception" regroup:"exception"`
+	// Context the context name. This field is optional.
+	Context Context `json:"context" regroup:"context"`
+	// Entity the entity name. This field is optional.
+	Entity Entity `json:"entity" regroup:"entity"`
+	// Error the error. This field is optional.
+	Error Error `json:"error" regroup:"error"`
 }
 
 // SinkEvent ...

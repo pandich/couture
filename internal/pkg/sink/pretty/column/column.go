@@ -22,7 +22,7 @@ var DefaultColumns = []string{
 	"source",
 	"timestamp",
 	"application",
-	"thread",
+	"context",
 	"caller",
 	"level",
 	"message",

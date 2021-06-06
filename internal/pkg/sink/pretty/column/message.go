@@ -84,15 +84,15 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) []inte
 	}
 	message += col.levelSprintf("", "", event.Level, message)
 
-	var exception = string(event.Exception)
-	if exception != "" {
+	var errString = string(event.Error)
+	if errString != "" {
 		if cfg.ExpandJSON {
-			if s, ok := expandJSON(exception); ok {
-				exception = s
+			if s, ok := expandJSON(errString); ok {
+				errString = s
 			}
 		}
 		message += "\n" + indent.String(
-			col.levelSprintf("", errorSuffix, event.Level, exception),
+			col.levelSprintf("", errorSuffix, event.Level, errString),
 			4)
 	}
 

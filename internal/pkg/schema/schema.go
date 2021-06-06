@@ -5,8 +5,6 @@ import (
 	"regexp"
 )
 
-const textRootField = "_"
-
 const (
 	// Timestamp ...
 	Timestamp = "timestamp"
@@ -16,44 +14,36 @@ const (
 	Message = "message"
 	// Application ...
 	Application = "application"
-	// Method ...
-	Method = "method"
+	// Action function, method, etc.
+	Action = "action"
 	// Line ...
 	Line = "line"
-	// Thread ...
-	Thread = "thread"
-	// Class ...
-	Class = "class"
-	// Exception ...
-	Exception = "exception"
+	// Context thread, session id, or some other execution context.
+	Context = "context"
+	// Entity class, struct, etc.
+	Entity = "entity"
+	// Error ...
+	Error = "error"
 )
 
 const (
 	// JSON ...
-	JSON format = "json"
+	JSON = "json"
 	// Text ...
-	Text format = "text"
+	Text = "text"
 )
 
-type (
-	canHandle func(s string) bool
-
-	priority = uint8
-
-	format string
-
-	// Schema ...
-	Schema struct {
-		Name                     string            `yaml:"-"`
-		Format                   format            `yaml:"format,omitempty"`
-		Priority                 priority          `yaml:"priority,omitempty"`
-		PredicatesByField        map[string]string `yaml:"predicates,omitempty"`
-		FieldByColumn            map[string]string `yaml:"mapping,omitempty"`
-		TemplateByColumn         map[string]string `yaml:"display,omitempty"`
-		Fields                   []string
-		canHandle                canHandle
-		predicatePatternsByField map[string]*regexp.Regexp
-		predicateFields          []string
-		TextPattern              *regroup.ReGroup
-	}
-)
+// Schema ...
+type Schema struct {
+	Name                     string            `yaml:"-"`
+	Format                   string            `yaml:"format,omitempty"`
+	Priority                 uint8             `yaml:"priority,omitempty"`
+	PredicatesByField        map[string]string `yaml:"predicates,omitempty"`
+	FieldByColumn            map[string]string `yaml:"mapping,omitempty"`
+	TemplateByColumn         map[string]string `yaml:"display,omitempty"`
+	Fields                   []string
+	TextPattern              *regroup.ReGroup
+	canHandle                func(s string) bool
+	predicatePatternsByField map[string]*regexp.Regexp
+	predicateFields          []string
+}
