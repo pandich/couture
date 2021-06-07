@@ -196,11 +196,15 @@ func (src cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
 			} else {
 				message = model.Message(stackEvent.ResourceStatus)
 			}
+			var entity = model.Entity(*stackEvent.StackName)
+			if s := stackEvent.PhysicalResourceId; s != nil && *s != "" {
+				entity = model.Entity(*s)
+			}
 			event := model.Event{
 				Timestamp:   model.Timestamp(*stackEvent.Timestamp),
 				Application: model.Application(*stackEvent.ResourceType),
 				Context:     model.Context(*stackEvent.EventId),
-				Entity:      model.Entity(*stackEvent.PhysicalResourceId),
+				Entity:      entity,
 				Action:      model.Action(""),
 				Line:        model.NoLineNumber,
 				Level:       lvl,
