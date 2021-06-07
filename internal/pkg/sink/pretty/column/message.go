@@ -115,17 +115,6 @@ func (col messageColumn) RenderValue(cfg config.Config, event model.SinkEvent) [
 // Helpers
 //
 
-func (col messageColumn) prefix(cfg config.Config, evt model.SinkEvent) string {
-	var s = " "
-	if col.sigil != nil {
-		s += string(*col.sigil) + " "
-	}
-	if cfg.ShowSchema {
-		s += "[" + evt.Schema.Name + "] "
-	}
-	return " " + col.levelSprintf(s, sigilSuffix, evt.Level, "") + " "
-}
-
 func (col messageColumn) levelSprintf(prefix string, suffix string, lvl level.Level, s interface{}) string {
 	return cfmt.Sprintf("{{"+prefix+"%s}}::"+col.levelStyleName(suffix, lvl), s)
 }
