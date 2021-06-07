@@ -26,14 +26,10 @@ type messageColumn struct {
 }
 
 func newMessageColumn() messageColumn {
-	sigil := '▸'
-
 	return messageColumn{
 		baseColumn: baseColumn{
-			columnName:  "message",
-			widthMode:   filling,
-			widthWeight: 0,
-			sigil:       &sigil,
+			columnName: "message",
+			widthMode:  filling,
 		},
 		bgColorSeq: map[level.Level]string{},
 	}
@@ -105,8 +101,6 @@ func (col messageColumn) RenderValue(cfg config.Config, event model.SinkEvent) [
 			}
 		}
 	}
-
-	message = col.prefix(cfg, event) + message
 
 	if cfg.Multiline || expanded {
 		message = "\n" + message
