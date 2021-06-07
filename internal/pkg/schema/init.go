@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"fmt"
 	"github.com/oriser/regroup"
 	"regexp"
 )
@@ -29,7 +30,29 @@ func (schema *Schema) initCanHandle() {
 	case JSON:
 		schema.canHandle = schema.canHandleJSON
 	case Text:
-		schema.TextPattern = regroup.MustCompile(schema.predicatePatternsByField[textRootField].String())
+		var pattern = schema.predicatePatternsByField[textRootField].String()
+		re := regexp.MustCompile(pattern)
+		names := map[string]bool{
+			Timestamp:   false,
+			Level:       false,
+			Message:     false,
+			Application: false,
+			Action:      false,
+			Line:        false,
+			Context:     false,
+			Entity:      false,
+			Error:       false,
+		}
+		for i := 0; i < re.NumSubexp(); i++ {
+			names[re.SubexpNames()[i+1]] = true
+		}
+
+		for name, ok := range names {
+			if !ok {
+				pattern += fmt.Sprintf("(?P<%s>)", name)
+			}
+		}
+		schema.TextPattern = regroup.MustCompile(pattern)
 		schema.canHandle = schema.canHandleText
 	}
 }

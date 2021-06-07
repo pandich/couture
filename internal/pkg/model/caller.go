@@ -64,9 +64,6 @@ func (c Entity) Abbreviate(maxWidth int) Entity {
 			}
 		}
 	}
-	if l > maxWidth {
-		pieces[0] = pieces[0][len(pieces[0])-maxWidth:]
-	}
 	return Entity(strings.Join(pieces, "."))
 }
 

@@ -65,28 +65,32 @@ func (col callerColumn) RenderFormat(_ uint, evt model.SinkEvent) string {
 
 // RenderValue ...
 func (col callerColumn) RenderValue(_ config.Config, event model.SinkEvent) []interface{} {
-	const maxEntityNameWidth = 30
-	const maxWidth = 60
+	const maxWidth = 54
 
-	var padding = ""
-	var entityName = orNoValue(string(event.Entity.Abbreviate(maxEntityNameWidth)))
+	var entityName = orNoValue(string(event.Entity.Abbreviate(maxWidth)))
 	var actionName = string(event.Action)
 	var lineNumber = ""
 	if event.Line != 0 {
 		lineNumber = fmt.Sprintf("%4d", event.Line)
 	}
-	totalLength := len(entityName) + len(actionName) + len(lineNumber)
+	var totalLength = len(entityName) + len(actionName) + len(lineNumber)
+
+	// pad
 	for i := totalLength; i < maxWidth; i++ {
-		padding += " "
-	}
-	extraChars := totalLength - maxWidth
-	if extraChars > 0 {
-		actionName = actionName[:len(actionName)-extraChars-1]
+		entityName = " " + entityName
+		totalLength++
 	}
 
-	return []interface{}{
-		padding + entityName,
-		actionName,
-		lineNumber,
+	// trim
+	var overage = totalLength - maxWidth
+	if l := len(entityName) - overage; overage > 0 && l >= 0 {
+		entityName = entityName[len(entityName)-l:]
+		overage -= l
 	}
+	if l := len(actionName) - overage; overage > 0 && l >= 0 {
+		actionName = actionName[l:]
+	}
+
+	// return
+	return []interface{}{entityName, actionName, lineNumber}
 }

@@ -76,18 +76,18 @@ func (col messageColumn) RenderValue(cfg config.Config, event model.SinkEvent) [
 	}
 	var expanded = false
 	var message = string(event.Message)
-	if cfg.ExpandJSON {
-		if s, ok := expandJSON(message); ok {
+	if cfg.Expand {
+		if s, ok := expand(message); ok {
 			expanded = true
 			message = s
 		}
 	}
-	message += col.levelSprintf("", "", event.Level, message)
+	message = col.levelSprintf("", "", event.Level, message)
 
 	var errString = string(event.Error)
 	if errString != "" {
-		if cfg.ExpandJSON {
-			if s, ok := expandJSON(errString); ok {
+		if cfg.Expand {
+			if s, ok := expand(errString); ok {
 				errString = s
 			}
 		}
@@ -146,7 +146,7 @@ func colorFormat(fgColor string, bgColor string) func(s string) string {
 	}
 }
 
-func expandJSON(in string) (string, bool) {
+func expand(in string) (string, bool) {
 	if in == "" {
 		return in, false
 	}

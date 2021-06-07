@@ -9,7 +9,7 @@ import (
 )
 
 func orNoValue(s string) string {
-	const noValue = "—"
+	const noValue = ""
 
 	if s == "" {
 		return noValue

@@ -1,7 +1,8 @@
-# TODO @Jim fix any problems in here, and add missing formats
-#   see:  parser_*.rb definitions in https://github.com/fluent/fluentd/tree/master/lib/fluent/plugin
-#         https://docs.fluentd.org/v/0.12/articles/common-log-formats
-#   see:  more format info in https://www.graylog.org/post/log-formats-a-complete-guide
+# TODO @Jim fix any problems in here, and add tests.
+
+#
+# Structured Formats
+#
 
 logstash:
   format: json
@@ -18,6 +19,9 @@ logstash:
     line: line_number
     message: message
     error: exception.stacktrace
+
+#
+# AWS
 
 cloudwatch-event:
   format: json
@@ -44,20 +48,43 @@ ecs:
     entity: environment
     action: instance_id
 
+
+#
+# Unstructured Formats
+#
+
+#
+# AWS Billing
+
 aws-billing-report:
   format: text
   priority: 90
   predicates:
-    _: "^(?P<message>REPORT (?P<entity>RequestId):\\s+(?P<action>\\S+)\\s+.+)(?P<level>)(?P<context>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<error>)$"
-
+    _: "^(?P<message>REPORT (?P<entity>RequestId):\\s+(?P<action>\\S+)\\s+.+)$"
 aws-billing-start:
   format: text
   priority: 90
   predicates:
-    _: "^(?P<message>START (?P<entity>RequestId):(?P<action>\\s+\\S+).+)(?P<level>)(?P<context>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<error>)$"
-
+    _: "^(?P<message>START (?P<entity>RequestId):(?P<action>\\s+\\S+).+)$"
 aws-billing-end:
   format: text
   priority: 90
   predicates:
-    _: "^(?P<message>END (?P<entity>RequestId):\\s+(?P<action>\\S+)\\s+.+)(?P<level>)(?P<context>)(?P<line>)(?P<application>)(?P<timestamp>)(?P<error>)$"
+    _: "^(?P<message>END (?P<entity>RequestId):\\s+(?P<action>\\S+)\\s+.+)$"
+
+
+#
+# Other
+
+# TODO syslog-rfc3164 untested
+syslog-rfc3164:
+  format: text
+  priority: 80
+  predicates:
+    _: "^(?P<timestamp>[A-Z][a-z][a-z]\\s{1,2}\\d{1,2}\\s\\d{2}[:]\\d{2}[:]\\d{2})\\s(?P<context>[\\w][\\w\\d\\.@-]*)\\s(?P<message>.*)$"
+# TODO syslog-rfc5424 untested
+syslog-rfc5424:
+  format: text
+  priority: 80
+  predicates:
+    _: "^(?P<timestamp>(\\d{4}[-]\\d{2}[-]\\d{2}[T]\\d{2}[:]\\d{2}[:]\\d{2}(?:\\.\\d{1,6})?(?:[+-]\\d{2}[:]\\d{2}|Z)?)|-)\\s(?P<context>([\\w][\\w\\d\\.@-]*)|-)\\s(?P<message>.*)$"

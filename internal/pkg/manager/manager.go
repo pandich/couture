@@ -46,6 +46,7 @@ type (
 	// Config ...
 	Config struct {
 		DumpMetrics bool
+		DumpUnknown bool
 		Level       level.Level
 		Since       *time.Time
 		Filters     []model.Filter

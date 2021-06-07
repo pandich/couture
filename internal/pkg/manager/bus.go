@@ -40,10 +40,9 @@ func (mgr *busManager) createChannels() (chan source.Event, chan model.SinkEvent
 func (mgr *busManager) makeUnknownhan() chan string {
 	unknownChan := make(chan string)
 	go func() {
-		enabled := os.Getenv("COUTURE_LOG_UNKNOWN") != ""
 		for {
 			s := <-unknownChan
-			if enabled {
+			if mgr.config.DumpUnknown {
 				fmt.Fprintln(os.Stderr, s)
 			}
 		}

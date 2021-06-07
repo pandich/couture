@@ -14,7 +14,7 @@ type Config struct {
 	Color            bool        `yaml:"color,omitempty"`
 	Columns          []string    `yaml:"columns,omitempty"`
 	ConsistentColors bool        `yaml:"consistent_colors,omitempty"`
-	ExpandJSON       bool        `yaml:"expand_json,omitempty"`
+	Expand           bool        `yaml:"expand,omitempty"`
 	Highlight        bool        `yaml:"highlight,omitempty"`
 	Multiline        bool        `yaml:"multiline,omitempty"`
 	Theme            theme.Theme `yaml:"theme,omitempty"`

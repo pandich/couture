@@ -7,9 +7,10 @@ import (
 
 //nolint:lll
 var cli struct {
-	Metrics    dumpMetrics `group:"diagnostic" hidden:"true" default:"false" negatable:"true"`
-	RateLimit  rateLimit   `group:"diagnostic" hidden:"true" default:"0" env:"COUTURE_RATE_LIMIT"`
-	ShowSchema showSchema  `group:"diagnostic" hidden:"true" default:"false" negatable:"true" env:"COUTURE_SHOW_SCHEMA"`
+	DumpMetrics dumpMetrics `group:"diagnostic" hidden:"true" default:"false"`
+	DumpUnknown dumpUnknown `group:"diagnostic" hidden:"true" default:"false"`
+	RateLimit   rateLimit   `group:"diagnostic" hidden:"true" default:"0" env:"COUTURE_RATE_LIMIT"`
+	ShowSchema  showSchema  `group:"diagnostic" hidden:"true" default:"false" env:"COUTURE_SHOW_SCHEMA"`
 
 	TTY        tty        `group:"terminal" help:"Force TTY mode." short:"T" default:"false"`
 	Color      color      `group:"terminal" help:"Force Color mode." short:"T" default:"true" negatable:"true"`
@@ -20,7 +21,7 @@ var cli struct {
 	Theme            themeName        `group:"display" help:"Specify the core Theme color: ${enum}." placeholder:"Theme" default:"${defaultTheme}" enum:"${themeNames}" env:"COUTURE_THEME"`
 	ConsistentColors consistentColors `group:"display" help:"Maintain consistent source URL colors between runs." negatable:"true" default:"true"`
 	Multiline        multiline        `group:"display" help:"Display each log event in multiline format. (Enabled by --expand-json)" negatable:"true" default:"false"`
-	ExpandJSON       expandJSON       `group:"display" help:"Example JSON message bodies. Warning: has a significant performance impact." negatable:"true" default:"false"`
+	Expand           expand           `group:"display" help:"Example structured message bodies (e.g. JSON)." negatable:"true" default:"false"`
 
 	Level     levelLike  `group:"filter" help:"The minimum log level to display: ${enum}." default:"${defaultLogLevel}" placeholder:"level" short:"l" enum:"${logLevels}" env:"COUTURE_LEVEL"`
 	Since     *time.Time `group:"filter" help:"How far back to look for events. Parses most time and duration formats including human friendly." placeholder:"(time|duration)" short:"s" env:"COUTURE_SINCE"`

@@ -38,7 +38,7 @@ type (
 	color            bool
 	columns          []string
 	consistentColors bool
-	expandJSON       bool
+	expand           bool
 	levelLike        level.Level
 	highlight        bool
 	multiline        bool
@@ -48,6 +48,7 @@ type (
 	width            uint
 	wrap             bool
 	dumpMetrics      bool
+	dumpUnknown      bool
 	showSchema       bool
 	rateLimit        uint
 	filterLike       []string
@@ -71,7 +72,7 @@ func (v consistentColors) AfterApply() error { prettyConfig.ConsistentColors = b
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v expandJSON) AfterApply() error { prettyConfig.ExpandJSON = bool(v); return nil }
+func (v expand) AfterApply() error { prettyConfig.Expand = bool(v); return nil }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -96,6 +97,10 @@ func (v wrap) AfterApply() error { prettyConfig.Wrap = bool(v); return nil }
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v dumpMetrics) AfterApply() error { managerConfig.DumpMetrics = bool(v); return nil }
+
+// AfterApply ...
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (v dumpUnknown) AfterApply() error { managerConfig.DumpUnknown = bool(v); return nil }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers

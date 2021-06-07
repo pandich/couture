@@ -187,25 +187,27 @@ func (src cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
 	var events []model.SinkEvent
 	for _, stackEvent := range stackEvents.StackEvents {
 		if src.lookbackTime == nil || src.lookbackTime.Before(*stackEvent.Timestamp) {
-			lvl := logLevelByResourceStatus[stackEvent.ResourceStatus]
-
+			var message model.Message
 			var evtError model.Error
+
+			lvl := logLevelByResourceStatus[stackEvent.ResourceStatus]
 			if lvl == level.Error {
-				evtError = model.Error(*stackEvent.ResourceStatusReason)
+				evtError = model.Error(stackEvent.ResourceStatus)
+			} else {
+				message = model.Message(stackEvent.ResourceStatus)
 			}
-			events = append(events, model.SinkEvent{
-				Event: model.Event{
-					Timestamp: model.Timestamp(*stackEvent.Timestamp),
-					Context:   "cloudformation",
-					Entity:    model.Entity(*stackEvent.StackName),
-					Action:    model.Action(*stackEvent.EventId),
-					Line:      model.NoLineNumber,
-					Level:     lvl,
-					Message:   model.Message(stackEvent.ResourceStatus),
-					Error:     evtError,
-				},
-				SourceURL: src.URL(),
-			})
+			event := model.Event{
+				Timestamp:   model.Timestamp(*stackEvent.Timestamp),
+				Application: model.Application(*stackEvent.ResourceType),
+				Context:     model.Context(*stackEvent.EventId),
+				Entity:      model.Entity(*stackEvent.PhysicalResourceId),
+				Action:      model.Action(""),
+				Line:        model.NoLineNumber,
+				Level:       lvl,
+				Message:     message,
+				Error:       evtError,
+			}
+			events = append(events, model.SinkEvent{Event: event, SourceURL: src.URL()})
 		}
 	}
 	return events, nil
