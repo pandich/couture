@@ -3,8 +3,8 @@ package column
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/sink/pretty/config"
-	"couture/internal/pkg/sink/pretty/theme"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/indent"
 	"github.com/muesli/termenv"
@@ -72,7 +72,7 @@ func (col messageColumn) RenderValue(cfg config.Config, event model.SinkEvent) [
 	}
 	var expanded = false
 	var message = string(event.Message)
-	if cfg.Expand {
+	if cfg.Expand != nil && *cfg.Expand {
 		if s, ok := expand(message); ok {
 			expanded = true
 			message = s
@@ -82,7 +82,7 @@ func (col messageColumn) RenderValue(cfg config.Config, event model.SinkEvent) [
 
 	var errString = string(event.Error)
 	if errString != "" {
-		if cfg.Expand {
+		if cfg.Expand != nil && *cfg.Expand {
 			if s, ok := expand(errString); ok {
 				errString = s
 			}
@@ -92,7 +92,7 @@ func (col messageColumn) RenderValue(cfg config.Config, event model.SinkEvent) [
 			4)
 	}
 
-	if cfg.Highlight {
+	if cfg.Highlight != nil && *cfg.Highlight {
 		for _, filter := range event.Filters {
 			if filter.Kind.IsHighlighted() {
 				message = filter.Pattern.ReplaceAllStringFunc(message, func(s string) string {
@@ -102,7 +102,7 @@ func (col messageColumn) RenderValue(cfg config.Config, event model.SinkEvent) [
 		}
 	}
 
-	if cfg.Multiline || expanded {
+	if (cfg.Multiline != nil && *cfg.Multiline) || expanded {
 		message = "\n" + message
 	} else {
 		message = " " + message

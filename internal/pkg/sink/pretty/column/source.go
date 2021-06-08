@@ -2,8 +2,8 @@ package column
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/sink/pretty/config"
-	"couture/internal/pkg/sink/pretty/theme"
 	"couture/internal/pkg/source"
 	"crypto/sha256"
 	"encoding/hex"

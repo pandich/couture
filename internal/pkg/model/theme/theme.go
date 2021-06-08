@@ -1,43 +1,51 @@
 package theme
 
 import (
+	"couture/internal/pkg/couture"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
+	"gopkg.in/yaml.v3"
+	"io/ioutil"
 	"math/rand"
 )
 
-var (
-	// Default ...
-	Default = prince
+// Prince ...
+const Prince = "prince"
 
-	// Registry is the registry of theme names to their structs.
-	Registry = map[string]Theme{}
+// Registry is the registry of theme names to their structs.
+var Registry = map[string]Theme{
+	Prince: mustLoad(Prince),
+}
 
-	// Names ...
-	Names []string
-)
+// Names all available theme names.
+func Names() []string {
+	var names []string
+	for k := range Registry {
+		names = append(names, k)
+	}
+	return names
+}
 
 type (
-	// columnStyle ...
 	columnStyle struct {
-		Fg string
-		Bg string
+		Fg string `yaml:"fg"`
+		Bg string `yaml:"bg"`
 	}
 
 	// Theme ...
 	Theme struct {
-		Legend          columnStyle
-		Source          []columnStyle
-		Timestamp       columnStyle
-		Application     columnStyle
-		Context         columnStyle
-		Entity          columnStyle
-		ActionDelimiter columnStyle
-		Action          columnStyle
-		LineDelimiter   columnStyle
-		Line            columnStyle
-		Level           map[level.Level]columnStyle
-		Message         map[level.Level]columnStyle
+		Legend          columnStyle                 `yaml:"legend"`
+		Source          []columnStyle               `yaml:"source"`
+		Timestamp       columnStyle                 `yaml:"timestamp"`
+		Application     columnStyle                 `yaml:"application"`
+		Context         columnStyle                 `yaml:"context"`
+		Entity          columnStyle                 `yaml:"entity"`
+		ActionDelimiter columnStyle                 `yaml:"action_delimiter"`
+		Action          columnStyle                 `yaml:"action"`
+		LineDelimiter   columnStyle                 `yaml:"line_delimiter"`
+		Line            columnStyle                 `yaml:"line"`
+		Level           map[level.Level]columnStyle `yaml:"level"`
+		Message         map[level.Level]columnStyle `yaml:"message"`
 	}
 )
 
@@ -151,14 +159,30 @@ func bgHex(style columnStyle) string {
 	return style.Bg
 }
 
-func register(name string, theme Theme) {
-	Names = append(Names, name)
-	Registry[name] = theme
+func load(name string) (*Theme, error) {
+	f, err := couture.Open("/themes/" + name + ".yaml")
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+
+	var theme Theme
+	err = yaml.Unmarshal(b, &theme)
+	if err != nil {
+		return nil, err
+	}
+	return &theme, nil
 }
 
-func style(fg string, bg string) columnStyle {
-	return columnStyle{
-		Fg: fg,
-		Bg: bg,
+func mustLoad(name string) Theme {
+	theme, err := load(name)
+	if err != nil {
+		panic(err)
 	}
+	return *theme
 }

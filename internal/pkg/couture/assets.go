@@ -17,7 +17,6 @@ func init() {
 }
 
 // Open ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
 func Open(name string) (http.File, error) {
 	return fileSystem.Open(name)
 }

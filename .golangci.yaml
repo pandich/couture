@@ -46,14 +46,14 @@ linters:
     - whitespace
 
 linters-settings:
-  lll:
-    line-length: 132
   forbidigo:
     forbid:
       - fmt.Errorf
   gocritic:
     disabled-checks:
       - singleCaseSwitch
+  lll:
+    line-length: 132
 
 run:
   skip-files:

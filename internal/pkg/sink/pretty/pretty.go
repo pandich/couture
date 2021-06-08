@@ -9,9 +9,6 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
-// Name ...
-const Name = "pretty"
-
 // prettySink provides render output.
 type prettySink struct {
 	terminalWidth uint
@@ -23,7 +20,9 @@ type prettySink struct {
 // New provides a configured prettySink sink.
 func New(cfg config.Config) *sink.Sink {
 	switch {
-	case cfg.Color, cfg.EffectiveIsTTY():
+	case cfg.Color != nil && !*cfg.Color:
+		cfmt.DisableColors()
+	case cfg.EffectiveIsTTY():
 		cfmt.EnableColors()
 	default:
 		cfmt.DisableColors()
@@ -44,7 +43,8 @@ func New(cfg config.Config) *sink.Sink {
 func (snk *prettySink) Init(sources []*source.Source) {
 	var sourceColors = map[model.SourceURL]string{}
 	for _, src := range sources {
-		sourceColors[(*src).URL()] = column.RegisterSource(snk.config.Theme, snk.config.ConsistentColors, *src)
+		consistentColors := *snk.config.ConsistentColors
+		sourceColors[(*src).URL()] = column.RegisterSource(*snk.config.Theme, consistentColors, *src)
 	}
 }
 

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"couture/internal/pkg/sink/pretty/theme"
+	"couture/internal/pkg/model/theme"
 	"github.com/mattn/go-isatty"
 	"github.com/olekukonko/ts"
 	"os"
@@ -9,28 +9,28 @@ import (
 
 // Config ...
 type Config struct {
-	AutoResize       bool        `yaml:"auto_resize,omitempty"`
-	ShowSchema       bool        `yaml:"show_schema,omitempty"`
-	Color            bool        `yaml:"color,omitempty"`
-	Columns          []string    `yaml:"columns,omitempty"`
-	ConsistentColors bool        `yaml:"consistent_colors,omitempty"`
-	Expand           bool        `yaml:"expand,omitempty"`
-	Highlight        bool        `yaml:"highlight,omitempty"`
-	Multiline        bool        `yaml:"multiline,omitempty"`
-	Theme            theme.Theme `yaml:"theme,omitempty"`
-	TimeFormat       string      `yaml:"time_format,omitempty"`
-	TTY              bool        `yaml:"-"`
-	Width            uint        `yaml:"width,omitempty"`
-	Wrap             bool        `yaml:"wrap,omitempty"`
-	Out              *os.File    `yaml:"-"`
+	AutoResize       *bool        `yaml:"auto_resize,omitempty"`
+	ShowSchema       *bool        `yaml:"show_schema,omitempty"`
+	Color            *bool        `yaml:"color,omitempty"`
+	Columns          []string     `yaml:"columns,omitempty"`
+	ConsistentColors *bool        `yaml:"consistent_colors,omitempty"`
+	Expand           *bool        `yaml:"expand,omitempty"`
+	Highlight        *bool        `yaml:"highlight,omitempty"`
+	Multiline        *bool        `yaml:"multiline,omitempty"`
+	Theme            *theme.Theme `yaml:"theme,omitempty"`
+	TimeFormat       *string      `yaml:"time_format,omitempty"`
+	TTY              bool         `yaml:"-"`
+	Width            *uint        `yaml:"width,omitempty"`
+	Wrap             *bool        `yaml:"wrap,omitempty"`
+	Out              *os.File     `yaml:"-"`
 }
 
 // EffectiveTerminalWidth ...
 func (cfg Config) EffectiveTerminalWidth() uint {
-	if cfg.Width > 0 {
-		return cfg.Width
+	if cfg.Width != nil && *cfg.Width > 0 {
+		return *cfg.Width
 	}
-	if cfg.Wrap {
+	if cfg.Wrap != nil && *cfg.Wrap {
 		return uint(terminalWidth())
 	}
 	return 0
@@ -47,4 +47,47 @@ func terminalWidth() int {
 // EffectiveIsTTY ...
 func (cfg Config) EffectiveIsTTY() bool {
 	return isatty.IsTerminal(cfg.Out.Fd()) || cfg.TTY
+}
+
+// FillMissing ...
+func (cfg *Config) FillMissing(other Config) {
+	if cfg.AutoResize == nil {
+		cfg.AutoResize = other.AutoResize
+	}
+	if cfg.ShowSchema == nil {
+		cfg.ShowSchema = other.ShowSchema
+	}
+	if cfg.Color == nil {
+		cfg.Color = other.Color
+	}
+	if cfg.Columns == nil {
+		cfg.Columns = other.Columns
+	}
+	if cfg.ConsistentColors == nil {
+		cfg.ConsistentColors = other.ConsistentColors
+	}
+	if cfg.Expand == nil {
+		cfg.Expand = other.Expand
+	}
+	if cfg.Highlight == nil {
+		cfg.Highlight = other.Highlight
+	}
+	if cfg.Multiline == nil {
+		cfg.Multiline = other.Multiline
+	}
+	if cfg.Theme == nil {
+		cfg.Theme = other.Theme
+	}
+	if cfg.TimeFormat == nil {
+		cfg.TimeFormat = other.TimeFormat
+	}
+	if cfg.Width == nil {
+		cfg.Width = other.Width
+	}
+	if cfg.Wrap == nil {
+		cfg.Wrap = other.Wrap
+	}
+	if cfg.Out == nil {
+		cfg.Out = other.Out
+	}
 }

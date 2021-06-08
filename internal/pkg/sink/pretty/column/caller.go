@@ -2,8 +2,8 @@ package column
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/sink/pretty/config"
-	"couture/internal/pkg/sink/pretty/theme"
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 )

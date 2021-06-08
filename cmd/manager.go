@@ -15,10 +15,6 @@ import (
 	"path"
 )
 
-var prettyConfig = config.Config{
-	Out: os.Stdout,
-}
-
 var managerConfig = manager.Config{}
 
 // Run runs the manager using the CLI arguments.
@@ -42,10 +38,10 @@ func parseInputs() []interface{} {
 	args, err := expandAliases(args)
 	maybeDie(err)
 
-	err = loadConfig()
+	_, err = parser.Parse(args)
 	maybeDie(err)
 
-	_, err = parser.Parse(args)
+	err = loadSinkConfig()
 	maybeDie(err)
 
 	options, err := getOptions()
@@ -89,27 +85,31 @@ func getOptions() ([]interface{}, error) {
 	return options, nil
 }
 
-func loadConfig() error {
+func loadConfig() (*config.Config, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	filename := path.Join(home, ".config", couture.Name, "config.yaml")
 	if !fileutil.Exist(filename) {
-		return nil
+		return &config.Config{}, nil
 	}
 
 	f, err := os.Open(filename)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	defer f.Close()
 	text, err := ioutil.ReadAll(f)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	return yaml.Unmarshal(text, &prettyConfig)
+	var c config.Config
+	err = yaml.Unmarshal(text, &c)
+	if err != nil {
+		return nil, err
+	}
+	return &c, nil
 }

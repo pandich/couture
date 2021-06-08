@@ -2,8 +2,9 @@ package column
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/sink/pretty/config"
-	"couture/internal/pkg/sink/pretty/theme"
+	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"time"
 )
@@ -34,7 +35,10 @@ func (col timestampColumn) RenderFormat(width uint, _ model.SinkEvent) string {
 
 // RenderValue ...
 func (col timestampColumn) RenderValue(cfg config.Config, event model.SinkEvent) []interface{} {
+	if cfg.TimeFormat == nil {
+		return []interface{}{fmt.Sprint(event.Timestamp)}
+	}
 	t := time.Time(event.Timestamp)
-	txt := t.Format(cfg.TimeFormat)
+	txt := t.Format(*cfg.TimeFormat)
 	return []interface{}{orNoValue(txt)}
 }

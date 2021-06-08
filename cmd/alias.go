@@ -29,7 +29,6 @@ func expandAliases(args []string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO look for yml as well?
 	aliasFilename := path.Join(home, ".config", couture.Name, "aliases.yaml")
 	if !fileutil.Exist(aliasFilename) {
 		return args, nil

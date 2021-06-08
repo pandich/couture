@@ -4,9 +4,8 @@ import (
 	"couture/internal/pkg/couture"
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/sink/pretty"
+	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/sink/pretty/column"
-	"couture/internal/pkg/sink/pretty/theme"
 	"github.com/alecthomas/kong"
 	"reflect"
 	"strings"
@@ -18,14 +17,12 @@ const helpSummary = "Tails one or more event sources."
 var maybeDie = parser.FatalIfErrorf
 
 var parserVars = kong.Vars{
-	"timeFormatNames":     strings.Join(timeFormatNames, ","),
-	"columnNames":         strings.Join(column.Names(), ","),
-	"themeNames":          strings.Join(theme.Names, ","),
-	"defaultTheme":        theme.Default,
-	"logLevels":           strings.Join(level.LowerNames(), ","),
-	"defaultLogLevel":     level.Info.LowerNames(),
-	"outputFormats":       strings.Join([]string{pretty.Name}, ","),
-	"defaultOutputFormat": pretty.Name,
+	"timeFormatNames": strings.Join(timeFormatNames, ","),
+	"columnNames":     strings.Join(column.Names(), ","),
+	"themeNames":      strings.Join(theme.Names(), ","),
+	"defaultTheme":    theme.Prince,
+	"logLevels":       strings.Join(level.LowerNames(), ","),
+	"defaultLogLevel": level.Info.LowerName(),
 }
 
 var parser = kong.Must(&cli,

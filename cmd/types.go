@@ -3,7 +3,7 @@ package cmd
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/sink/pretty/theme"
+	"couture/internal/pkg/model/theme"
 	"github.com/alecthomas/kong"
 	"github.com/araddon/dateparse"
 	errors2 "github.com/pkg/errors"
@@ -56,11 +56,25 @@ type (
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v autoResize) AfterApply() error { prettyConfig.AutoResize = bool(v); return nil }
+func (v *autoResize) AfterApply() error {
+	if v == nil {
+		return nil
+	}
+	b := bool(*v)
+	prettyConfig.AutoResize = &b
+	return nil
+}
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v color) AfterApply() error { prettyConfig.Color = bool(v); return nil }
+func (v *color) AfterApply() error {
+	if v == nil {
+		return nil
+	}
+	b := bool(*v)
+	prettyConfig.Color = &b
+	return nil
+}
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -68,19 +82,47 @@ func (v columns) AfterApply() error { prettyConfig.Columns = v; return nil }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v consistentColors) AfterApply() error { prettyConfig.ConsistentColors = bool(v); return nil }
+func (v *consistentColors) AfterApply() error {
+	if v == nil {
+		return nil
+	}
+	b := bool(*v)
+	prettyConfig.ConsistentColors = &b
+	return nil
+}
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v expand) AfterApply() error { prettyConfig.Expand = bool(v); return nil }
+func (v *expand) AfterApply() error {
+	if v == nil {
+		return nil
+	}
+	b := bool(*v)
+	prettyConfig.Expand = &b
+	return nil
+}
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v highlight) AfterApply() error { prettyConfig.Highlight = bool(v); return nil }
+func (v *highlight) AfterApply() error {
+	if v == nil {
+		return nil
+	}
+	b := bool(*v)
+	prettyConfig.Highlight = &b
+	return nil
+}
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v multiline) AfterApply() error { prettyConfig.Multiline = bool(v); return nil }
+func (v *multiline) AfterApply() error {
+	if v == nil {
+		return nil
+	}
+	b := bool(*v)
+	prettyConfig.Multiline = &b
+	return nil
+}
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -88,11 +130,25 @@ func (v tty) AfterApply() error { prettyConfig.TTY = bool(v); return nil }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v width) AfterApply() error { prettyConfig.Width = uint(v); return nil }
+func (v *width) AfterApply() error {
+	if v == nil {
+		return nil
+	}
+	ui := uint(*v)
+	prettyConfig.Width = &ui
+	return nil
+}
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v wrap) AfterApply() error { prettyConfig.Wrap = bool(v); return nil }
+func (v *wrap) AfterApply() error {
+	if v == nil {
+		return nil
+	}
+	b := bool(*v)
+	prettyConfig.Wrap = &b
+	return nil
+}
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -104,7 +160,14 @@ func (v dumpUnknown) AfterApply() error { managerConfig.DumpUnknown = bool(v); r
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v showSchema) AfterApply() error { prettyConfig.ShowSchema = bool(v); return nil }
+func (v *showSchema) AfterApply() error {
+	if v == nil {
+		return nil
+	}
+	b := bool(*v)
+	prettyConfig.ShowSchema = &b
+	return nil
+}
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -123,52 +186,75 @@ func (f filterLike) AfterApply() (err error) {
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v themeName) AfterApply() error {
-	thm, ok := theme.Registry[string(v)]
-	if !ok {
-		return errors2.Errorf("unknown theme: %s", v)
+func (v *themeName) AfterApply() error {
+	if v == nil {
+		return nil
 	}
-	prettyConfig.Theme = thm
+	thm, ok := theme.Registry[string(*v)]
+	if !ok {
+		return errors2.Errorf("unknown theme: %s", *v)
+	}
+	prettyConfig.Theme = &thm
 	return nil
 }
 
 // AfterApply ...
+//nolint:funlen
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (t timeFormat) AfterApply() error {
-	format := strings.ToLower(string(t))
+func (t *timeFormat) AfterApply() error {
+	if t == nil {
+		return nil
+	}
+	format := strings.ToLower(string(*t))
 	switch format {
 	case "c":
-		prettyConfig.TimeFormat = time.ANSIC
+		s := time.ANSIC
+		prettyConfig.TimeFormat = &s
 	case "unix":
-		prettyConfig.TimeFormat = time.UnixDate
+		s := time.UnixDate
+		prettyConfig.TimeFormat = &s
 	case "ruby":
-		prettyConfig.TimeFormat = time.RubyDate
+		s := time.RubyDate
+		prettyConfig.TimeFormat = &s
 	case "rfc822":
-		prettyConfig.TimeFormat = time.RFC822
+		s := time.RFC822
+		prettyConfig.TimeFormat = &s
 	case "rfc822-utc":
-		prettyConfig.TimeFormat = time.RFC822Z
+		s := time.RFC822Z
+		prettyConfig.TimeFormat = &s
 	case "rfc850":
-		prettyConfig.TimeFormat = time.RFC850
+		s := time.RFC850
+		prettyConfig.TimeFormat = &s
 	case "rfc1123":
-		prettyConfig.TimeFormat = time.RFC1123
+		s := time.RFC1123
+		prettyConfig.TimeFormat = &s
 	case "rfc1123-utc":
-		prettyConfig.TimeFormat = time.RFC1123Z
+		s := time.RFC1123Z
+		prettyConfig.TimeFormat = &s
 	case "rfc3339", "iso8601":
-		prettyConfig.TimeFormat = time.RFC3339
+		s := time.RFC3339
+		prettyConfig.TimeFormat = &s
 	case "rfc3339-nanos", "iso8601-nanos":
-		prettyConfig.TimeFormat = time.RFC3339Nano
+		s := time.RFC3339Nano
+		prettyConfig.TimeFormat = &s
 	case "kitchen":
-		prettyConfig.TimeFormat = time.Kitchen
+		s := time.Kitchen
+		prettyConfig.TimeFormat = &s
 	case "stamp":
-		prettyConfig.TimeFormat = time.Stamp
+		s := time.Stamp
+		prettyConfig.TimeFormat = &s
 	case "stamp-millis":
-		prettyConfig.TimeFormat = time.StampMilli
+		s := time.StampMilli
+		prettyConfig.TimeFormat = &s
 	case "stamp-micros":
-		prettyConfig.TimeFormat = time.StampMicro
+		s := time.StampMicro
+		prettyConfig.TimeFormat = &s
 	case "stamp-nanos":
-		prettyConfig.TimeFormat = time.StampNano
+		s := time.StampNano
+		prettyConfig.TimeFormat = &s
 	default:
-		prettyConfig.TimeFormat = "stamp"
+		s := "stamp"
+		prettyConfig.TimeFormat = &s
 	}
 	return nil
 }

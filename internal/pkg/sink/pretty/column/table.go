@@ -2,6 +2,7 @@ package column
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/sink/pretty/config"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/wordwrap"
@@ -31,14 +32,18 @@ type Table struct {
 func NewTable(config config.Config) *Table {
 	for _, name := range config.Columns {
 		col := registry[name]
-		col.Init(config.Theme)
+		if config.Theme == nil {
+			th := theme.Registry[theme.Prince]
+			config.Theme = &th
+		}
+		col.Init(*config.Theme)
 	}
 	table := Table{
 		config: config,
 		widths: map[string]uint{},
 	}
 	table.updateColumnWidths()
-	if config.AutoResize {
+	if config.AutoResize != nil && *config.AutoResize {
 		table.autoUpdateColumnWidths()
 	}
 	return &table
@@ -58,7 +63,7 @@ func (table *Table) RenderEvent(event model.SinkEvent) string {
 	}
 	format += resetSequence
 	var line = cfmt.Sprintf(format, values...)
-	if table.config.Wrap {
+	if table.config.Wrap != nil && *table.config.Wrap {
 		line = wordwrap.String(line, int(table.config.EffectiveTerminalWidth()))
 	}
 	return line

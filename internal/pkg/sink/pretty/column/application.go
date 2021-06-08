@@ -2,7 +2,7 @@ package column
 
 import (
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/sink/pretty/theme"
+	"couture/internal/pkg/model/theme"
 )
 
 type applicationColumn struct {
