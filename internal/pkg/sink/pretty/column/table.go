@@ -2,11 +2,10 @@ package column
 
 import (
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/theme"
+	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink/pretty/config"
 	"github.com/muesli/reflow/wordwrap"
-	"github.com/muesli/termenv"
 	"os"
 	"os/signal"
 	"syscall"
@@ -31,22 +30,27 @@ type Table struct {
 
 // NewTable ...
 func NewTable(config config.Config) *Table {
+	errorMessageStyle := config.Theme.Level[level.Error]
+	errorMessageStyle.Fg, errorMessageStyle.Bg = errorMessageStyle.Bg, errorMessageStyle.Fg
 	registry := map[string]column{
-		"source":           newSourceColumn(config),
-		schema.Timestamp:   newTimestampColumn(config),
-		schema.Application: newApplicationColumn(config),
-		schema.Context:     newContextColumn(config),
-		"caller":           newCallerColumn(config),
-		schema.Level:       newLevelColumn(config),
-		schema.Message:     newMessageColumn(config),
-	}
-	for _, name := range config.Columns {
-		col := registry[name]
-		if config.Theme == nil {
-			th := theme.Registry[theme.Prince]
-			config.Theme = &th
-		}
-		col.Init(*config.Theme)
+		"source":           newSourceColumn(config.Layout.Source),
+		schema.Timestamp:   newTimestampColumn(config.Theme.Timestamp, config.Layout.Timestamp),
+		schema.Application: newApplicationColumn(config.Theme.Application, config.Layout.Application),
+		schema.Context:     newContextColumn(config.Theme.Context, config.Layout.Context),
+		"caller": newCallerColumn(
+			config.Theme.Entity,
+			config.Theme.ActionDelimiter,
+			config.Theme.Action,
+			config.Theme.LineDelimiter,
+			config.Theme.Line,
+			config.Layout.Caller,
+		),
+		schema.Level: newLevelColumn(config.Theme.Level, config.Layout.Level),
+		schema.Message: newMessageColumn(
+			config.Theme.Level[level.Error].Bg,
+			config.Theme.Message,
+			config.Layout.Message,
+		),
 	}
 	table := Table{
 		config:   config,
@@ -62,8 +66,6 @@ func NewTable(config config.Config) *Table {
 
 // RenderEvent ...
 func (table *Table) RenderEvent(event model.SinkEvent) string {
-	const resetSequence = termenv.CSI + termenv.ResetSeq + "m"
-
 	// get format string and arguments
 	var line string
 	for _, name := range table.config.Columns {

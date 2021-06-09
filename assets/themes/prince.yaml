@@ -3,8 +3,8 @@ legend:
   bg: "#808080"
 
 timestamp:
-  fg: "#b2a73e"
-  bg: "#0c0a05"
+  fg: "#0c0a05"
+  bg: "#b2a73e"
 
 application:
   fg: "#587585"
@@ -65,7 +65,7 @@ message:
     fg: "#fbfafc"
     bg: "#1e180a"
   ERROR:
-    fg: "#e66a00"
+    fg: "#fbfafc"
     bg: "#1d1005"
 
 source:

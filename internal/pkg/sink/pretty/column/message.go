@@ -2,13 +2,13 @@ package column
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/layout"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink/pretty/config"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/indent"
-	"github.com/muesli/termenv"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
 	"strconv"
@@ -23,42 +23,36 @@ const (
 
 type messageColumn struct {
 	baseColumn
-	bgColorSeq map[level.Level]string
 }
 
-func newMessageColumn(_ config.Config) messageColumn {
-	return messageColumn{
+func newMessageColumn(errorFg string, messageStyles map[level.Level]theme.Style, layout layout.ColumnLayout) messageColumn {
+	col := messageColumn{
 		baseColumn: baseColumn{
 			columnName: schema.Message,
+			colLayout:  layout,
 			widthMode:  filling,
 		},
-		bgColorSeq: map[level.Level]string{},
 	}
-}
-
-// Init ...
-func (col messageColumn) Init(theme theme.Theme) {
 	for _, lvl := range level.Levels {
-		fg := theme.MessageFg()
-		bg := theme.MessageBg(lvl)
-		col.bgColorSeq[lvl] = termenv.CSI + termenv.EnvColorProfile().Color(bg).Sequence(true) + "m"
+		style := messageStyles[lvl]
 		cfmt.RegisterStyle(
 			col.levelStyleName("", lvl),
-			colorFormat(fg, bg),
+			colorFormat(style.Fg, style.Bg),
 		)
 		cfmt.RegisterStyle(
 			col.levelStyleName(highlightSuffix, lvl),
-			colorFormat(theme.HighlightFg(lvl), theme.HighlightBg()),
+			colorFormat(style.Bg, style.Fg),
 		)
 		cfmt.RegisterStyle(
 			col.levelStyleName(errorSuffix, lvl),
-			colorFormat(theme.StackTraceFg(), bg),
+			colorFormat(errorFg, style.Bg),
 		)
 		cfmt.RegisterStyle(
 			col.levelStyleName(sigilSuffix, lvl),
-			colorFormat(theme.HighlightFg(lvl), theme.HighlightBg()),
+			colorFormat(style.Bg, style.Fg),
 		)
 	}
+	return col
 }
 
 // Render ...
@@ -83,16 +77,17 @@ func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) string
 				errString = s
 			}
 		}
-		message += "\n" + indent.String(
-			col.levelSprintf("", errorSuffix, event.Level, errString),
-			4)
+		if message != "" {
+			message += "\n"
+		}
+		message += indent.String(col.levelSprintf("", errorSuffix, event.Level, errString), 4)
 	}
 
 	if cfg.Highlight != nil && *cfg.Highlight {
 		for _, filter := range event.Filters {
 			if filter.Kind.IsHighlighted() {
 				message = filter.Pattern.ReplaceAllStringFunc(message, func(s string) string {
-					return col.levelSprintf("", highlightSuffix, event.Level, s) + col.bgColorSeq[event.Level]
+					return col.levelSprintf("", highlightSuffix, event.Level, s)
 				})
 			}
 		}

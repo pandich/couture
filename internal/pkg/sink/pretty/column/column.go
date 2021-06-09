@@ -7,7 +7,10 @@ import (
 	"couture/internal/pkg/sink/pretty/config"
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
+	"github.com/muesli/termenv"
 )
+
+const resetSequence = termenv.CSI + termenv.ResetSeq + "m"
 
 func orNoValue(s string) string {
 	const noValue = ""
@@ -31,7 +34,6 @@ var DefaultColumns = []string{
 
 type (
 	column interface {
-		Init(th theme.Theme)
 		Render(cfg config.Config, event model.SinkEvent) string
 		name() string
 		mode() widthMode
@@ -76,41 +78,36 @@ func (col baseColumn) layout() layout.ColumnLayout {
 
 type weightedColumn struct {
 	baseColumn
-	color func(theme.Theme) string
 	value func(event model.SinkEvent) []interface{}
 }
 
 func newWeightedColumn(
 	columnName string,
 	layout layout.ColumnLayout,
-	color func(theme.Theme) string,
+	style theme.Style,
 	value func(event model.SinkEvent) []interface{},
 ) weightedColumn {
-	return weightedColumn{
+	col := weightedColumn{
 		baseColumn: baseColumn{
 			columnName: columnName,
 			widthMode:  weighted,
 			colLayout:  layout,
 		},
-		color: color,
 		value: value,
 	}
-}
-
-// Render ...
-func (col weightedColumn) Render(_ config.Config, event model.SinkEvent) string {
-	return cfmt.Sprintf(formatColumn(col, col.layout().Width), col.value(event)...)
-}
-
-// Init ...
-func (col weightedColumn) Init(theme theme.Theme) {
 	cfmt.RegisterStyle(col.name(), func(s string) string {
 		var prefix = ""
 		if col.colLayout.Sigil != "" {
 			prefix = " " + col.colLayout.Sigil + " "
 		}
-		return cfmt.Sprintf("{{"+prefix+"%s }}::"+col.color(theme), s)
+		return cfmt.Sprintf("{{"+prefix+"%s }}::"+style.Fg+"|bg"+style.Bg, s)
 	})
+	return col
+}
+
+// Render ...
+func (col weightedColumn) Render(_ config.Config, event model.SinkEvent) string {
+	return cfmt.Sprintf(formatColumn(col, col.layout().Width), col.value(event)...)
 }
 
 func formatStringOfWidth(width uint) string {
@@ -126,4 +123,10 @@ func formatStyleOfWidth(style string, width uint) string {
 
 func formatColumn(col column, width uint) string {
 	return formatStyleOfWidth(col.name(), width)
+}
+
+func stringValue(extract func(event model.SinkEvent) string) func(event model.SinkEvent) []interface{} {
+	return func(event model.SinkEvent) []interface{} {
+		return []interface{}{orNoValue(extract(event))}
+	}
 }

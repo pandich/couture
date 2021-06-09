@@ -2,6 +2,7 @@ package column
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/layout"
 	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/source"
@@ -15,26 +16,15 @@ type sourceColumn struct {
 	baseColumn
 }
 
-func newSourceColumn(cfg config.Config) column {
-	layout := cfg.Layout.Source
-	return sourceColumn{baseColumn{
-		columnName: "source",
-		widthMode:  weighted,
-		colLayout:  layout,
-	}}
+func newSourceColumn(layout layout.ColumnLayout) column {
+	return sourceColumn{baseColumn{columnName: "source", widthMode: weighted, colLayout: layout}}
 }
 
-// Init ...
-func (col sourceColumn) Init(_ theme.Theme) {}
-
 // RegisterSource ...
-func RegisterSource(th theme.Theme, consistentColors bool, src source.Source) string {
-	fgColor, bgColor := th.SourceColor(consistentColors, src)
-	sigilColor := fgColor
+func RegisterSource(style theme.Style, src source.Source) {
 	cfmt.RegisterStyle(sourceID(src.URL()), func(s string) string {
-		return cfmt.Sprintf("{{%s }}::"+sigilColor+"|bg"+bgColor+"{{ %s }}::"+fgColor+"|bg"+bgColor, string(src.Sigil()), s)
+		return cfmt.Sprintf("{{%s }}::"+style.Fg+"|bg"+style.Bg+"{{ %s }}::"+style.Fg+"|bg"+style.Bg, string(src.Sigil()), s)
 	})
-	return bgColor
 }
 
 // Render ...

@@ -2,6 +2,7 @@ package column
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/layout"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/schema"
@@ -13,24 +14,17 @@ type levelColumn struct {
 	baseColumn
 }
 
-func newLevelColumn(cfg config.Config) column {
-	layout := cfg.Layout.Level
-	return levelColumn{baseColumn{
-		columnName: schema.Level,
-		widthMode:  fixed,
-		colLayout:  layout,
-	}}
-}
-
-// Init ...
-func (col levelColumn) Init(thm theme.Theme) {
+func newLevelColumn(styles map[level.Level]theme.Style, layout layout.ColumnLayout) column {
+	col := levelColumn{
+		baseColumn: baseColumn{columnName: schema.Level, widthMode: fixed, colLayout: layout},
+	}
 	for _, lvl := range level.Levels {
-		fgColor := thm.LevelColorFg(lvl)
-		bgColor := thm.LevelColorBg(lvl)
+		style := styles[lvl]
 		cfmt.RegisterStyle(col.name()+string(lvl), func(s string) string {
-			return cfmt.Sprintf("{{"+col.format()+"}}::bg"+bgColor+"|"+fgColor, "", s, "")
+			return cfmt.Sprintf("{{"+col.format()+"}}::bg"+style.Bg+"|"+style.Fg, "", s, "")
 		})
 	}
+	return col
 }
 
 // Render ...

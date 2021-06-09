@@ -44,7 +44,9 @@ func (snk *prettySink) Init(sources []*source.Source) {
 	var sourceColors = map[model.SourceURL]string{}
 	for _, src := range sources {
 		consistentColors := *snk.config.ConsistentColors
-		sourceColors[(*src).URL()] = column.RegisterSource(*snk.config.Theme, consistentColors, *src)
+		style := snk.config.Theme.SourceColor(consistentColors, *src)
+		sourceColors[(*src).URL()] = style.Bg
+		column.RegisterSource(style, *src)
 	}
 }
 

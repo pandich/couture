@@ -2,6 +2,7 @@ package column
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/layout"
 	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/sink/pretty/config"
 	"fmt"
@@ -12,39 +13,44 @@ type callerColumn struct {
 	baseColumn
 }
 
-func newCallerColumn(cfg config.Config) column {
-	layout := cfg.Layout.Caller
-	return callerColumn{baseColumn{
-		columnName: "caller",
-		widthMode:  fixed,
-		colLayout:  layout,
-	}}
-}
+func newCallerColumn(
+	entityStyle theme.Style,
+	actionDelimiterStyle theme.Style,
+	actionStyle theme.Style,
+	lineDelimiterStyle theme.Style,
+	lineStyle theme.Style,
+	layout layout.ColumnLayout,
+) column {
+	col := callerColumn{
+		baseColumn: baseColumn{
+			columnName: "caller",
+			widthMode:  fixed,
+			colLayout:  layout,
+		},
+	}
 
-// Init ...
-func (col callerColumn) Init(theme theme.Theme) {
 	var prefix = ""
 	if col.colLayout.Sigil != "" {
 		prefix = " " + col.colLayout.Sigil + " "
 	}
 
-	bgColor := theme.CallerBg()
-
 	cfmt.RegisterStyle("Entity", func(s string) string {
-		return cfmt.Sprintf("{{"+prefix+"︎%s}}::bg"+bgColor+"|"+theme.EntityFg(), s)
+		return cfmt.Sprintf("{{"+prefix+"︎%s}}::bg"+entityStyle.Bg+"|"+entityStyle.Fg, s)
 	})
 	cfmt.RegisterStyle("ActionDelimiter", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+theme.ActionDelimiterFg(), s)
+		return cfmt.Sprintf("{{%s}}::bg"+actionDelimiterStyle.Bg+"|"+actionDelimiterStyle.Fg, s)
 	})
 	cfmt.RegisterStyle("Action", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+theme.ActionFg(), s)
+		return cfmt.Sprintf("{{%s}}::bg"+actionStyle.Bg+"|"+actionStyle.Fg, s)
 	})
-	cfmt.RegisterStyle("LineNumberDelimiter", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+bgColor+"|"+theme.LineNumberDelimiterFg(), s)
+	cfmt.RegisterStyle("LineDelimiter", func(s string) string {
+		return cfmt.Sprintf("{{%s}}::bg"+lineDelimiterStyle.Bg+"|"+lineDelimiterStyle.Fg, s)
 	})
 	cfmt.RegisterStyle("Line", func(s string) string {
-		return cfmt.Sprintf("{{%s }}::bg"+bgColor+"|"+theme.LineNumberFg(), s)
+		return cfmt.Sprintf("{{%s }}::bg"+lineStyle.Bg+"|"+lineStyle.Fg, s)
 	})
+
+	return col
 }
 
 // Render ...
@@ -58,7 +64,7 @@ func (col callerColumn) Render(_ config.Config, event model.SinkEvent) string {
 	}
 	format += "{{%s}}::Action"
 	if event.Line != 0 {
-		format += "{{#}}::LineNumberDelimiter"
+		format += "{{#}}::LineDelimiter"
 	}
 	format += "{{%s}}::Line"
 
@@ -87,8 +93,16 @@ func (col callerColumn) Render(_ config.Config, event model.SinkEvent) string {
 		actionName = actionName[l:]
 		totalLength -= l
 	}
-	for i := maxWidth - totalLength; i > 0; i-- {
-		entityName = " " + entityName
+	underage := int(col.layout().Width) - totalLength
+	for i := underage; i > 0; i-- {
+		switch col.layout().Align {
+		case layout.AlignRight:
+			entityName = " " + entityName
+		case layout.AlignLeft:
+			fallthrough
+		default:
+			entityName += " "
+		}
 	}
 
 	return cfmt.Sprintf(format, entityName, actionName, lineNumber)

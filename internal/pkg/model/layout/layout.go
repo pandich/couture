@@ -9,12 +9,21 @@ import (
 // Default ...
 const Default = "default"
 
+const (
+	// AlignLeft ...
+	AlignLeft alignment = "left"
+	// AlignRight ...
+	AlignRight alignment = "right"
+)
+
 // Registry is the registry of layout names to their structs.
 var Registry = map[string]Layout{
 	Default: mustLoad(Default),
 }
 
 type (
+	alignment string
+
 	padding struct {
 		Left  uint `yaml:"left,omitempty"`
 		Right uint `yaml:"right,omitempty"`
@@ -22,10 +31,10 @@ type (
 
 	// ColumnLayout ...
 	ColumnLayout struct {
-		Align   string  `yaml:"align,omitempty"`
-		Width   uint    `yaml:"width,omitempty"`
-		Padding padding `yaml:"padding,omitempty"`
-		Sigil   string  `yaml:"sigil,omitempty"`
+		Align   alignment `yaml:"align,omitempty"`
+		Width   uint      `yaml:"width,omitempty"`
+		Padding padding   `yaml:"padding,omitempty"`
+		Sigil   string    `yaml:"sigil,omitempty"`
 	}
 
 	// Layout ...
