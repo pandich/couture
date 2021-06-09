@@ -15,12 +15,12 @@ type sourceColumn struct {
 	baseColumn
 }
 
-func newSourceColumn() column {
-	const weight = 40
+func newSourceColumn(cfg config.Config) column {
+	layout := cfg.Layout.Source
 	return sourceColumn{baseColumn{
-		columnName:  "source",
-		widthMode:   weighted,
-		widthWeight: weight,
+		columnName: "source",
+		widthMode:  weighted,
+		colLayout:  layout,
 	}}
 }
 
@@ -37,14 +37,9 @@ func RegisterSource(th theme.Theme, consistentColors bool, src source.Source) st
 	return bgColor
 }
 
-// RenderFormat ...
-func (col sourceColumn) RenderFormat(width uint, event model.SinkEvent) string {
-	return formatStyleOfWidth(sourceID(event.SourceURL), width)
-}
-
-// RenderValue ...
-func (col sourceColumn) RenderValue(_ config.Config, event model.SinkEvent) []interface{} {
-	return []interface{}{event.SourceURL.ShortForm()}
+// Render ...
+func (col sourceColumn) Render(_ config.Config, event model.SinkEvent) string {
+	return cfmt.Sprintf(formatStyleOfWidth(sourceID(event.SourceURL), col.layout().Width), event.SourceURL.ShortForm())
 }
 
 func sourceID(sourceURL model.SourceURL) string {

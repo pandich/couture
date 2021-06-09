@@ -2,6 +2,7 @@ package column
 
 import (
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/layout"
 	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/sink/pretty/config"
 	"fmt"
@@ -31,18 +32,17 @@ var DefaultColumns = []string{
 type (
 	column interface {
 		Init(th theme.Theme)
-		RenderFormat(width uint, event model.SinkEvent) string
-		RenderValue(cfg config.Config, event model.SinkEvent) []interface{}
+		Render(cfg config.Config, event model.SinkEvent) string
 		name() string
 		mode() widthMode
-		weight() widthWeight
+		layout() layout.ColumnLayout
+		format() string
 	}
 
 	baseColumn struct {
-		columnName  string
-		widthMode   widthMode
-		widthWeight widthWeight
-		sigil       *rune
+		columnName string
+		widthMode  widthMode
+		colLayout  layout.ColumnLayout
 	}
 )
 
@@ -58,7 +58,20 @@ func (col baseColumn) mode() widthMode {
 
 // Weight ...
 func (col baseColumn) weight() widthWeight {
-	return col.widthWeight
+	return widthWeight(col.colLayout.Width)
+}
+
+func (col baseColumn) format() string {
+	return fmt.Sprintf(
+		"%%%[1]d.%[1]ds%%%[2]d.%[2]ds%%%[3]d.%[3]ds",
+		col.colLayout.Padding.Left,
+		col.colLayout.Width,
+		col.colLayout.Padding.Right,
+	)
+}
+
+func (col baseColumn) layout() layout.ColumnLayout {
+	return col.colLayout
 }
 
 type weightedColumn struct {
@@ -69,42 +82,35 @@ type weightedColumn struct {
 
 func newWeightedColumn(
 	columnName string,
-	sigil *rune,
-	widthWeight widthWeight,
+	layout layout.ColumnLayout,
 	color func(theme.Theme) string,
 	value func(event model.SinkEvent) []interface{},
 ) weightedColumn {
 	return weightedColumn{
 		baseColumn: baseColumn{
-			columnName:  columnName,
-			widthMode:   weighted,
-			widthWeight: widthWeight,
-			sigil:       sigil,
+			columnName: columnName,
+			widthMode:  weighted,
+			colLayout:  layout,
 		},
 		color: color,
 		value: value,
 	}
 }
 
+// Render ...
+func (col weightedColumn) Render(_ config.Config, event model.SinkEvent) string {
+	return cfmt.Sprintf(formatColumn(col, col.layout().Width), col.value(event)...)
+}
+
 // Init ...
 func (col weightedColumn) Init(theme theme.Theme) {
 	cfmt.RegisterStyle(col.name(), func(s string) string {
 		var prefix = ""
-		if col.sigil != nil {
-			prefix = " " + string(*col.sigil) + " "
+		if col.colLayout.Sigil != "" {
+			prefix = " " + col.colLayout.Sigil + " "
 		}
 		return cfmt.Sprintf("{{"+prefix+"%s }}::"+col.color(theme), s)
 	})
-}
-
-// RenderFormat ...
-func (col weightedColumn) RenderFormat(width uint, _ model.SinkEvent) string {
-	return formatColumn(col, width)
-}
-
-// RenderValue ...
-func (col weightedColumn) RenderValue(_ config.Config, event model.SinkEvent) []interface{} {
-	return col.value(event)
 }
 
 func formatStringOfWidth(width uint) string {

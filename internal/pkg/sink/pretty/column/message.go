@@ -4,6 +4,7 @@ import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/model/theme"
+	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink/pretty/config"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/indent"
@@ -25,10 +26,10 @@ type messageColumn struct {
 	bgColorSeq map[level.Level]string
 }
 
-func newMessageColumn() messageColumn {
+func newMessageColumn(_ config.Config) messageColumn {
 	return messageColumn{
 		baseColumn: baseColumn{
-			columnName: "message",
+			columnName: schema.Message,
 			widthMode:  filling,
 		},
 		bgColorSeq: map[level.Level]string{},
@@ -60,13 +61,8 @@ func (col messageColumn) Init(theme theme.Theme) {
 	}
 }
 
-// RenderFormat ...
-func (col messageColumn) RenderFormat(_ uint, _ model.SinkEvent) string {
-	return "%s"
-}
-
-// RenderValue ...
-func (col messageColumn) RenderValue(cfg config.Config, event model.SinkEvent) []interface{} {
+// Render ...
+func (col messageColumn) Render(cfg config.Config, event model.SinkEvent) string {
 	if event.Level == "" {
 		event.Level = level.Info
 	}
@@ -108,7 +104,7 @@ func (col messageColumn) RenderValue(cfg config.Config, event model.SinkEvent) [
 		message = " " + message
 	}
 
-	return []interface{}{message}
+	return cfmt.Sprint(message)
 }
 
 //

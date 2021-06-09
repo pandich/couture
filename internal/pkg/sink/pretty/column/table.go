@@ -3,8 +3,8 @@ package column
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/theme"
+	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink/pretty/config"
-	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/termenv"
 	"os"
@@ -24,12 +24,22 @@ const (
 
 // Table ...
 type Table struct {
-	config config.Config
-	widths map[string]uint
+	config   config.Config
+	widths   map[string]uint
+	registry map[string]column
 }
 
 // NewTable ...
 func NewTable(config config.Config) *Table {
+	registry := map[string]column{
+		"source":           newSourceColumn(config),
+		schema.Timestamp:   newTimestampColumn(config),
+		schema.Application: newApplicationColumn(config),
+		schema.Context:     newContextColumn(config),
+		"caller":           newCallerColumn(config),
+		schema.Level:       newLevelColumn(config),
+		schema.Message:     newMessageColumn(config),
+	}
 	for _, name := range config.Columns {
 		col := registry[name]
 		if config.Theme == nil {
@@ -39,8 +49,9 @@ func NewTable(config config.Config) *Table {
 		col.Init(*config.Theme)
 	}
 	table := Table{
-		config: config,
-		widths: map[string]uint{},
+		config:   config,
+		widths:   map[string]uint{},
+		registry: registry,
 	}
 	table.updateColumnWidths()
 	if config.AutoResize != nil && *config.AutoResize {
@@ -54,15 +65,11 @@ func (table *Table) RenderEvent(event model.SinkEvent) string {
 	const resetSequence = termenv.CSI + termenv.ResetSeq + "m"
 
 	// get format string and arguments
-	var format = ""
-	var values []interface{}
+	var line string
 	for _, name := range table.config.Columns {
-		col := registry[name]
-		format += col.RenderFormat(table.widths[name], event)
-		values = append(values, col.RenderValue(table.config, event)...)
+		col := table.registry[name]
+		line += col.Render(table.config, event) + resetSequence
 	}
-	format += resetSequence
-	var line = cfmt.Sprintf(format, values...)
 	if table.config.Wrap != nil && *table.config.Wrap {
 		line = wordwrap.String(line, int(table.config.EffectiveTerminalWidth()))
 	}
@@ -74,41 +81,43 @@ func (table *Table) updateColumnWidths() {
 	const maxGrowthWidthPercent = 5.0 / 4.0
 	const nonMessageAreaWidthPercent = 1.0 / 3.0
 
-	var remainingWidth = table.config.EffectiveTerminalWidth()
+	var remainingWidth = widthWeight(table.config.EffectiveTerminalWidth())
 	var totalWeight widthWeight
 	for _, name := range table.config.Columns {
-		col := registry[name]
+		col := table.registry[name]
+		weight := widthWeight(col.layout().Width)
 		switch col.mode() {
 		case weighted:
-			totalWeight += col.weight()
+			totalWeight += weight
 		case fixed:
-			remainingWidth -= uint(col.weight())
+			remainingWidth -= weight
 		}
 	}
 
 	// reserve room for the message
-	remainingWidth = uint(float64(remainingWidth) * nonMessageAreaWidthPercent)
+	remainingWidth = widthWeight(float64(remainingWidth) * nonMessageAreaWidthPercent)
 
 	for _, name := range table.config.Columns {
-		col := registry[name]
+		col := table.registry[name]
 		var width uint = fixedWidth
 		switch col.mode() {
 		case weighted:
-			weighting := float64(col.weight()) / float64(totalWeight)
+			weigth := col.layout().Width
+			weighting := float64(weigth) / float64(totalWeight)
 			width = uint(weighting * float64(remainingWidth))
-			max := uint(float64(col.weight()) * maxGrowthWidthPercent)
+			max := uint(float64(weigth) * maxGrowthWidthPercent)
 			if width > max {
 				width = max
 			}
 		case fixed:
-			width = uint(col.weight())
+			width = col.layout().Width
 		}
 		table.widths[name] = width
 	}
 }
 
 func (table *Table) autoUpdateColumnWidths() {
-	resize := make(chan os.Signal)
+	resize := make(chan os.Signal, 1)
 	signal.Notify(resize, os.Interrupt, syscall.SIGWINCH)
 	go func() {
 		defer close(resize)

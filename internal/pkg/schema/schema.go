@@ -26,6 +26,21 @@ const (
 	Error = "error"
 )
 
+// Names ...
+func Names() []string {
+	return []string{
+		Timestamp,
+		Level,
+		Message,
+		Application,
+		Action,
+		Line,
+		Context,
+		Entity,
+		Error,
+	}
+}
+
 const (
 	// JSON ...
 	JSON = "json"

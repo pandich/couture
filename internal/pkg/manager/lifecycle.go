@@ -45,7 +45,7 @@ func (mgr *busManager) Wait() {
 
 // TrapSignals ...
 func (mgr *busManager) TrapSignals() {
-	interrupt := make(chan os.Signal)
+	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		const stopGracePeriod = 250 * time.Millisecond

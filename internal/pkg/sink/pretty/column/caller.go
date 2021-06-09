@@ -12,22 +12,20 @@ type callerColumn struct {
 	baseColumn
 }
 
-func newCallerColumn() column {
-	const width = 50
-	sigil := '☎'
+func newCallerColumn(cfg config.Config) column {
+	layout := cfg.Layout.Caller
 	return callerColumn{baseColumn{
-		columnName:  "caller",
-		widthMode:   fixed,
-		widthWeight: width,
-		sigil:       &sigil,
+		columnName: "caller",
+		widthMode:  fixed,
+		colLayout:  layout,
 	}}
 }
 
 // Init ...
 func (col callerColumn) Init(theme theme.Theme) {
 	var prefix = ""
-	if col.sigil != nil {
-		prefix = " " + string(*col.sigil) + " "
+	if col.colLayout.Sigil != "" {
+		prefix = " " + col.colLayout.Sigil + " "
 	}
 
 	bgColor := theme.CallerBg()
@@ -49,23 +47,20 @@ func (col callerColumn) Init(theme theme.Theme) {
 	})
 }
 
-// RenderFormat ...
-func (col callerColumn) RenderFormat(_ uint, evt model.SinkEvent) string {
-	var s = "{{%s}}::Entity"
-	if evt.Action != "" {
-		s += "{{∕}}::ActionDelimiter"
-	}
-	s += "{{%s}}::Action"
-	if evt.Line != 0 {
-		s += "{{#}}::LineNumberDelimiter"
-	}
-	s += "{{%s}}::Line"
-	return s
-}
+// Render ...
+func (col callerColumn) Render(_ config.Config, event model.SinkEvent) string {
+	const delimiterCharacterCount = 4
+	maxWidth := int(col.layout().Width) - delimiterCharacterCount
 
-// RenderValue ...
-func (col callerColumn) RenderValue(_ config.Config, event model.SinkEvent) []interface{} {
-	const maxWidth = 54
+	var format = "{{%s}}::Entity"
+	if event.Action != "" {
+		format += "{{∕}}::ActionDelimiter"
+	}
+	format += "{{%s}}::Action"
+	if event.Line != 0 {
+		format += "{{#}}::LineNumberDelimiter"
+	}
+	format += "{{%s}}::Line"
 
 	var entityName = orNoValue(string(event.Entity.Abbreviate(maxWidth)))
 	var actionName = string(event.Action)
@@ -86,11 +81,15 @@ func (col callerColumn) RenderValue(_ config.Config, event model.SinkEvent) []in
 	if l := len(entityName) - overage; overage > 0 && l >= 0 {
 		entityName = entityName[len(entityName)-l:]
 		overage -= l
+		totalLength -= l
 	}
 	if l := len(actionName) - overage; overage > 0 && l >= 0 {
 		actionName = actionName[l:]
+		totalLength -= l
+	}
+	for i := maxWidth - totalLength; i > 0; i-- {
+		entityName = " " + entityName
 	}
 
-	// return
-	return []interface{}{entityName, actionName, lineNumber}
+	return cfmt.Sprintf(format, entityName, actionName, lineNumber)
 }
