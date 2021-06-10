@@ -17,7 +17,6 @@ require (
 	github.com/charmbracelet/lipgloss v0.2.1
 	github.com/coreos/etcd v3.3.25+incompatible
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
-	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/dustin/go-humanize v1.0.0
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1

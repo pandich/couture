@@ -1,6 +1,6 @@
 ![Couture](docs/couture.png)
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/pandich/couture)]()
+[![Go Report Card](https://goreportcard.com/badge/github.com/pandich/couture)](https://goreportcard.com/report/github.com/pandich/couture)
 
 ---
 
