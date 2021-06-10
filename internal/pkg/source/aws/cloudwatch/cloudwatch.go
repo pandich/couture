@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	errors2 "github.com/pkg/errors"
+	"go.uber.org/ratelimit"
 	"path"
 	"reflect"
 	"sync"
@@ -58,7 +59,8 @@ type cloudwatchSource struct {
 	// logGroupName is the name of the log group.
 	logGroupName string
 	// nextToken for calls to get log events.
-	nextToken *string
+	nextToken             *string
+	cloudWatchRateLimiter ratelimit.Limiter
 }
 
 // newFromURL Cloudwatch source.
@@ -77,11 +79,17 @@ func New(
 	lookbackTime *time.Time,
 	logGroupName string,
 ) *source.Source {
+	const maxRequestsPerMinute = 20
 	src := cloudwatchSource{
 		Source:       awsSource,
 		lookbackTime: lookbackTime,
 		logGroupName: logGroupName,
 		logs:         cloudwatchlogs.NewFromConfig(awsSource.Config()),
+		cloudWatchRateLimiter: ratelimit.New(
+			maxRequestsPerMinute,
+			ratelimit.Per(time.Minute),
+			ratelimit.WithoutSlack,
+		),
 	}
 	var p source.Source = &src
 	return &p
@@ -121,6 +129,7 @@ func (src *cloudwatchSource) Start(
 	go func() {
 		defer wg.Done()
 		for running() {
+			src.cloudWatchRateLimiter.Take()
 			logEvents, err := src.logs.FilterLogEvents(context.TODO(), &cloudwatchlogs.FilterLogEventsInput{
 				LogGroupName: &src.logGroupName,
 				NextToken:    src.nextToken,
