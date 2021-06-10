@@ -1,6 +1,5 @@
 ![Couture](docs/couture.png)
 
----
 [![Go Report Card](https://goreportcard.com/badge/github.com/pandich/couture)](https://goreportcard.com/badge/github.com/pandich/couture)
 [![goreleaser](https://github.com/pandich/couture/actions/workflows/goreleaser.yml/badge.svg)](https://github.com/pandich/couture/actions/workflows/goreleaser.yml)
 
