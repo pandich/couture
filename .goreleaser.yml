@@ -37,6 +37,6 @@ brews:
   - name: couture
     tap:
       owner: pandich
-      name: couture
+      name: homebrew-couture
     folder: Formula
     description: "Allows for tailing multiple event sources."
