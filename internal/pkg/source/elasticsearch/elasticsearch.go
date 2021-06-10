@@ -123,8 +123,6 @@ func (src elasticSearch) Start(
 	errChan chan source.Error,
 ) error {
 	go func() {
-		const eofSleepTime = 100 * time.Millisecond
-
 		defer wg.Done()
 		defer func() {
 			err := src.scroll.Clear(context.TODO())
@@ -135,7 +133,10 @@ func (src elasticSearch) Start(
 				}
 			}
 		}()
+
 		for running() {
+			const eofSleepTime = 100 * time.Millisecond
+
 			src.searchRateLimiter.Take()
 			result, err := src.scroll.DoC(context.TODO())
 			if err != nil {

@@ -28,7 +28,7 @@ type sshSource struct {
 }
 
 func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
-	client, err := getClient(sourceURL)
+	client, err := sshURL(sourceURL).getClient()
 	if err != nil {
 		return nil, err
 	}

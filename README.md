@@ -2,12 +2,8 @@
 
 Couture combines multiple log streams from disparate sources into friendly output.
 
-[comment]: <> (TODO example output - uses asciinema)
-
-[comment]: <> (TODO working badges)
-[![Build Status](https://travis-ci.org/gaggle-net/couture.svg?branch=master)]()
-[![Go Report Card](https://goreportcard.com/badge/github.com/gaggle-net/couture)]()
-[![Coverage Status](https://coveralls.io/repos/github/gaggle-net/couture/badge.svg?branch=master)]()
+`couture --multi-line --expand --highlight --filter=+qunioa fake://?style=hacker fake://?style=hipster fake://?style=hacker`
+![Couture](docs/couture-example-1.gif)
 
 ### Installation
 
