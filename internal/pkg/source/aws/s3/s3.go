@@ -3,6 +3,7 @@ package s3
 import (
 	"context"
 	"couture/internal/pkg/model"
+	"couture/internal/pkg/sink"
 	"couture/internal/pkg/source"
 	"couture/internal/pkg/source/aws"
 	"fmt"
@@ -66,7 +67,7 @@ func (src *s3Source) Start(
 
 	request := &s3.GetObjectInput{Bucket: &src.bucket, Key: &src.key}
 
-	writer := source.NewChanWriterAt(src, srcChan)
+	writer := sink.NewChanWriterAt(src, srcChan)
 	downloader := manager.NewDownloader(src.s3, func(d *manager.Downloader) {
 		d.PartSize = partSize
 		d.Concurrency = 1

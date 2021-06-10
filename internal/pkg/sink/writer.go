@@ -1,6 +1,7 @@
-package source
+package sink
 
 import (
+	"couture/internal/pkg/source"
 	"io"
 	"strings"
 	"sync"
@@ -8,8 +9,8 @@ import (
 
 // NewChanWriterAt ...
 func NewChanWriterAt(
-	src Source,
-	out chan Event,
+	src source.Source,
+	out chan source.Event,
 ) io.WriterAt {
 	return &chanWriteAt{
 		src:  src,
@@ -20,8 +21,8 @@ func NewChanWriterAt(
 
 // chanWriteAt ...
 type chanWriteAt struct {
-	src       Source
-	out       chan Event
+	src       source.Source
+	out       chan source.Event
 	remainder string
 	lock      sync.Mutex
 }
@@ -42,7 +43,7 @@ func (writer *chanWriteAt) WriteAt(buf []byte, _ int64) (n int, err error) {
 		pieces, writer.remainder = pieces[0:len(pieces)-1], pieces[len(pieces)-1]
 	}
 	for _, s := range pieces {
-		writer.out <- Event{Source: writer.src, Event: s}
+		writer.out <- source.Event{Source: writer.src, Event: s}
 	}
 	return len(buf), nil
 }

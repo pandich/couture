@@ -3,12 +3,12 @@ package column
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/schema"
-	layout2 "couture/internal/pkg/sink/layout"
-	theme2 "couture/internal/pkg/sink/theme"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/layout"
 	"time"
 )
 
-func newTimestampColumn(timeFormat *string, style theme2.Style, layout layout2.ColumnLayout) column {
+func newTimestampColumn(timeFormat *string, style sink.Style, layout layout.ColumnLayout) column {
 	return newWeightedColumn(
 		schema.Timestamp,
 		layout,

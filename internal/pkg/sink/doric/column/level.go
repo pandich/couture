@@ -4,8 +4,8 @@ import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/schema"
-	layout2 "couture/internal/pkg/sink/layout"
-	theme2 "couture/internal/pkg/sink/theme"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/layout"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
@@ -13,7 +13,7 @@ type levelColumn struct {
 	extractorColumn
 }
 
-func newLevelColumn(styles map[level.Level]theme2.Style, layout layout2.ColumnLayout) column {
+func newLevelColumn(styles map[level.Level]sink.Style, layout layout.ColumnLayout) column {
 	for _, lvl := range level.Levels {
 		formatLevel := schema.Level + string(lvl)
 		cfmt.RegisterStyle(formatLevel, styles[lvl].Format())
