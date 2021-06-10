@@ -42,6 +42,9 @@ var priorities = map[Level]int{
 	Error: errorPriority,
 }
 
+// Default ...
+var Default = Info
+
 // LowerNames ...
 func LowerNames() []string {
 	var logLevels []string

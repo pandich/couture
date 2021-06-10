@@ -4,9 +4,18 @@ import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/layout"
 	"couture/internal/pkg/model/theme"
-	"couture/internal/pkg/sink/pretty/config"
 	"fmt"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/i582/cfmt/cmd/cfmt"
+)
+
+const (
+	callerPsuedoColumn       = "caller"
+	entityStyleName          = "Entity"
+	actionDelimiterStyleName = "ActionDelimiter"
+	actionStyleName          = "Action"
+	lineDelimiterStyleName   = "LineDelimiter"
+	lineStyleName            = "Line"
 )
 
 type callerColumn struct {
@@ -19,91 +28,69 @@ func newCallerColumn(
 	actionStyle theme.Style,
 	lineDelimiterStyle theme.Style,
 	lineStyle theme.Style,
-	layout layout.ColumnLayout,
+	entityLayout layout.ColumnLayout,
 ) column {
-	col := callerColumn{
-		baseColumn: baseColumn{
-			columnName: "caller",
-			widthMode:  fixed,
-			colLayout:  layout,
-		},
-	}
+	col := callerColumn{baseColumn{columnName: callerPsuedoColumn, colLayout: entityLayout}}
 
-	var prefix = ""
-	if col.colLayout.Sigil != "" {
-		prefix = " " + col.colLayout.Sigil + " "
-	}
+	linePadding := entityLayout.EffectivePadding()
+	linePadding.Left = layout.NoPadding.Left
+	lineLayout := layout.ColumnLayout{Padding: &linePadding}
 
-	cfmt.RegisterStyle("Entity", func(s string) string {
-		return cfmt.Sprintf("{{"+prefix+"︎%s}}::bg"+entityStyle.Bg+"|"+entityStyle.Fg, s)
-	})
-	cfmt.RegisterStyle("ActionDelimiter", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+actionDelimiterStyle.Bg+"|"+actionDelimiterStyle.Fg, s)
-	})
-	cfmt.RegisterStyle("Action", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+actionStyle.Bg+"|"+actionStyle.Fg, s)
-	})
-	cfmt.RegisterStyle("LineDelimiter", func(s string) string {
-		return cfmt.Sprintf("{{%s}}::bg"+lineDelimiterStyle.Bg+"|"+lineDelimiterStyle.Fg, s)
-	})
-	cfmt.RegisterStyle("Line", func(s string) string {
-		return cfmt.Sprintf("{{%s }}::bg"+lineStyle.Bg+"|"+lineStyle.Fg, s)
-	})
+	entityPadding := entityLayout.EffectivePadding()
+	entityLayout.Padding = &entityPadding
+	entityLayout.Padding.Right = layout.NoPadding.Right
 
+	registerStyle(entityStyleName, entityStyle, entityLayout)
+	registerStyle(actionDelimiterStyleName, actionDelimiterStyle, layout.NoPaddingLayout)
+	registerStyle(actionStyleName, actionStyle, layout.NoPaddingLayout)
+	registerStyle(lineDelimiterStyleName, lineDelimiterStyle, layout.NoPaddingLayout)
+	registerStyle(lineStyleName, lineStyle, lineLayout)
 	return col
 }
 
-// Render ...
-func (col callerColumn) Render(_ config.Config, event model.SinkEvent) string {
-	const delimiterCharacterCount = 4
-	maxWidth := int(col.layout().Width) - delimiterCharacterCount
+func (col callerColumn) render(event model.SinkEvent) string {
+	entityName, actionName, lineNumber := col.callerParts(event)
 
-	var format = "{{%s}}::Entity"
+	var format = "{{%s}}::" + entityStyleName
 	if event.Action != "" {
-		format += "{{∕}}::ActionDelimiter"
+		format += "{{∕}}::" + actionDelimiterStyleName
 	}
-	format += "{{%s}}::Action"
+	format += "{{%s}}::" + actionStyleName
 	if event.Line != 0 {
-		format += "{{#}}::LineDelimiter"
+		format += "{{#}}::" + lineDelimiterStyleName
 	}
-	format += "{{%s}}::Line"
+	format += "{{%s}}::" + lineStyleName
 
-	var entityName = orNoValue(string(event.Entity.Abbreviate(maxWidth)))
+	return cfmt.Sprintf(
+		format,
+		col.entityPartStyle(entityName, actionName, lineNumber).Render(entityName),
+		actionName,
+		lineNumber,
+	)
+}
+
+func (col callerColumn) callerParts(event model.SinkEvent) (string, string, string) {
+	var entityName = string(event.Entity.Abbreviate(int(col.colLayout.Width)))
 	var actionName = string(event.Action)
 	var lineNumber = ""
 	if event.Line != 0 {
 		lineNumber = fmt.Sprintf("%4d", event.Line)
 	}
-	var totalLength = len(entityName) + len(actionName) + len(lineNumber)
+	return entityName, actionName, lineNumber
+}
 
-	// pad
-	for i := totalLength; i < maxWidth; i++ {
-		entityName = " " + entityName
-		totalLength++
-	}
+func (col callerColumn) entityPartStyle(entityName string, actionName string, lineNumber string) lipgloss.Style {
+	const delimiterWidth = 1
+	const sigilWidth = 2
+	const minEntityWidth = 10
 
-	// trim
-	var overage = totalLength - maxWidth
-	if l := len(entityName) - overage; overage > 0 && l >= 0 {
-		entityName = entityName[len(entityName)-l:]
-		overage -= l
-		totalLength -= l
+	totalWidth := sigilWidth + len(entityName) + delimiterWidth + len(actionName) + delimiterWidth + len(lineNumber)
+	var entityWidth = int(col.colLayout.Width) - totalWidth + len(entityName)
+	if entityWidth < minEntityWidth {
+		entityWidth = minEntityWidth
 	}
-	if l := len(actionName) - overage; overage > 0 && l >= 0 {
-		actionName = actionName[l:]
-		totalLength -= l
-	}
-	underage := int(col.layout().Width) - totalLength
-	for i := underage; i > 0; i-- {
-		switch col.layout().Align {
-		case layout.AlignRight:
-			entityName = " " + entityName
-		case layout.AlignLeft:
-			fallthrough
-		default:
-			entityName += " "
-		}
-	}
-
-	return cfmt.Sprintf(format, entityName, actionName, lineNumber)
+	return lipgloss.NewStyle().
+		Align(lipgloss.Right).
+		Width(entityWidth).
+		MaxWidth(entityWidth)
 }

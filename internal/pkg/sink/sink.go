@@ -5,7 +5,11 @@ import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/source"
 	"github.com/rcrowley/go-metrics"
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/pretty"
 	"io"
+	"strconv"
+	"strings"
 )
 
 // Sink of events. Responsible for consuming an event.
@@ -44,4 +48,24 @@ func NewOut(name string, writer io.WriteCloser) chan string {
 	}()
 
 	return out
+}
+
+// ExpandText ...
+func ExpandText(in string) (string, bool) {
+	if in == "" {
+		return in, false
+	}
+	if in[0] == '"' {
+		s, err := strconv.Unquote(in)
+		if err != nil {
+			return in, false
+		}
+		in = s
+	}
+	if !gjson.Valid(in) {
+		return in, false
+	}
+	in = string(pretty.Pretty([]byte(in)))
+	in = strings.TrimRight(in, "\n")
+	return in, true
 }

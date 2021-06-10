@@ -12,6 +12,6 @@ func newApplicationColumn(style theme.Style, layout layout.ColumnLayout) column 
 		schema.Application,
 		layout,
 		style,
-		stringValue(func(event model.SinkEvent) string { return string(event.Application) }),
+		func(event model.SinkEvent) []interface{} { return []interface{}{string(event.Application)} },
 	)
 }

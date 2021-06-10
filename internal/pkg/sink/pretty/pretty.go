@@ -7,6 +7,7 @@ import (
 	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/source"
 	"github.com/i582/cfmt/cmd/cfmt"
+	"time"
 )
 
 // prettySink provides render output.
@@ -30,6 +31,10 @@ func New(cfg config.Config) *sink.Sink {
 	if len(cfg.Columns) == 0 {
 		cfg.Columns = column.DefaultColumns
 	}
+	if cfg.TimeFormat == nil {
+		tf := time.Stamp
+		cfg.TimeFormat = &tf
+	}
 	var snk sink.Sink = &prettySink{
 		terminalWidth: cfg.EffectiveTerminalWidth(),
 		table:         column.NewTable(cfg),
@@ -44,14 +49,14 @@ func (snk *prettySink) Init(sources []*source.Source) {
 	var sourceColors = map[model.SourceURL]string{}
 	for _, src := range sources {
 		consistentColors := *snk.config.ConsistentColors
-		style := snk.config.Theme.SourceColor(consistentColors, *src)
+		style := snk.config.Theme.SourceStyle(consistentColors, *src)
 		sourceColors[(*src).URL()] = style.Bg
-		column.RegisterSource(style, *src)
+		column.RegisterSourceStyle(style, snk.config.Layout.Source, *src)
 	}
 }
 
 // Accept ...
 func (snk *prettySink) Accept(event model.SinkEvent) error {
-	snk.out <- snk.table.RenderEvent(event)
+	snk.out <- snk.table.Render(event)
 	return nil
 }

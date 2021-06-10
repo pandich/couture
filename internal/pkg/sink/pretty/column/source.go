@@ -4,36 +4,30 @@ import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/layout"
 	"couture/internal/pkg/model/theme"
-	"couture/internal/pkg/sink/pretty/config"
 	"couture/internal/pkg/source"
-	"crypto/sha256"
-	"encoding/hex"
 	"github.com/i582/cfmt/cmd/cfmt"
-	"strings"
 )
+
+const sourcePseudoColumn = "source"
 
 type sourceColumn struct {
 	baseColumn
 }
 
 func newSourceColumn(layout layout.ColumnLayout) column {
-	return sourceColumn{baseColumn{columnName: "source", widthMode: weighted, colLayout: layout}}
+	return sourceColumn{baseColumn{columnName: sourcePseudoColumn, colLayout: layout}}
 }
 
-// RegisterSource ...
-func RegisterSource(style theme.Style, src source.Source) {
-	cfmt.RegisterStyle(sourceID(src.URL()), func(s string) string {
-		return cfmt.Sprintf("{{%s }}::"+style.Fg+"|bg"+style.Bg+"{{ %s }}::"+style.Fg+"|bg"+style.Bg, string(src.Sigil()), s)
-	})
+func (col sourceColumn) render(event model.SinkEvent) string {
+	return cfmt.Sprintf(col.formatWithSuffix(event.SourceURL.HashString()), event.SourceURL.ShortForm())
 }
 
-// Render ...
-func (col sourceColumn) Render(_ config.Config, event model.SinkEvent) string {
-	return cfmt.Sprintf(formatStyleOfWidth(sourceID(event.SourceURL), col.layout().Width), event.SourceURL.ShortForm())
-}
-
-func sourceID(sourceURL model.SourceURL) string {
-	hasher := sha256.New()
-	hasher.Write([]byte(sourceURL.String()))
-	return strings.ReplaceAll(hex.EncodeToString(hasher.Sum(nil)), "-", "")
+// RegisterSourceStyle ...
+func RegisterSourceStyle(
+	style theme.Style,
+	layout layout.ColumnLayout,
+	src source.Source,
+) {
+	layout.Sigil = string(src.Sigil())
+	registerStyle(sourcePseudoColumn+src.URL().HashString(), style, layout)
 }

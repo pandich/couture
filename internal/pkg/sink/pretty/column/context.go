@@ -12,6 +12,6 @@ func newContextColumn(style theme.Style, layout layout.ColumnLayout) column {
 		schema.Context,
 		layout,
 		style,
-		stringValue(func(event model.SinkEvent) string { return string(event.Context) }),
+		func(event model.SinkEvent) []interface{} { return []interface{}{string(event.Context)} },
 	)
 }

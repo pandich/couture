@@ -6,33 +6,30 @@ import (
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/schema"
-	"couture/internal/pkg/sink/pretty/config"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
 type levelColumn struct {
-	baseColumn
+	extractorColumn
 }
 
 func newLevelColumn(styles map[level.Level]theme.Style, layout layout.ColumnLayout) column {
-	col := levelColumn{
-		baseColumn: baseColumn{columnName: schema.Level, widthMode: fixed, colLayout: layout},
-	}
 	for _, lvl := range level.Levels {
-		style := styles[lvl]
-		cfmt.RegisterStyle(col.name()+string(lvl), func(s string) string {
-			return cfmt.Sprintf("{{"+col.format()+"}}::bg"+style.Bg+"|"+style.Fg, "", s, "")
-		})
+		formatLevel := schema.Level + string(lvl)
+		cfmt.RegisterStyle(formatLevel, styles[lvl].Format())
 	}
-	return col
+	return levelColumn{
+		extractorColumn: extractorColumn{
+			baseColumn: baseColumn{columnName: schema.Level, colLayout: layout},
+			extractor: func(event model.SinkEvent) []interface{} {
+				return []interface{}{string(event.Level)}
+			},
+		},
+	}
 }
 
-// Render ...
-func (col levelColumn) Render(_ config.Config, event model.SinkEvent) string {
-	var lvl = event.Level
-	if lvl == "" {
-		lvl = level.Info
-	}
-	levelName := string(lvl)
-	return cfmt.Sprintf(formatStyleOfWidth(col.name()+levelName, uint(col.weight())), levelName)
+func (col levelColumn) render(event model.SinkEvent) string {
+	format := col.formatWithSuffix(string(event.Level))
+	value := col.extractor(event)
+	return cfmt.Sprintf(format, value...)
 }

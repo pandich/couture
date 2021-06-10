@@ -4,6 +4,7 @@ import (
 	"couture/internal/pkg/couture"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
+	"github.com/i582/cfmt/cmd/cfmt"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"math/rand"
@@ -51,9 +52,9 @@ type (
 	}
 )
 
-// SourceColor returns a color for a source. When consistentColors is true, sources will get the same
+// SourceStyle returns a color for a source. When consistentColors is true, sources will get the same
 // color across invocations of the application. Otherwise, the color selection randomized for each run.
-func (theme Theme) SourceColor(consistentColors bool, src source.Source) Style {
+func (theme Theme) SourceStyle(consistentColors bool, src source.Source) Style {
 	//nolint:gosec
 	var index = rand.Intn(len(theme.Source))
 	if consistentColors {
@@ -88,4 +89,19 @@ func mustLoad(name string) Theme {
 		panic(err)
 	}
 	return *theme
+}
+
+// Reverse ...
+func (s Style) Reverse() Style {
+	return Style{
+		Fg: s.Bg,
+		Bg: s.Fg,
+	}
+}
+
+// Format ...
+func (s Style) Format() func(value string) string {
+	return func(value string) string {
+		return cfmt.Sprintf("{{%s}}::"+s.Fg+"|bg"+s.Bg, value)
+	}
 }

@@ -2,6 +2,7 @@ package model
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"net"
 	"net/url"
@@ -77,6 +78,7 @@ func (u *SourceURL) Normalize() {
 func (u SourceURL) ShortForm() string {
 	const tldComponentCount = 2
 	var host = u.Host
+	u.RawQuery = strings.TrimRight(u.RawQuery, "&")
 	if net.ParseIP(host) == nil {
 		hostParts := strings.Split(host, ".")
 		if len(hostParts) > tldComponentCount {
@@ -100,4 +102,11 @@ func (u SourceURL) Hash() int {
 		sum += int(v)
 	}
 	return sum
+}
+
+// HashString ...
+func (u SourceURL) HashString() string {
+	hasher := sha256.New()
+	hasher.Write([]byte(u.String()))
+	return strings.ReplaceAll(hex.EncodeToString(hasher.Sum(nil)), "-", "")
 }

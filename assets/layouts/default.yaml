@@ -3,17 +3,12 @@ application:
   width: 25
   sigil: §
 caller:
-  align: right
   width: 60
   sigil: ☎
 level:
   width: 1
-  padding:
-    left: 1
-    right: 1
 message:
 source:
-  align: left
   width: 40
 context:
   width: 20

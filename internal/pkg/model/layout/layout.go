@@ -9,45 +9,21 @@ import (
 // Default ...
 const Default = "default"
 
-const (
-	// AlignLeft ...
-	AlignLeft alignment = "left"
-	// AlignRight ...
-	AlignRight alignment = "right"
-)
-
 // Registry is the registry of layout names to their structs.
 var Registry = map[string]Layout{
 	Default: mustLoad(Default),
 }
 
-type (
-	alignment string
-
-	padding struct {
-		Left  uint `yaml:"left,omitempty"`
-		Right uint `yaml:"right,omitempty"`
-	}
-
-	// ColumnLayout ...
-	ColumnLayout struct {
-		Align   alignment `yaml:"align,omitempty"`
-		Width   uint      `yaml:"width,omitempty"`
-		Padding padding   `yaml:"padding,omitempty"`
-		Sigil   string    `yaml:"sigil,omitempty"`
-	}
-
-	// Layout ...
-	Layout struct {
-		Application ColumnLayout `yaml:"application"`
-		Caller      ColumnLayout `yaml:"caller"`
-		Level       ColumnLayout `yaml:"level"`
-		Message     ColumnLayout `yaml:"message"`
-		Source      ColumnLayout `yaml:"source"`
-		Context     ColumnLayout `yaml:"context"`
-		Timestamp   ColumnLayout `yaml:"timestamp"`
-	}
-)
+// Layout ...
+type Layout struct {
+	Application ColumnLayout `yaml:"application"`
+	Caller      ColumnLayout `yaml:"caller"`
+	Level       ColumnLayout `yaml:"level"`
+	Message     ColumnLayout `yaml:"message"`
+	Source      ColumnLayout `yaml:"source"`
+	Context     ColumnLayout `yaml:"context"`
+	Timestamp   ColumnLayout `yaml:"timestamp"`
+}
 
 func load(name string) (*Layout, error) {
 	f, err := couture.Open("/layouts/" + name + ".yaml")

@@ -3,55 +3,24 @@ package column
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink/pretty/config"
 	"github.com/muesli/reflow/wordwrap"
+	"github.com/muesli/termenv"
 	"os"
 	"os/signal"
 	"syscall"
-)
-
-type widthMode int
-
-type widthWeight uint
-
-const (
-	weighted widthMode = iota
-	fixed
-	filling
 )
 
 // Table ...
 type Table struct {
 	config   config.Config
 	widths   map[string]uint
-	registry map[string]column
+	registry registry
 }
 
 // NewTable ...
 func NewTable(config config.Config) *Table {
-	errorMessageStyle := config.Theme.Level[level.Error]
-	errorMessageStyle.Fg, errorMessageStyle.Bg = errorMessageStyle.Bg, errorMessageStyle.Fg
-	registry := map[string]column{
-		"source":           newSourceColumn(config.Layout.Source),
-		schema.Timestamp:   newTimestampColumn(config.Theme.Timestamp, config.Layout.Timestamp),
-		schema.Application: newApplicationColumn(config.Theme.Application, config.Layout.Application),
-		schema.Context:     newContextColumn(config.Theme.Context, config.Layout.Context),
-		"caller": newCallerColumn(
-			config.Theme.Entity,
-			config.Theme.ActionDelimiter,
-			config.Theme.Action,
-			config.Theme.LineDelimiter,
-			config.Theme.Line,
-			config.Layout.Caller,
-		),
-		schema.Level: newLevelColumn(config.Theme.Level, config.Layout.Level),
-		schema.Message: newMessageColumn(
-			config.Theme.Level[level.Error].Bg,
-			config.Theme.Message,
-			config.Layout.Message,
-		),
-	}
+	registry := newRegistry(config)
 	table := Table{
 		config:   config,
 		widths:   map[string]uint{},
@@ -64,13 +33,17 @@ func NewTable(config config.Config) *Table {
 	return &table
 }
 
-// RenderEvent ...
-func (table *Table) RenderEvent(event model.SinkEvent) string {
+// Render ...
+func (table *Table) Render(event model.SinkEvent) string {
+	const resetSequence = termenv.CSI + termenv.ResetSeq + "m"
+	if event.Level == "" {
+		event.Level = level.Default
+	}
 	// get format string and arguments
 	var line string
 	for _, name := range table.config.Columns {
 		col := table.registry[name]
-		line += col.Render(table.config, event) + resetSequence
+		line += col.render(event) + resetSequence
 	}
 	if table.config.Wrap != nil && *table.config.Wrap {
 		line = wordwrap.String(line, int(table.config.EffectiveTerminalWidth()))
@@ -79,40 +52,27 @@ func (table *Table) RenderEvent(event model.SinkEvent) string {
 }
 
 func (table *Table) updateColumnWidths() {
-	const fixedWidth = 0
 	const maxGrowthWidthPercent = 5.0 / 4.0
 	const nonMessageAreaWidthPercent = 1.0 / 3.0
 
-	var remainingWidth = widthWeight(table.config.EffectiveTerminalWidth())
-	var totalWeight widthWeight
+	var remainingWidth = table.config.EffectiveTerminalWidth()
+	var totalWeight uint
 	for _, name := range table.config.Columns {
 		col := table.registry[name]
-		weight := widthWeight(col.layout().Width)
-		switch col.mode() {
-		case weighted:
-			totalWeight += weight
-		case fixed:
-			remainingWidth -= weight
-		}
+		totalWeight += col.layout().Width
 	}
 
 	// reserve room for the message
-	remainingWidth = widthWeight(float64(remainingWidth) * nonMessageAreaWidthPercent)
+	remainingWidth = uint(float64(remainingWidth) * nonMessageAreaWidthPercent)
 
 	for _, name := range table.config.Columns {
 		col := table.registry[name]
-		var width uint = fixedWidth
-		switch col.mode() {
-		case weighted:
-			weigth := col.layout().Width
-			weighting := float64(weigth) / float64(totalWeight)
-			width = uint(weighting * float64(remainingWidth))
-			max := uint(float64(weigth) * maxGrowthWidthPercent)
-			if width > max {
-				width = max
-			}
-		case fixed:
-			width = col.layout().Width
+		weigth := col.layout().Width
+		weighting := float64(weigth) / float64(totalWeight)
+		var width = uint(weighting * float64(remainingWidth))
+		max := uint(float64(weigth) * maxGrowthWidthPercent)
+		if width > max {
+			width = max
 		}
 		table.widths[name] = width
 	}
