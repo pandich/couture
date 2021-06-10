@@ -6,6 +6,7 @@ import (
 	"couture/internal/pkg/source"
 	"encoding/json"
 	"github.com/bnkamalesh/errors"
+	"go.uber.org/ratelimit"
 	"gopkg.in/olivere/elastic.v3"
 	"io"
 	"reflect"
@@ -45,10 +46,12 @@ const (
 
 type elasticSearch struct {
 	source.BaseSource
-	scroll *elastic.ScrollService
+	scroll            *elastic.ScrollService
+	searchRateLimiter ratelimit.Limiter
 }
 
 func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+	const maxRequestsPerMinute = 60
 	const eventsPerFetch = 100
 	const keepAliveOneMinute = "1m"
 
@@ -89,8 +92,12 @@ func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, err
 	var src source.Source = elasticSearch{
 		BaseSource: source.New('፨', sourceURL),
 		scroll:     scroll,
+		searchRateLimiter: ratelimit.New(
+			maxRequestsPerMinute,
+			ratelimit.Per(time.Minute),
+			ratelimit.WithSlack(maxRequestsPerMinute),
+		),
 	}
-
 	return &src, nil
 }
 
@@ -129,6 +136,7 @@ func (src elasticSearch) Start(
 			}
 		}()
 		for running() {
+			src.searchRateLimiter.Take()
 			result, err := src.scroll.DoC(context.TODO())
 			if err != nil {
 				if errors.Is(err, io.EOF) {
