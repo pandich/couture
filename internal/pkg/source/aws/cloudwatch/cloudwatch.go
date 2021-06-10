@@ -88,7 +88,7 @@ func New(
 		cloudWatchRateLimiter: ratelimit.New(
 			maxRequestsPerMinute,
 			ratelimit.Per(time.Minute),
-			ratelimit.WithoutSlack,
+			ratelimit.WithSlack(maxRequestsPerMinute),
 		),
 	}
 	var p source.Source = &src

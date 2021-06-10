@@ -138,7 +138,7 @@ func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, err
 		stackEventRateLimiter: ratelimit.New(
 			maxRequestsPerMinute,
 			ratelimit.Per(time.Minute),
-			ratelimit.WithoutSlack,
+			ratelimit.WithSlack(maxRequestsPerMinute),
 		),
 	}
 	return &src, nil
