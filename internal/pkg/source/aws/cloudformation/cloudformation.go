@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	errors2 "github.com/pkg/errors"
+	"go.uber.org/ratelimit"
 	"path"
 	"reflect"
 	"sync"
@@ -95,13 +96,16 @@ type (
 		cf        *cloudformation.Client
 		stackName string
 		// stackEventsNextToken is used to keep track of the last call to fetch stack events.
-		stackEventsNextToken *string
-		stackEventTimes      map[int64]bool
+		stackEventsNextToken  *string
+		stackEventTimes       map[int64]bool
+		stackEventRateLimiter ratelimit.Limiter
 	}
 )
 
 // newSource CloudFormation source.
 func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+	const maxRequestsPerMinute = 20
+
 	normalizeURL(&sourceURL)
 	stackName := sourceURL.Path[1:]
 	awsSource, err := aws.New('☁', &sourceURL)
@@ -131,6 +135,11 @@ func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, err
 		stackName:            stackName,
 		stackEventsNextToken: nil,
 		stackEventTimes:      map[int64]bool{},
+		stackEventRateLimiter: ratelimit.New(
+			maxRequestsPerMinute,
+			ratelimit.Per(time.Minute),
+			ratelimit.WithoutSlack,
+		),
 	}
 	return &src, nil
 }
@@ -177,6 +186,7 @@ func (src cloudFormationSource) Start(
 
 // getChildEvents retrieves CloudFormation events for this stack.
 func (src *cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
+	src.stackEventRateLimiter.Take()
 	stackEvents, err := src.cf.DescribeStackEvents(context.TODO(), &cloudformation.DescribeStackEventsInput{
 		NextToken: src.stackEventsNextToken,
 		StackName: &src.stackName,
