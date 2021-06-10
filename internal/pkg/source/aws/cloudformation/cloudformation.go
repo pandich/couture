@@ -85,7 +85,8 @@ type (
 	cloudFormationSource struct {
 		aws.Source
 		// lookbackTime is how far back to look for log events.
-		lookbackTime *time.Time
+		highwaterTimestamp *time.Time
+		lowwaterTimestamp  *time.Time
 		// includeStackEvents specifies whether or not to include stack events in the log.
 		includeStackEvents bool
 		// children represents all child sources added during stack-resource discovery.
@@ -123,7 +124,7 @@ func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, err
 
 	var src source.Source = cloudFormationSource{
 		Source:               awsSource,
-		lookbackTime:         since,
+		highwaterTimestamp:   since,
 		includeStackEvents:   sourceURL.QueryFlag(includeStackEventsFlag),
 		children:             children,
 		cf:                   cf,
@@ -174,7 +175,7 @@ func (src cloudFormationSource) Start(
 }
 
 // getChildEvents retrieves CloudFormation events for this stack.
-func (src cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
+func (src *cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
 	stackEvents, err := src.cf.DescribeStackEvents(context.TODO(), &cloudformation.DescribeStackEventsInput{
 		NextToken: src.stackEventsNextToken,
 		StackName: &src.stackName,
@@ -182,39 +183,62 @@ func (src cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-	src.stackEventsNextToken = stackEvents.NextToken
+	if len(stackEvents.StackEvents) > 0 {
+		timestamp := stackEvents.StackEvents[0].Timestamp
+		lowwaterTimestamp := src.lowwaterTimestamp
+		src.stackEventsNextToken = stackEvents.NextToken
+		src.lowwaterTimestamp = timestamp
+		if src.highwaterTimestamp != nil {
+			if timestamp.Unix() >= src.highwaterTimestamp.Unix() {
+				return nil, nil
+			}
+		} else if lowwaterTimestamp != nil {
+			if timestamp.Unix() == lowwaterTimestamp.Unix() {
+				return nil, nil
+			}
+		}
+		src.highwaterTimestamp = timestamp
+	}
+	return src.stackEventsToModelEvents(stackEvents)
+}
 
+func (src *cloudFormationSource) stackEventsToModelEvents(
+	stackEvents *cloudformation.DescribeStackEventsOutput,
+) ([]model.SinkEvent, error) {
 	var events []model.SinkEvent
 	for _, stackEvent := range stackEvents.StackEvents {
-		if src.lookbackTime == nil || src.lookbackTime.Before(*stackEvent.Timestamp) {
-			var message model.Message
-			var evtError model.Error
-
-			lvl := logLevelByResourceStatus[stackEvent.ResourceStatus]
-			if lvl == level.Error {
-				evtError = model.Error(stackEvent.ResourceStatus)
-			} else {
-				message = model.Message(stackEvent.ResourceStatus)
-			}
-			var entity = model.Entity(*stackEvent.StackName)
-			if s := stackEvent.PhysicalResourceId; s != nil && *s != "" {
-				entity = model.Entity(*s)
-			}
-			event := model.Event{
-				Timestamp:   model.Timestamp(*stackEvent.Timestamp),
-				Application: model.Application(*stackEvent.ResourceType),
-				Context:     model.Context(*stackEvent.EventId),
-				Entity:      entity,
-				Action:      model.Action(""),
-				Line:        model.NoLineNumber,
-				Level:       lvl,
-				Message:     message,
-				Error:       evtError,
-			}
-			events = append(events, model.SinkEvent{Event: event, SourceURL: src.URL()})
-		}
+		event := src.stackEventToModelEvent(stackEvent)
+		events = append(events, model.SinkEvent{Event: event, SourceURL: src.URL()})
 	}
 	return events, nil
+}
+
+func (src *cloudFormationSource) stackEventToModelEvent(stackEvent types.StackEvent) model.Event {
+	var message model.Message
+	var evtError model.Error
+
+	lvl := logLevelByResourceStatus[stackEvent.ResourceStatus]
+	if lvl == level.Error {
+		evtError = model.Error(stackEvent.ResourceStatus)
+	} else {
+		message = model.Message(stackEvent.ResourceStatus)
+	}
+	var entity = model.Entity(*stackEvent.StackName)
+	if s := stackEvent.PhysicalResourceId; s != nil && *s != "" {
+		entity = model.Entity(*s)
+	}
+	event := model.Event{
+		Timestamp:   model.Timestamp(*stackEvent.Timestamp),
+		Application: model.Application(*stackEvent.ResourceType),
+		Context:     model.Context(*stackEvent.EventId),
+		Entity:      entity,
+		Action:      model.Action(""),
+		Line:        model.NoLineNumber,
+		Level:       lvl,
+		Message:     message,
+		Error:       evtError,
+	}
+	return event
 }
 
 // discoverLambdaResources discovers all lambdas under the stack or its child stacks.
