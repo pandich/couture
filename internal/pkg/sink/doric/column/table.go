@@ -3,7 +3,7 @@ package column
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/sink/pretty/config"
+	"couture/internal/pkg/sink/doric/config"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/termenv"
 	"os"

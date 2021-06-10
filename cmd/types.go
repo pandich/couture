@@ -61,7 +61,7 @@ func (v *autoResize) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	prettyConfig.AutoResize = &b
+	doricConfig.AutoResize = &b
 	return nil
 }
 
@@ -72,13 +72,13 @@ func (v *color) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	prettyConfig.Color = &b
+	doricConfig.Color = &b
 	return nil
 }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v columns) AfterApply() error { prettyConfig.Columns = v; return nil }
+func (v columns) AfterApply() error { doricConfig.Columns = v; return nil }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -87,7 +87,7 @@ func (v *consistentColors) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	prettyConfig.ConsistentColors = &b
+	doricConfig.ConsistentColors = &b
 	return nil
 }
 
@@ -98,7 +98,7 @@ func (v *expand) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	prettyConfig.Expand = &b
+	doricConfig.Expand = &b
 	return nil
 }
 
@@ -109,7 +109,7 @@ func (v *highlight) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	prettyConfig.Highlight = &b
+	doricConfig.Highlight = &b
 	return nil
 }
 
@@ -120,13 +120,13 @@ func (v *multiline) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	prettyConfig.Multiline = &b
+	doricConfig.Multiline = &b
 	return nil
 }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v tty) AfterApply() error { prettyConfig.TTY = bool(v); return nil }
+func (v tty) AfterApply() error { doricConfig.TTY = bool(v); return nil }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -135,7 +135,7 @@ func (v *width) AfterApply() error {
 		return nil
 	}
 	ui := uint(*v)
-	prettyConfig.Width = &ui
+	doricConfig.Width = &ui
 	return nil
 }
 
@@ -146,7 +146,7 @@ func (v *wrap) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	prettyConfig.Wrap = &b
+	doricConfig.Wrap = &b
 	return nil
 }
 
@@ -165,7 +165,7 @@ func (v *showSchema) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	prettyConfig.ShowSchema = &b
+	doricConfig.ShowSchema = &b
 	return nil
 }
 
@@ -194,7 +194,7 @@ func (v *themeName) AfterApply() error {
 	if !ok {
 		return errors2.Errorf("unknown theme: %s", *v)
 	}
-	prettyConfig.Theme = &thm
+	doricConfig.Theme = &thm
 	return nil
 }
 
@@ -209,52 +209,52 @@ func (t *timeFormat) AfterApply() error {
 	switch format {
 	case "c":
 		s := time.ANSIC
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "unix":
 		s := time.UnixDate
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "ruby":
 		s := time.RubyDate
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "rfc822":
 		s := time.RFC822
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "rfc822-utc":
 		s := time.RFC822Z
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "rfc850":
 		s := time.RFC850
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "rfc1123":
 		s := time.RFC1123
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "rfc1123-utc":
 		s := time.RFC1123Z
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "rfc3339", "iso8601":
 		s := time.RFC3339
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "rfc3339-nanos", "iso8601-nanos":
 		s := time.RFC3339Nano
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "kitchen":
 		s := time.Kitchen
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "stamp":
 		s := time.Stamp
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "stamp-millis":
 		s := time.StampMilli
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "stamp-micros":
 		s := time.StampMicro
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	case "stamp-nanos":
 		s := time.StampNano
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	default:
 		s := "stamp"
-		prettyConfig.TimeFormat = &s
+		doricConfig.TimeFormat = &s
 	}
 	return nil
 }

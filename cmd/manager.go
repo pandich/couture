@@ -5,8 +5,8 @@ import (
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/schema"
-	"couture/internal/pkg/sink/pretty"
-	"couture/internal/pkg/sink/pretty/config"
+	"couture/internal/pkg/sink/doric"
+	"couture/internal/pkg/sink/doric/config"
 	"github.com/coreos/etcd/pkg/fileutil"
 	"gopkg.in/multierror.v1"
 	"gopkg.in/yaml.v2"
@@ -72,7 +72,7 @@ func getOptions() ([]interface{}, error) {
 	}
 
 	var options = []interface{}{
-		pretty.New(prettyConfig),
+		doric.New(doricConfig),
 	}
 	sources, err := sourceArgs()
 	if err != nil {

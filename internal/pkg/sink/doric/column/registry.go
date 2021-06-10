@@ -5,7 +5,7 @@ import (
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/schema"
-	"couture/internal/pkg/sink/pretty/config"
+	"couture/internal/pkg/sink/doric/config"
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 )

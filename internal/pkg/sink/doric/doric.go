@@ -1,24 +1,24 @@
-package pretty
+package doric
 
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/sink"
-	"couture/internal/pkg/sink/pretty/column"
-	"couture/internal/pkg/sink/pretty/config"
+	"couture/internal/pkg/sink/doric/column"
+	"couture/internal/pkg/sink/doric/config"
 	"couture/internal/pkg/source"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"time"
 )
 
-// prettySink provides render output.
-type prettySink struct {
+// doricSink provides render output.
+type doricSink struct {
 	terminalWidth uint
 	table         *column.Table
 	config        config.Config
 	out           chan string
 }
 
-// New provides a configured prettySink sink.
+// New provides a configured doricSink sink.
 func New(cfg config.Config) *sink.Sink {
 	switch {
 	case cfg.Color != nil && !*cfg.Color:
@@ -35,17 +35,17 @@ func New(cfg config.Config) *sink.Sink {
 		tf := time.Stamp
 		cfg.TimeFormat = &tf
 	}
-	var snk sink.Sink = &prettySink{
+	var snk sink.Sink = &doricSink{
 		terminalWidth: cfg.EffectiveTerminalWidth(),
 		table:         column.NewTable(cfg),
 		config:        cfg,
-		out:           sink.NewOut("pretty", cfg.Out),
+		out:           sink.NewOut("doric", cfg.Out),
 	}
 	return &snk
 }
 
 // Init ...
-func (snk *prettySink) Init(sources []*source.Source) {
+func (snk *doricSink) Init(sources []*source.Source) {
 	var sourceColors = map[model.SourceURL]string{}
 	for _, src := range sources {
 		consistentColors := *snk.config.ConsistentColors
@@ -56,7 +56,7 @@ func (snk *prettySink) Init(sources []*source.Source) {
 }
 
 // Accept ...
-func (snk *prettySink) Accept(event model.SinkEvent) error {
+func (snk *doricSink) Accept(event model.SinkEvent) error {
 	snk.out <- snk.table.Render(event)
 	return nil
 }

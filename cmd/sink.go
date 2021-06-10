@@ -3,7 +3,7 @@ package cmd
 import (
 	"couture/internal/pkg/model/layout"
 	"couture/internal/pkg/model/theme"
-	"couture/internal/pkg/sink/pretty/config"
+	"couture/internal/pkg/sink/doric/config"
 	"os"
 	"time"
 )
@@ -14,8 +14,8 @@ var defaultTheme = theme.Registry[theme.Prince]
 var defaultLayout = layout.Registry[layout.Default]
 var defaultTimeFormat = time.Stamp
 
-var prettyConfig = config.Config{}
-var prettyConfigDefaults = config.Config{
+var doricConfig = config.Config{}
+var doricConfigDefaults = config.Config{
 	AutoResize:       &enabled,
 	Color:            &enabled,
 	ConsistentColors: &enabled,
@@ -37,8 +37,8 @@ func loadSinkConfig() error {
 	}
 
 	if userCfg != nil {
-		prettyConfig.FillMissing(*userCfg)
+		doricConfig.FillMissing(*userCfg)
 	}
-	prettyConfig.FillMissing(prettyConfigDefaults)
+	doricConfig.FillMissing(doricConfigDefaults)
 	return nil
 }
