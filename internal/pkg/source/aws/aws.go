@@ -2,10 +2,10 @@ package aws
 
 import (
 	"context"
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/source"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/source"
 )
 
 // LambdaLogGroupPrefix ...

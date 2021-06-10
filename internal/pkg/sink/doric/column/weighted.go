@@ -1,10 +1,10 @@
 package column
 
 import (
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/sink"
-	"couture/internal/pkg/sink/layout"
 	"github.com/i582/cfmt/cmd/cfmt"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/sink"
+	"github.com/pandich/couture/internal/pkg/sink/layout"
 )
 
 type extractor func(event model.SinkEvent) []interface{}

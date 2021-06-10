@@ -26,6 +26,6 @@ class Couture < Formula
   end
 
   def install
-    bin.install "couture"
+    bin.install "github.com/pandich/couture"
   end
 end

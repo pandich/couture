@@ -2,13 +2,13 @@ package s3
 
 import (
 	"context"
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/sink"
-	"couture/internal/pkg/source"
-	"couture/internal/pkg/source/aws"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/sink"
+	"github.com/pandich/couture/internal/pkg/source"
+	"github.com/pandich/couture/internal/pkg/source/aws"
 	errors2 "github.com/pkg/errors"
 	"reflect"
 	"sync"

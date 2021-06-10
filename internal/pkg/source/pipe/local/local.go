@@ -1,9 +1,9 @@
 package local
 
 import (
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/source"
-	"couture/internal/pkg/source/pipe"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/source"
+	"github.com/pandich/couture/internal/pkg/source/pipe"
 	"os/exec"
 	"path/filepath"
 	"reflect"

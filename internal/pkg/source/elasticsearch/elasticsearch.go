@@ -2,10 +2,10 @@ package elasticsearch
 
 import (
 	"context"
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/source"
 	"encoding/json"
 	"github.com/bnkamalesh/errors"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/source"
 	"go.uber.org/ratelimit"
 	"gopkg.in/olivere/elastic.v3"
 	"io"

@@ -1,15 +1,15 @@
 package manager
 
 import (
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/source"
-	"couture/internal/pkg/source/aws/cloudformation"
-	"couture/internal/pkg/source/aws/cloudwatch"
-	"couture/internal/pkg/source/aws/s3"
-	"couture/internal/pkg/source/elasticsearch"
-	"couture/internal/pkg/source/fake"
-	"couture/internal/pkg/source/pipe/local"
-	"couture/internal/pkg/source/pipe/ssh"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/source"
+	"github.com/pandich/couture/internal/pkg/source/aws/cloudformation"
+	"github.com/pandich/couture/internal/pkg/source/aws/cloudwatch"
+	"github.com/pandich/couture/internal/pkg/source/aws/s3"
+	"github.com/pandich/couture/internal/pkg/source/elasticsearch"
+	"github.com/pandich/couture/internal/pkg/source/fake"
+	"github.com/pandich/couture/internal/pkg/source/pipe/local"
+	"github.com/pandich/couture/internal/pkg/source/pipe/ssh"
 	errors2 "github.com/pkg/errors"
 	"time"
 )

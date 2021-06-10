@@ -1,10 +1,10 @@
 package sink
 
 import (
-	"couture/internal/pkg/io"
-	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/source"
 	"github.com/i582/cfmt/cmd/cfmt"
+	"github.com/pandich/couture/internal/pkg/io"
+	"github.com/pandich/couture/internal/pkg/model/level"
+	"github.com/pandich/couture/internal/pkg/source"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"math/rand"

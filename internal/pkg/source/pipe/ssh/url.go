@@ -1,8 +1,8 @@
 package ssh
 
 import (
-	"couture/internal/pkg/model"
 	"github.com/melbahja/goph"
+	"github.com/pandich/couture/internal/pkg/model"
 	"net/url"
 	"os"
 	"os/user"

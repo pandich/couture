@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"couture/internal/pkg/couture"
-	"couture/internal/pkg/manager"
-	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/schema"
-	"couture/internal/pkg/sink"
 	"github.com/alecthomas/kong"
+	"github.com/pandich/couture/internal/pkg/couture"
+	"github.com/pandich/couture/internal/pkg/manager"
+	"github.com/pandich/couture/internal/pkg/model/level"
+	"github.com/pandich/couture/internal/pkg/schema"
+	"github.com/pandich/couture/internal/pkg/sink"
 	"reflect"
 	"strings"
 	"time"

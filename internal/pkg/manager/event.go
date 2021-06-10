@@ -2,10 +2,10 @@ package manager
 
 import (
 	"bytes"
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/schema"
 	"github.com/araddon/dateparse"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/model/level"
+	"github.com/pandich/couture/internal/pkg/schema"
 	"github.com/tidwall/gjson"
 	"html/template"
 	"strings"

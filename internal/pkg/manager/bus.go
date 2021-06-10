@@ -1,12 +1,12 @@
 package manager
 
 import (
-	"couture/internal/pkg/couture"
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/schema"
-	"couture/internal/pkg/source"
 	"fmt"
 	"github.com/joomcode/errorx"
+	"github.com/pandich/couture/internal/pkg/couture"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/schema"
+	"github.com/pandich/couture/internal/pkg/source"
 	"github.com/rcrowley/go-metrics"
 	"go.uber.org/ratelimit"
 	"os"

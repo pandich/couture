@@ -2,11 +2,11 @@ package cloudwatch
 
 import (
 	"context"
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/source"
-	"couture/internal/pkg/source/aws"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/source"
+	"github.com/pandich/couture/internal/pkg/source/aws"
 	errors2 "github.com/pkg/errors"
 	"go.uber.org/ratelimit"
 	"path"

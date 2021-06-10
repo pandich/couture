@@ -2,11 +2,11 @@
 package fake
 
 import (
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/source"
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/model/level"
+	"github.com/pandich/couture/internal/pkg/source"
 	"math/rand"
 	"reflect"
 	"strings"

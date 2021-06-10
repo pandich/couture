@@ -1,10 +1,10 @@
 package ssh
 
 import (
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/source"
-	"couture/internal/pkg/source/pipe"
 	"github.com/melbahja/goph"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/source"
+	"github.com/pandich/couture/internal/pkg/source/pipe"
 	"reflect"
 	"sync"
 	"time"

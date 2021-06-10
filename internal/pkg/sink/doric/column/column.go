@@ -1,8 +1,8 @@
 package column
 
 import (
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/sink/layout"
+	"github.com/pandich/couture/internal/pkg/model"
+	"github.com/pandich/couture/internal/pkg/sink/layout"
 )
 
 type (
