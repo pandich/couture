@@ -1,5 +1,7 @@
 ![Couture](docs/couture.png)
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/pandich/couture)]()
+
 ---
 
 Couture combines multiple log streams from disparate sources into human-friendly output.
