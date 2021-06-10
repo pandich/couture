@@ -1,17 +1,17 @@
 package cmd
 
 import (
-	"couture/internal/pkg/model/layout"
-	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/sink/doric/config"
+	layout2 "couture/internal/pkg/sink/layout"
+	theme2 "couture/internal/pkg/sink/theme"
 	"os"
 	"time"
 )
 
 var enabled = true
 var disabled = false
-var defaultTheme = theme.Registry[theme.Prince]
-var defaultLayout = layout.Registry[layout.Default]
+var defaultTheme = theme2.Registry[theme2.Prince]
+var defaultLayout = layout2.Registry[layout2.Default]
 var defaultTimeFormat = time.Stamp
 
 var doricConfig = config.Config{}

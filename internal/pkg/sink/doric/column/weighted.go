@@ -2,8 +2,8 @@ package column
 
 import (
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/layout"
-	"couture/internal/pkg/model/theme"
+	layout2 "couture/internal/pkg/sink/layout"
+	theme2 "couture/internal/pkg/sink/theme"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 
@@ -16,8 +16,8 @@ type extractorColumn struct {
 
 func newWeightedColumn(
 	columnName string,
-	layout layout.ColumnLayout,
-	style theme.Style,
+	layout layout2.ColumnLayout,
+	style theme2.Style,
 	value func(event model.SinkEvent) []interface{},
 ) extractorColumn {
 	col := extractorColumn{

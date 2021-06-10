@@ -2,8 +2,8 @@ package column
 
 import (
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/layout"
-	"couture/internal/pkg/model/theme"
+	layout2 "couture/internal/pkg/sink/layout"
+	theme2 "couture/internal/pkg/sink/theme"
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/i582/cfmt/cmd/cfmt"
@@ -23,27 +23,27 @@ type callerColumn struct {
 }
 
 func newCallerColumn(
-	entityStyle theme.Style,
-	actionDelimiterStyle theme.Style,
-	actionStyle theme.Style,
-	lineDelimiterStyle theme.Style,
-	lineStyle theme.Style,
-	entityLayout layout.ColumnLayout,
+	entityStyle theme2.Style,
+	actionDelimiterStyle theme2.Style,
+	actionStyle theme2.Style,
+	lineDelimiterStyle theme2.Style,
+	lineStyle theme2.Style,
+	entityLayout layout2.ColumnLayout,
 ) column {
 	col := callerColumn{baseColumn{columnName: callerPsuedoColumn, colLayout: entityLayout}}
 
 	linePadding := entityLayout.EffectivePadding()
-	linePadding.Left = layout.NoPadding.Left
-	lineLayout := layout.ColumnLayout{Padding: &linePadding}
+	linePadding.Left = layout2.NoPadding.Left
+	lineLayout := layout2.ColumnLayout{Padding: &linePadding}
 
 	entityPadding := entityLayout.EffectivePadding()
 	entityLayout.Padding = &entityPadding
-	entityLayout.Padding.Right = layout.NoPadding.Right
+	entityLayout.Padding.Right = layout2.NoPadding.Right
 
 	registerStyle(entityStyleName, entityStyle, entityLayout)
-	registerStyle(actionDelimiterStyleName, actionDelimiterStyle, layout.NoPaddingLayout)
-	registerStyle(actionStyleName, actionStyle, layout.NoPaddingLayout)
-	registerStyle(lineDelimiterStyleName, lineDelimiterStyle, layout.NoPaddingLayout)
+	registerStyle(actionDelimiterStyleName, actionDelimiterStyle, layout2.NoPaddingLayout)
+	registerStyle(actionStyleName, actionStyle, layout2.NoPaddingLayout)
+	registerStyle(lineDelimiterStyleName, lineDelimiterStyle, layout2.NoPaddingLayout)
 	registerStyle(lineStyleName, lineStyle, lineLayout)
 	return col
 }

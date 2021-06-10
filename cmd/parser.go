@@ -4,8 +4,8 @@ import (
 	"couture/internal/pkg/couture"
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/schema"
+	theme2 "couture/internal/pkg/sink/theme"
 	"github.com/alecthomas/kong"
 	"reflect"
 	"strings"
@@ -19,8 +19,8 @@ var maybeDie = parser.FatalIfErrorf
 var parserVars = kong.Vars{
 	"timeFormatNames": strings.Join(timeFormatNames, ","),
 	"columnNames":     strings.Join(schema.Names(), ","),
-	"themeNames":      strings.Join(theme.Names(), ","),
-	"defaultTheme":    theme.Prince,
+	"themeNames":      strings.Join(theme2.Names(), ","),
+	"defaultTheme":    theme2.Prince,
 	"logLevels":       strings.Join(level.LowerNames(), ","),
 	"defaultLogLevel": level.Info.LowerName(),
 }

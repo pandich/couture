@@ -1,11 +1,11 @@
 package column
 
 import (
-	"couture/internal/pkg/model/layout"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink/doric/config"
+	layout2 "couture/internal/pkg/sink/layout"
+	theme2 "couture/internal/pkg/sink/theme"
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
@@ -64,7 +64,7 @@ func newRegistry(config config.Config) registry {
 	}
 }
 
-func registerStyle(styleName string, style theme.Style, layout layout.ColumnLayout) {
+func registerStyle(styleName string, style theme2.Style, layout layout2.ColumnLayout) {
 	rawFormat := "{{%s%%s%s}}::" + style.Fg + "|bg" + style.Bg
 	format := fmt.Sprintf(rawFormat, layout.Prefix(), layout.Suffix())
 	cfmt.RegisterStyle(styleName, func(s string) string {

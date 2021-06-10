@@ -2,11 +2,11 @@ package column
 
 import (
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/layout"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink"
+	layout2 "couture/internal/pkg/sink/layout"
+	theme2 "couture/internal/pkg/sink/theme"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/indent"
 )
@@ -29,8 +29,8 @@ func newMessageColumn(
 	expand *bool,
 	multiLine *bool,
 	errorFg string,
-	messageStyles map[level.Level]theme.Style,
-	layout layout.ColumnLayout,
+	messageStyles map[level.Level]theme2.Style,
+	layout layout2.ColumnLayout,
 ) column {
 	col := messageColumn{
 		baseColumn: baseColumn{
@@ -43,7 +43,7 @@ func newMessageColumn(
 	}
 	for _, lvl := range level.Levels {
 		style := messageStyles[lvl]
-		errStyle := theme.Style{
+		errStyle := theme2.Style{
 			Fg: errorFg,
 			Bg: style.Bg,
 		}

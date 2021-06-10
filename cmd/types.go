@@ -3,7 +3,7 @@ package cmd
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/model/theme"
+	theme2 "couture/internal/pkg/sink/theme"
 	"github.com/alecthomas/kong"
 	"github.com/araddon/dateparse"
 	errors2 "github.com/pkg/errors"
@@ -190,7 +190,7 @@ func (v *themeName) AfterApply() error {
 	if v == nil {
 		return nil
 	}
-	thm, ok := theme.Registry[string(*v)]
+	thm, ok := theme2.Registry[string(*v)]
 	if !ok {
 		return errors2.Errorf("unknown theme: %s", *v)
 	}

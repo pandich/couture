@@ -1,8 +1,8 @@
 package config
 
 import (
-	"couture/internal/pkg/model/layout"
-	"couture/internal/pkg/model/theme"
+	layout2 "couture/internal/pkg/sink/layout"
+	theme2 "couture/internal/pkg/sink/theme"
 	"github.com/mattn/go-isatty"
 	"github.com/olekukonko/ts"
 	"os"
@@ -10,21 +10,21 @@ import (
 
 // Config ...
 type Config struct {
-	AutoResize       *bool          `yaml:"auto_resize,omitempty"`
-	ShowSchema       *bool          `yaml:"show_schema,omitempty"`
-	Color            *bool          `yaml:"color,omitempty"`
-	Columns          []string       `yaml:"columns,omitempty"`
-	ConsistentColors *bool          `yaml:"consistent_colors,omitempty"`
-	Expand           *bool          `yaml:"expand,omitempty"`
-	Highlight        *bool          `yaml:"highlight,omitempty"`
-	Multiline        *bool          `yaml:"multiline,omitempty"`
-	Theme            *theme.Theme   `yaml:"theme,omitempty"`
-	Layout           *layout.Layout `yaml:"-"`
-	TimeFormat       *string        `yaml:"time_format,omitempty"`
-	TTY              bool           `yaml:"-"`
-	Width            *uint          `yaml:"width,omitempty"`
-	Wrap             *bool          `yaml:"wrap,omitempty"`
-	Out              *os.File       `yaml:"-"`
+	AutoResize       *bool           `yaml:"auto_resize,omitempty"`
+	ShowSchema       *bool           `yaml:"show_schema,omitempty"`
+	Color            *bool           `yaml:"color,omitempty"`
+	Columns          []string        `yaml:"columns,omitempty"`
+	ConsistentColors *bool           `yaml:"consistent_colors,omitempty"`
+	Expand           *bool           `yaml:"expand,omitempty"`
+	Highlight        *bool           `yaml:"highlight,omitempty"`
+	Multiline        *bool           `yaml:"multiline,omitempty"`
+	Theme            *theme2.Theme   `yaml:"theme,omitempty"`
+	Layout           *layout2.Layout `yaml:"-"`
+	TimeFormat       *string         `yaml:"time_format,omitempty"`
+	TTY              bool            `yaml:"-"`
+	Width            *uint           `yaml:"width,omitempty"`
+	Wrap             *bool           `yaml:"wrap,omitempty"`
+	Out              *os.File        `yaml:"-"`
 }
 
 // EffectiveTerminalWidth ...

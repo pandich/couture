@@ -2,12 +2,12 @@ package column
 
 import (
 	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/layout"
-	"couture/internal/pkg/model/theme"
 	"couture/internal/pkg/schema"
+	layout2 "couture/internal/pkg/sink/layout"
+	theme2 "couture/internal/pkg/sink/theme"
 )
 
-func newContextColumn(style theme.Style, layout layout.ColumnLayout) column {
+func newContextColumn(style theme2.Style, layout layout2.ColumnLayout) column {
 	return newWeightedColumn(
 		schema.Context,
 		layout,
