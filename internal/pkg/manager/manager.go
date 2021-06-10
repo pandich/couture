@@ -1,11 +1,11 @@
 package manager
 
 import (
-	"github.com/pandich/couture/internal/pkg/model"
-	"github.com/pandich/couture/internal/pkg/model/level"
-	"github.com/pandich/couture/internal/pkg/schema"
-	"github.com/pandich/couture/internal/pkg/sink"
-	"github.com/pandich/couture/internal/pkg/source"
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/schema"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/source"
 	errors2 "github.com/pkg/errors"
 	"runtime"
 	"sync"

@@ -1,11 +1,11 @@
 package column
 
 import (
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/sink"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/termenv"
-	"github.com/pandich/couture/internal/pkg/model"
-	"github.com/pandich/couture/internal/pkg/model/level"
-	"github.com/pandich/couture/internal/pkg/sink"
 	"os"
 	"os/signal"
 	"syscall"

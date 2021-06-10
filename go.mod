@@ -1,4 +1,4 @@
-module github.com/pandich/couture
+module couture
 
 go 1.16
 

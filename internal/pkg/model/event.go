@@ -1,8 +1,8 @@
 package model
 
 import (
-	"github.com/pandich/couture/internal/pkg/model/level"
-	"github.com/pandich/couture/internal/pkg/schema"
+	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/schema"
 )
 
 // Event a log event

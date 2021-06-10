@@ -1,13 +1,13 @@
 package column
 
 import (
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/schema"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/layout"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/indent"
-	"github.com/pandich/couture/internal/pkg/model"
-	"github.com/pandich/couture/internal/pkg/model/level"
-	"github.com/pandich/couture/internal/pkg/schema"
-	"github.com/pandich/couture/internal/pkg/sink"
-	"github.com/pandich/couture/internal/pkg/sink/layout"
 )
 
 const (

@@ -1,9 +1,9 @@
 package source
 
 import (
+	"couture/internal/pkg/model"
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/pandich/couture/internal/pkg/model"
 	"net/url"
 	"reflect"
 	"strings"

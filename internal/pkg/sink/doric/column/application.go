@@ -1,10 +1,10 @@
 package column
 
 import (
-	"github.com/pandich/couture/internal/pkg/model"
-	"github.com/pandich/couture/internal/pkg/schema"
-	"github.com/pandich/couture/internal/pkg/sink"
-	"github.com/pandich/couture/internal/pkg/sink/layout"
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/schema"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/layout"
 )
 
 func newApplicationColumn(style sink.Style, layout layout.ColumnLayout) column {

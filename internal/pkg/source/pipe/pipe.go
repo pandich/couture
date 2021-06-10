@@ -2,8 +2,8 @@ package pipe
 
 import (
 	"bufio"
-	"github.com/pandich/couture/internal/pkg/model"
-	"github.com/pandich/couture/internal/pkg/source"
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/source"
 	"io"
 	"sync"
 )

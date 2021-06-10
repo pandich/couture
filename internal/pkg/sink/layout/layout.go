@@ -1,7 +1,7 @@
 package layout
 
 import (
-	"github.com/pandich/couture/internal/pkg/io"
+	"couture/internal/pkg/io"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 )

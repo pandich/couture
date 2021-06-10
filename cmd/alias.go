@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"couture/internal/pkg/couture"
 	"fmt"
 	"github.com/aymerick/raymond"
 	"github.com/coreos/etcd/pkg/fileutil"
-	"github.com/pandich/couture/internal/pkg/couture"
 	errors2 "github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"

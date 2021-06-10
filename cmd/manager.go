@@ -1,14 +1,14 @@
 package cmd
 
 import (
+	"couture/internal/pkg/couture"
+	"couture/internal/pkg/manager"
+	"couture/internal/pkg/model"
+	"couture/internal/pkg/schema"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/doric"
+	"couture/internal/pkg/sink/doric/column"
 	"github.com/coreos/etcd/pkg/fileutil"
-	"github.com/pandich/couture/internal/pkg/couture"
-	"github.com/pandich/couture/internal/pkg/manager"
-	"github.com/pandich/couture/internal/pkg/model"
-	"github.com/pandich/couture/internal/pkg/schema"
-	"github.com/pandich/couture/internal/pkg/sink"
-	"github.com/pandich/couture/internal/pkg/sink/doric"
-	"github.com/pandich/couture/internal/pkg/sink/doric/column"
 	"gopkg.in/multierror.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"

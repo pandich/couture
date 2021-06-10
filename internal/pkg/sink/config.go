@@ -1,9 +1,9 @@
 package sink
 
 import (
+	"couture/internal/pkg/sink/layout"
 	"github.com/mattn/go-isatty"
 	"github.com/olekukonko/ts"
-	"github.com/pandich/couture/internal/pkg/sink/layout"
 	"os"
 )
 

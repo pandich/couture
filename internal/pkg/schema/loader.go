@@ -1,9 +1,9 @@
 package schema
 
 import (
+	"couture/internal/pkg/couture"
+	cio "couture/internal/pkg/io"
 	"github.com/coreos/etcd/pkg/fileutil"
-	"github.com/pandich/couture/internal/pkg/couture"
-	cio "github.com/pandich/couture/internal/pkg/io"
 	"gopkg.in/yaml.v3"
 	"io"
 	"io/ioutil"

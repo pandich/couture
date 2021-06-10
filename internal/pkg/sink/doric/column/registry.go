@@ -1,12 +1,12 @@
 package column
 
 import (
+	"couture/internal/pkg/model/level"
+	"couture/internal/pkg/schema"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/layout"
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
-	"github.com/pandich/couture/internal/pkg/model/level"
-	"github.com/pandich/couture/internal/pkg/schema"
-	"github.com/pandich/couture/internal/pkg/sink"
-	"github.com/pandich/couture/internal/pkg/sink/layout"
 )
 
 // DefaultColumns ...
