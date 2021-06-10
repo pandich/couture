@@ -43,7 +43,7 @@ clean:
 	@echo cleaning
 	@rm -rf dist/
 	@find $(SOURCES) -name statik.go -exec rm {} \;
-build: neat
+build: neat assets
 	@echo building
 	@$(GO) build -o dist/$(APPLICATION) $(COMMAND)
 assets: statik
