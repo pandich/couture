@@ -14,6 +14,7 @@ import (
 )
 
 var timeFormatNames = []string{
+	model.HumanTimeFormat,
 	"c",
 	"iso8601",
 	"iso8601-nanos",
@@ -207,6 +208,8 @@ func (t *timeFormat) AfterApply() error {
 	}
 	format := strings.ToLower(string(*t))
 	switch format {
+	case model.HumanTimeFormat:
+		doricConfig.TimeFormat = &format
 	case "c":
 		s := time.ANSIC
 		doricConfig.TimeFormat = &s

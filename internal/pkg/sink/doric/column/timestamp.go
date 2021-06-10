@@ -5,6 +5,7 @@ import (
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/layout"
+	"github.com/dustin/go-humanize"
 	"time"
 )
 
@@ -14,7 +15,15 @@ func newTimestampColumn(timeFormat *string, style sink.Style, layout layout.Colu
 		layout,
 		style,
 		func(event model.SinkEvent) []interface{} {
-			return []interface{}{time.Time(event.Timestamp).Format(*timeFormat)}
+			then := time.Time(event.Timestamp)
+			if *timeFormat == model.HumanTimeFormat {
+				humanized := humanize.Time(then)
+				if humanized != "now" {
+					return []interface{}{humanized}
+				}
+				return []interface{}{then.Format(time.Stamp)}
+			}
+			return []interface{}{then.Format(*timeFormat)}
 		},
 	)
 }

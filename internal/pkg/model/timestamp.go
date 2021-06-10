@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+// HumanTimeFormat ...
+const HumanTimeFormat = "human"
+
 // Timestamp When the even occurred.
 type Timestamp time.Time
 

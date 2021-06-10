@@ -85,3 +85,18 @@ install-shell-completions: gocomplete
 	@echo installing completions
 	@echo y | COMP_UNINSTALL=1 $(APPLICATION) > /dev/null
 	@echo y | COMP_INSTALL=1 $(APPLICATION) > /dev/null
+
+# Documentation
+.PHONY: record-examples
+record-examples: example-fake-multi-line example-fake-single-line
+.PHONY: example-fake-multi-line
+example-fake-multi-line:
+	@asciinema rec --overwrite --command="couture --rate-limit=5 --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa --expand --multiline @@fake" docs/$@.cast
+	@make docs/$@.gif
+.PHONY: example-fake-single-line
+example-fake-single-line:
+	@asciinema rec --overwrite --command="couture --rate-limit=5 --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa @@fake" docs/$@.cast
+	@make docs/$@.gif
+.PHONY: %.gif
+%.gif:
+	@asciicast2gif -t monokai $*.cast $@

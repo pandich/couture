@@ -1,22 +1,34 @@
 ![Couture](docs/couture.png)
 
-Couture combines multiple log streams from disparate sources into friendly output.
+---
 
-Example:
-
-`couture --multi-line --expand --highlight --filter=+'[Ss]habby' --filter=+qunioa fake://?style=hacker fake://?style=hipster fake://?style=hacker`
-![Couture](docs/couture-example-1.gif)
+Couture combines multiple log streams from disparate sources into human-friendly output.
 
 ### Installation
 
-`make install`
+	make install
+	make install-shell-completions # optional
 
 ### Usage:
 
-`couture --help`
-
-[comment]: <> (TODO shell completions )
+	couture --help
 
 ### Configuration
 
 [comment]: <> (TODO config doc)
+
+---
+
+### Examples:
+
+#### Single-line
+
+	couture --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa @@fake
+
+![Couture](docs/example-fake-single-line.gif)
+
+#### Multi-line
+
+	couture --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa --expand --multiline @@fake
+
+![Couture](docs/example-fake-multi-line.gif)
