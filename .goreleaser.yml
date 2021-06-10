@@ -30,14 +30,13 @@ changelog:
 
 release:
   github:
-    owner: gaggle-net
+    owner: pandich
     name: couture
 
 brews:
   - name: couture
     tap:
-      owner: gaggle-net
+      owner: pandich
       name: couture
     folder: Formula
     description: "Allows for tailing multiple event sources."
-    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
