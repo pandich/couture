@@ -39,7 +39,23 @@ type Filter struct {
 	Kind    FilterKind
 }
 
-// IsHighlighted ...
-func (f FilterKind) IsHighlighted() bool {
+type filters []Filter
+
+func (f FilterKind) isHighlighted() bool {
 	return f == Include
+}
+
+func (f Filter) replaceAllStringFunc(s string, replacer func(string) string) string {
+	if f.Kind.isHighlighted() {
+		s = f.Pattern.ReplaceAllStringFunc(s, replacer)
+	}
+	return s
+}
+
+// ReplaceAllStringFunc ...
+func (fs filters) ReplaceAllStringFunc(s string, replacer func(string) string) string {
+	for _, filter := range fs {
+		s = filter.replaceAllStringFunc(s, replacer)
+	}
+	return s
 }

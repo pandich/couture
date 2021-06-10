@@ -15,6 +15,8 @@ import (
 	"time"
 )
 
+// TODO test alias behavior
+
 var now = time.Now()
 
 const aliasScheme = "alias"

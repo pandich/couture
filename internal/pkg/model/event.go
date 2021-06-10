@@ -31,6 +31,6 @@ type Event struct {
 type SinkEvent struct {
 	Event
 	SourceURL SourceURL
-	Filters   []Filter
+	Filters   filters
 	Schema    *schema.Schema
 }

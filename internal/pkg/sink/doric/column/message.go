@@ -79,7 +79,12 @@ func (col messageColumn) render(event model.SinkEvent) string {
 		}
 		message += errorMessage
 	}
-	message = col.highlightMessage(event, message)
+
+	if col.highlight {
+		message = event.Filters.ReplaceAllStringFunc(message, func(s string) string {
+			return col.levelSprintf("", highlightSuffix, event.Level, s)
+		})
+	}
 
 	if message != "" {
 		if bool(col.multiLine) || expanded {
@@ -90,21 +95,6 @@ func (col messageColumn) render(event model.SinkEvent) string {
 	}
 
 	return cfmt.Sprint(message)
-}
-
-func (col messageColumn) renderErrorMessage(event model.SinkEvent) string {
-	if event.Error == "" {
-		return ""
-	}
-	var errString = string(event.Error)
-	if col.expand {
-		if s, ok := model.Message(event.Error).Expand(); ok {
-			errString = s
-		}
-	}
-	errString = col.levelSprintf("", errorSuffix, event.Level, errString)
-	errString = indent.String(errString, 4)
-	return errString
 }
 
 func (col messageColumn) renderMessage(event model.SinkEvent) (string, bool) {
@@ -120,17 +110,19 @@ func (col messageColumn) renderMessage(event model.SinkEvent) (string, bool) {
 	return message, expanded
 }
 
-func (col messageColumn) highlightMessage(event model.SinkEvent, message string) string {
-	if col.highlight {
-		for _, filter := range event.Filters {
-			if filter.Kind.IsHighlighted() {
-				message = filter.Pattern.ReplaceAllStringFunc(message, func(s string) string {
-					return col.levelSprintf("", highlightSuffix, event.Level, s)
-				})
-			}
+func (col messageColumn) renderErrorMessage(event model.SinkEvent) string {
+	if event.Error == "" {
+		return ""
+	}
+	var errString = string(event.Error)
+	if col.expand {
+		if s, ok := model.Message(event.Error).Expand(); ok {
+			errString = s
 		}
 	}
-	return message
+	errString = col.levelSprintf("", errorSuffix, event.Level, errString)
+	errString = indent.String(errString, 4)
+	return errString
 }
 
 func (col messageColumn) levelSprintf(prefix string, suffix string, lvl level.Level, s interface{}) string {
