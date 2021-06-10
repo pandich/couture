@@ -8,6 +8,10 @@ Couture combines multiple log streams from disparate sources into human-friendly
 
 ### Installation
 
+	go get -u github.com/pandich/couture	
+
+or
+
 	make install
 	make install-shell-completions # optional
 
