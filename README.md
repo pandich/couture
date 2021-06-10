@@ -4,7 +4,7 @@ Couture combines multiple log streams from disparate sources into friendly outpu
 
 Example:
 
-`couture --multi-line --expand --highlight --filter=+qunioa fake://?style=hacker fake://?style=hipster fake://?style=hacker`
+`couture --multi-line --expand --highlight --filter=+'[Ss]habby' --filter=+qunioa fake://?style=hacker fake://?style=hipster fake://?style=hacker`
 ![Couture](docs/couture-example-1.gif)
 
 ### Installation
