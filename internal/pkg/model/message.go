@@ -1,5 +1,12 @@
 package model
 
+import (
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/pretty"
+	"strconv"
+	"strings"
+)
+
 // Message ...
 type (
 	// Message a message.
@@ -42,4 +49,25 @@ func (msg Message) Matches(filters *[]Filter) FilterKind {
 // String ...
 func (msg Message) String() string {
 	return string(msg)
+}
+
+// Expand ...
+func (msg Message) Expand() (string, bool) {
+	var in = string(msg)
+	if in == "" {
+		return in, false
+	}
+	if in[0] == '"' {
+		s, err := strconv.Unquote(in)
+		if err != nil {
+			return in, false
+		}
+		in = s
+	}
+	if !gjson.Valid(in) {
+		return in, false
+	}
+	in = string(pretty.Pretty([]byte(in)))
+	in = strings.TrimRight(in, "\n")
+	return in, true
 }

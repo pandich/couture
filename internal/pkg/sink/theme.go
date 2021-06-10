@@ -1,7 +1,7 @@
-package theme
+package sink
 
 import (
-	"couture/internal/pkg/couture"
+	"couture/internal/pkg/io"
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/source"
 	"github.com/i582/cfmt/cmd/cfmt"
@@ -14,7 +14,7 @@ import (
 const Prince = "prince"
 
 // Registry is the registry of theme names to their structs.
-var Registry = map[string]Theme{
+var Registry = map[string]theme{
 	Prince: mustLoad(Prince),
 }
 
@@ -35,8 +35,7 @@ type (
 		Bg string `yaml:"bg"`
 	}
 
-	// Theme ...
-	Theme struct {
+	theme struct {
 		Legend          Style                 `yaml:"legend"`
 		Source          []Style               `yaml:"source"`
 		Timestamp       Style                 `yaml:"timestamp"`
@@ -54,7 +53,7 @@ type (
 
 // SourceStyle returns a color for a source. When consistentColors is true, sources will get the same
 // color across invocations of the application. Otherwise, the color selection randomized for each run.
-func (theme Theme) SourceStyle(consistentColors bool, src source.Source) Style {
+func (theme theme) SourceStyle(consistentColors bool, src source.Source) Style {
 	//nolint:gosec
 	var index = rand.Intn(len(theme.Source))
 	if consistentColors {
@@ -63,8 +62,8 @@ func (theme Theme) SourceStyle(consistentColors bool, src source.Source) Style {
 	return theme.Source[index]
 }
 
-func load(name string) (*Theme, error) {
-	f, err := couture.Open("/themes/" + name + ".yaml")
+func load(name string) (*theme, error) {
+	f, err := io.Open("/themes/" + name + ".yaml")
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +74,7 @@ func load(name string) (*Theme, error) {
 		return nil, err
 	}
 
-	var theme Theme
+	var theme theme
 	err = yaml.Unmarshal(b, &theme)
 	if err != nil {
 		return nil, err
@@ -83,7 +82,7 @@ func load(name string) (*Theme, error) {
 	return &theme, nil
 }
 
-func mustLoad(name string) Theme {
+func mustLoad(name string) theme {
 	theme, err := load(name)
 	if err != nil {
 		panic(err)

@@ -3,9 +3,8 @@ package column
 import (
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/schema"
-	"couture/internal/pkg/sink/doric/config"
-	layout2 "couture/internal/pkg/sink/layout"
-	theme2 "couture/internal/pkg/sink/theme"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/layout"
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
@@ -23,7 +22,8 @@ var DefaultColumns = []string{
 
 type registry map[string]column
 
-func newRegistry(config config.Config) registry {
+func newRegistry(config sink.Config) registry {
+	errorStyle := config.Theme.Level[level.Error]
 	return map[string]column{
 		sourcePseudoColumn: newSourceColumn(
 			config.Layout.Source,
@@ -54,17 +54,17 @@ func newRegistry(config config.Config) registry {
 			config.Layout.Level,
 		),
 		schema.Message: newMessageColumn(
-			config.Highlight,
-			config.Expand,
-			config.Multiline,
-			config.Theme.Level[level.Error].Bg,
+			highlight(config.Highlight != nil && *config.Highlight),
+			expand(config.Expand != nil && *config.Expand),
+			multiLine(config.MultiLine != nil && *config.MultiLine),
+			errorStyle,
 			config.Theme.Message,
 			config.Layout.Message,
 		),
 	}
 }
 
-func registerStyle(styleName string, style theme2.Style, layout layout2.ColumnLayout) {
+func registerStyle(styleName string, style sink.Style, layout layout.ColumnLayout) {
 	rawFormat := "{{%s%%s%s}}::" + style.Fg + "|bg" + style.Bg
 	format := fmt.Sprintf(rawFormat, layout.Prefix(), layout.Suffix())
 	cfmt.RegisterStyle(styleName, func(s string) string {

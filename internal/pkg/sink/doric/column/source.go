@@ -2,8 +2,8 @@ package column
 
 import (
 	"couture/internal/pkg/model"
-	layout2 "couture/internal/pkg/sink/layout"
-	theme2 "couture/internal/pkg/sink/theme"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/layout"
 	"couture/internal/pkg/source"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
@@ -14,7 +14,7 @@ type sourceColumn struct {
 	baseColumn
 }
 
-func newSourceColumn(layout layout2.ColumnLayout) column {
+func newSourceColumn(layout layout.ColumnLayout) column {
 	return sourceColumn{baseColumn{columnName: sourcePseudoColumn, colLayout: layout}}
 }
 
@@ -24,8 +24,8 @@ func (col sourceColumn) render(event model.SinkEvent) string {
 
 // RegisterSourceStyle ...
 func RegisterSourceStyle(
-	style theme2.Style,
-	layout layout2.ColumnLayout,
+	style sink.Style,
+	layout layout.ColumnLayout,
 	src source.Source,
 ) {
 	layout.Sigil = string(src.Sigil())

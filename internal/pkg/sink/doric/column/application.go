@@ -3,11 +3,11 @@ package column
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/schema"
-	layout2 "couture/internal/pkg/sink/layout"
-	theme2 "couture/internal/pkg/sink/theme"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/layout"
 )
 
-func newApplicationColumn(style theme2.Style, layout layout2.ColumnLayout) column {
+func newApplicationColumn(style sink.Style, layout layout.ColumnLayout) column {
 	return newWeightedColumn(
 		schema.Application,
 		layout,

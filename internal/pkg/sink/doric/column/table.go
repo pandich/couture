@@ -3,7 +3,7 @@ package column
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/sink/doric/config"
+	"couture/internal/pkg/sink"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/termenv"
 	"os"
@@ -13,13 +13,13 @@ import (
 
 // Table ...
 type Table struct {
-	config   config.Config
+	config   sink.Config
 	widths   map[string]uint
 	registry registry
 }
 
 // NewTable ...
-func NewTable(config config.Config) *Table {
+func NewTable(config sink.Config) *Table {
 	registry := newRegistry(config)
 	table := Table{
 		config:   config,

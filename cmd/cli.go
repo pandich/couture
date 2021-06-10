@@ -20,7 +20,7 @@ var cli struct {
 
 	Theme            themeName        `group:"display" help:"Specify the the color theme: ${enum}." placeholder:"theme" default:"${defaultTheme}" enum:"${themeNames}" env:"COUTURE_THEME"`
 	ConsistentColors consistentColors `group:"display" help:"Maintain consistent source URL colors between runs." negatable:"true"`
-	Multiline        multiline        `group:"display" help:"Display each log event in multiline format. (Enabled by --expand-json)" negatable:"true"`
+	MultiLine        multiLine        `group:"display" help:"Display each log event in multi-line format. (Enabled by --expand-json)" negatable:"true"`
 	Expand           expand           `group:"display" help:"Example structured message bodies (e.g. JSON)." negatable:"true"`
 
 	Level     levelLike  `group:"filter" help:"The minimum log level to display: ${enum}." default:"${defaultLogLevel}" placeholder:"level" short:"l" enum:"${logLevels}" env:"COUTURE_LEVEL"`

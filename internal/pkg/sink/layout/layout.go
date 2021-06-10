@@ -1,7 +1,7 @@
 package layout
 
 import (
-	"couture/internal/pkg/couture"
+	"couture/internal/pkg/io"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 )
@@ -26,7 +26,7 @@ type Layout struct {
 }
 
 func load(name string) (*Layout, error) {
-	f, err := couture.Open("/layouts/" + name + ".yaml")
+	f, err := io.Open("/layouts/" + name + ".yaml")
 	if err != nil {
 		return nil, err
 	}

@@ -1,27 +1,26 @@
 package cmd
 
 import (
-	"couture/internal/pkg/sink/doric/config"
-	layout2 "couture/internal/pkg/sink/layout"
-	theme2 "couture/internal/pkg/sink/theme"
+	"couture/internal/pkg/sink"
+	"couture/internal/pkg/sink/layout"
 	"os"
 	"time"
 )
 
 var enabled = true
 var disabled = false
-var defaultTheme = theme2.Registry[theme2.Prince]
-var defaultLayout = layout2.Registry[layout2.Default]
+var defaultTheme = sink.Registry[sink.Prince]
+var defaultLayout = layout.Registry[layout.Default]
 var defaultTimeFormat = time.Stamp
 
-var doricConfig = config.Config{}
-var doricConfigDefaults = config.Config{
+var doricConfig = sink.Config{}
+var doricConfigDefaults = sink.Config{
 	AutoResize:       &enabled,
 	Color:            &enabled,
 	ConsistentColors: &enabled,
 	Expand:           &disabled,
 	Highlight:        &disabled,
-	Multiline:        &disabled,
+	MultiLine:        &disabled,
 	Out:              os.Stdout,
 	ShowSchema:       &disabled,
 	Theme:            &defaultTheme,

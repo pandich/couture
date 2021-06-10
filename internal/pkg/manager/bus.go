@@ -57,7 +57,7 @@ func (mgr *busManager) makeAlertChan(errChan chan source.Error) chan model.SinkE
 			alert := <-alertChan
 			title := fmt.Sprintf("%s: %s (%s)", couture.Name, alert.Application, alert.SourceURL.ShortForm())
 			message := fmt.Sprintf("[%s] %s", alert.Level, alert.Message)
-			if err := couture.NotifyOS(title, message); err != nil {
+			if err := notifyOS(title, message); err != nil {
 				errChan <- source.Error{SourceURL: alert.SourceURL, Error: err}
 			}
 		}
@@ -110,7 +110,7 @@ func (mgr *busManager) makeSrcChan(
 				metrics.NewMeter(),
 			).(metrics.Meter)
 			srcChanSrcMeter.Mark(1)
-			sch := schema.Guess(sourceEvent.Event, mgr.config.Schemas...)
+			sch := schema.GuessSchema(sourceEvent.Event, mgr.config.Schemas...)
 			if sch == nil {
 				unknownChan <- sourceEvent.Event
 			}

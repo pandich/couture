@@ -5,14 +5,16 @@ import (
 	"couture/internal/pkg/manager"
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/schema"
+	"couture/internal/pkg/sink"
 	"couture/internal/pkg/sink/doric"
-	"couture/internal/pkg/sink/doric/config"
+	"couture/internal/pkg/sink/doric/column"
 	"github.com/coreos/etcd/pkg/fileutil"
 	"gopkg.in/multierror.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path"
+	"time"
 )
 
 var managerConfig = manager.Config{}
@@ -71,6 +73,14 @@ func getOptions() ([]interface{}, error) {
 		return sources, nil
 	}
 
+	if len(doricConfig.Columns) == 0 {
+		doricConfig.Columns = column.DefaultColumns
+	}
+	if doricConfig.TimeFormat == nil {
+		tf := time.Stamp
+		doricConfig.TimeFormat = &tf
+	}
+
 	var options = []interface{}{
 		doric.New(doricConfig),
 	}
@@ -85,7 +95,7 @@ func getOptions() ([]interface{}, error) {
 	return options, nil
 }
 
-func loadConfig() (*config.Config, error) {
+func loadConfig() (*sink.Config, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -93,7 +103,7 @@ func loadConfig() (*config.Config, error) {
 
 	filename := path.Join(home, ".config", couture.Name, "config.yaml")
 	if !fileutil.Exist(filename) {
-		return &config.Config{}, nil
+		return &sink.Config{}, nil
 	}
 
 	f, err := os.Open(filename)
@@ -106,7 +116,7 @@ func loadConfig() (*config.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	var c config.Config
+	var c sink.Config
 	err = yaml.Unmarshal(text, &c)
 	if err != nil {
 		return nil, err

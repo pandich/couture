@@ -59,8 +59,8 @@ type (
 func (mgr *busManager) Register(registrants ...interface{}) error {
 	for _, registrant := range registrants {
 		switch v := registrant.(type) {
-		case *sink.Sink:
-			mgr.sinks = append(mgr.sinks, v)
+		case sink.Sink:
+			mgr.sinks = append(mgr.sinks, &v)
 		case source.Source:
 			mgr.sources = append(mgr.sources, &v)
 		default:

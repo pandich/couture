@@ -43,19 +43,19 @@ func expandAliases(args []string) ([]string, error) {
 		return nil, err
 	}
 
-	var cfg aliasConfig
-	err = yaml.Unmarshal(s, &cfg)
+	var config aliasConfig
+	err = yaml.Unmarshal(s, &config)
 	if err != nil {
 		return nil, err
 	}
 
 	var expandedArgs []string
 	for i := range args {
-		expandedArgs = append(expandedArgs, expandAliasString(cfg, args[i])...)
+		expandedArgs = append(expandedArgs, expandAliasString(config, args[i])...)
 	}
 	for i := range expandedArgs {
 		if u, err := url.Parse(expandedArgs[i]); err == nil && u.Scheme == "alias" {
-			value, err := expandAliasURL(cfg, u)
+			value, err := expandAliasURL(config, u)
 			if err != nil {
 				return nil, err
 			}
@@ -67,16 +67,16 @@ func expandAliases(args []string) ([]string, error) {
 	return expandedArgs, nil
 }
 
-func expandAliasString(cfg aliasConfig, arg string) []string {
+func expandAliasString(config aliasConfig, arg string) []string {
 	const aliasNamePrefix = "@"
-	const groupNamePrefix = "@@"
+	const groupNamePrefix = aliasNamePrefix + aliasNamePrefix
 	const aliasURLPrefix = aliasScheme + "://"
 
 	var args []string
 	switch {
 	case len(arg) > len(groupNamePrefix) && arg[:len(groupNamePrefix)] == groupNamePrefix:
 		groupName := arg[len(groupNamePrefix):]
-		group, ok := cfg.Groups[groupName]
+		group, ok := config.Groups[groupName]
 		if !ok {
 			return nil
 		}
@@ -91,9 +91,9 @@ func expandAliasString(cfg aliasConfig, arg string) []string {
 	return args
 }
 
-func expandAliasURL(cfg aliasConfig, aliasURL *url.URL) (string, error) {
+func expandAliasURL(config aliasConfig, aliasURL *url.URL) (string, error) {
 	simpleArgs := regexp.MustCompile(`@(?P<name>\w+)`)
-	alias, ok := cfg.Aliases[aliasURL.Host]
+	alias, ok := config.Aliases[aliasURL.Host]
 	if !ok {
 		return "", errors2.Errorf("unknown alias: %s", aliasURL.Host)
 	}

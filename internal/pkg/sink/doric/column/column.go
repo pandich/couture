@@ -2,18 +2,18 @@ package column
 
 import (
 	"couture/internal/pkg/model"
-	layout2 "couture/internal/pkg/sink/layout"
+	"couture/internal/pkg/sink/layout"
 )
 
 type (
 	column interface {
 		render(event model.SinkEvent) string
 		name() string
-		layout() layout2.ColumnLayout
+		layout() layout.ColumnLayout
 	}
 	baseColumn struct {
 		columnName string
-		colLayout  layout2.ColumnLayout
+		colLayout  layout.ColumnLayout
 	}
 )
 
@@ -22,7 +22,7 @@ func (col baseColumn) name() string {
 	return col.columnName
 }
 
-func (col baseColumn) layout() layout2.ColumnLayout {
+func (col baseColumn) layout() layout.ColumnLayout {
 	return col.colLayout
 }
 

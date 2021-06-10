@@ -5,8 +5,7 @@ import (
 	"couture/internal/pkg/model/level"
 	"couture/internal/pkg/schema"
 	"couture/internal/pkg/sink"
-	layout2 "couture/internal/pkg/sink/layout"
-	theme2 "couture/internal/pkg/sink/theme"
+	"couture/internal/pkg/sink/layout"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/indent"
 )
@@ -17,34 +16,39 @@ const (
 	sigilSuffix     = "Sigil"
 )
 
-type messageColumn struct {
-	baseColumn
-	highlight bool
-	multiLine bool
-	expand    bool
-}
+type (
+	highlight     bool
+	multiLine     bool
+	expand        bool
+	messageColumn struct {
+		baseColumn
+		highlight highlight
+		multiLine multiLine
+		expand    expand
+	}
+)
 
 func newMessageColumn(
-	highlight *bool,
-	expand *bool,
-	multiLine *bool,
-	errorFg string,
-	messageStyles map[level.Level]theme2.Style,
-	layout layout2.ColumnLayout,
+	highlight highlight,
+	expand expand,
+	multiLine multiLine,
+	errorStyle sink.Style,
+	messageStyles map[level.Level]sink.Style,
+	layout layout.ColumnLayout,
 ) column {
 	col := messageColumn{
 		baseColumn: baseColumn{
 			columnName: schema.Message,
 			colLayout:  layout,
 		},
-		highlight: highlight != nil && *highlight,
-		multiLine: multiLine != nil && *multiLine,
-		expand:    expand != nil && *expand,
+		highlight: highlight,
+		multiLine: multiLine,
+		expand:    expand,
 	}
 	for _, lvl := range level.Levels {
 		style := messageStyles[lvl]
-		errStyle := theme2.Style{
-			Fg: errorFg,
+		errStyle := sink.Style{
+			Fg: errorStyle.Bg,
 			Bg: style.Bg,
 		}
 		cfmt.RegisterStyle(
@@ -78,7 +82,7 @@ func (col messageColumn) render(event model.SinkEvent) string {
 	message = col.highlightMessage(event, message)
 
 	if message != "" {
-		if col.multiLine || expanded {
+		if bool(col.multiLine) || expanded {
 			message = "\n" + message
 		} else {
 			message = " " + message
@@ -89,16 +93,17 @@ func (col messageColumn) render(event model.SinkEvent) string {
 }
 
 func (col messageColumn) renderErrorMessage(event model.SinkEvent) string {
-	var errString = string(event.Error)
-	if errString != "" {
-		if col.expand {
-			if s, ok := sink.ExpandText(errString); ok {
-				errString = s
-			}
-		}
-		errString = col.levelSprintf("", errorSuffix, event.Level, errString)
-		errString = indent.String(errString, 4)
+	if event.Error == "" {
+		return ""
 	}
+	var errString = string(event.Error)
+	if col.expand {
+		if s, ok := model.Message(event.Error).Expand(); ok {
+			errString = s
+		}
+	}
+	errString = col.levelSprintf("", errorSuffix, event.Level, errString)
+	errString = indent.String(errString, 4)
 	return errString
 }
 
@@ -106,7 +111,7 @@ func (col messageColumn) renderMessage(event model.SinkEvent) (string, bool) {
 	var expanded = false
 	var message = string(event.Message)
 	if col.expand {
-		if s, ok := sink.ExpandText(message); ok {
+		if s, ok := event.Message.Expand(); ok {
 			expanded = true
 			message = s
 		}

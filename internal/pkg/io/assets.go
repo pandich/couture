@@ -1,4 +1,4 @@
-package couture
+package io
 
 import (
 	_ "couture/internal/pkg/assets" // for statik file system initialization

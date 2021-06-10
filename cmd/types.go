@@ -3,7 +3,7 @@ package cmd
 import (
 	"couture/internal/pkg/model"
 	"couture/internal/pkg/model/level"
-	theme2 "couture/internal/pkg/sink/theme"
+	"couture/internal/pkg/sink"
 	"github.com/alecthomas/kong"
 	"github.com/araddon/dateparse"
 	errors2 "github.com/pkg/errors"
@@ -41,7 +41,7 @@ type (
 	expand           bool
 	levelLike        level.Level
 	highlight        bool
-	multiline        bool
+	multiLine        bool
 	themeName        string
 	timeFormat       string
 	tty              bool
@@ -115,12 +115,12 @@ func (v *highlight) AfterApply() error {
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v *multiline) AfterApply() error {
+func (v *multiLine) AfterApply() error {
 	if v == nil {
 		return nil
 	}
 	b := bool(*v)
-	doricConfig.Multiline = &b
+	doricConfig.MultiLine = &b
 	return nil
 }
 
@@ -190,7 +190,7 @@ func (v *themeName) AfterApply() error {
 	if v == nil {
 		return nil
 	}
-	thm, ok := theme2.Registry[string(*v)]
+	thm, ok := sink.Registry[string(*v)]
 	if !ok {
 		return errors2.Errorf("unknown theme: %s", *v)
 	}

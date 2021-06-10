@@ -7,8 +7,8 @@ import (
 
 const textRootField = "_"
 
-// Guess ..
-func Guess(s string, schemasToCheck ...Schema) *Schema {
+// GuessSchema ..
+func GuessSchema(s string, schemasToCheck ...Schema) *Schema {
 	for _, schema := range schemasToCheck {
 		if schema.canHandle(s) {
 			return &schema
