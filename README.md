@@ -2,6 +2,7 @@
 
 [![Go Report Card](http://goreportcard.com/badge/github.com/pandich/couture)](https://goreportcard.com/badge/github.com/pandich/couture)
 [![goreleaser](http://github.com/pandich/couture/actions/workflows/goreleaser.yml/badge.svg)](https://github.com/pandich/couture/actions/workflows/goreleaser.yml)
+[![CodeQL](https://github.com/pandich/couture/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/pandich/couture/actions/workflows/codeql-analysis.yml)
 
 ---
 
