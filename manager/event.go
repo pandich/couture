@@ -74,7 +74,7 @@ func unmarshallUnknown(msg string) *model.Event {
 func updateEvent(event *model.Event, col string, field string, values map[string]gjson.Result, tmpl string) {
 	rawValue := values[field]
 	value := getValue(tmpl, values, rawValue)
-	switch col {
+	switch schema.Column(col) {
 	case schema.Timestamp:
 		s := value
 		if s != "" {

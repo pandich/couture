@@ -5,6 +5,7 @@ import (
 	"github.com/muesli/termenv"
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/model/level"
+	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink"
 	"os"
 	"os/signal"
@@ -42,7 +43,7 @@ func (table *Table) Render(event model.SinkEvent) string {
 	// get format string and arguments
 	var line string
 	for _, name := range table.config.Columns {
-		col := table.registry[name]
+		col := table.registry[schema.Column(name)]
 		line += col.render(event) + resetSequence
 	}
 	if table.config.Wrap != nil && *table.config.Wrap {
@@ -58,7 +59,7 @@ func (table *Table) updateColumnWidths() {
 	var remainingWidth = table.config.EffectiveTerminalWidth()
 	var totalWeight uint
 	for _, name := range table.config.Columns {
-		col := table.registry[name]
+		col := table.registry[schema.Column(name)]
 		totalWeight += col.layout().Width
 	}
 
@@ -66,7 +67,7 @@ func (table *Table) updateColumnWidths() {
 	remainingWidth = uint(float64(remainingWidth) * nonMessageAreaWidthPercent)
 
 	for _, name := range table.config.Columns {
-		col := table.registry[name]
+		col := table.registry[schema.Column(name)]
 		weigth := col.layout().Width
 		weighting := float64(weigth) / float64(totalWeight)
 		var width = uint(weighting * float64(remainingWidth))

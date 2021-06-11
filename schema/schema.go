@@ -5,30 +5,34 @@ import (
 	"regexp"
 )
 
+// Column ...
+type Column string
+
 const (
 	// Timestamp ...
-	Timestamp = "timestamp"
+	Timestamp Column = "timestamp"
 	// Level ...
-	Level = "level"
+	Level Column = "level"
 	// Message ...
-	Message = "message"
+	Message Column = "message"
 	// Application ...
-	Application = "application"
+	Application Column = "application"
 	// Action function, method, etc.
-	Action = "action"
+	Action Column = "action"
 	// Line ...
-	Line = "line"
+	Line Column = "line"
 	// Context thread, session id, or some other execution context.
-	Context = "context"
+	Context Column = "context"
 	// Entity class, struct, etc.
-	Entity = "entity"
+	Entity Column = "entity"
 	// Error ...
-	Error = "error"
+	Error Column = "error"
 )
 
 // Names ...
 func Names() []string {
-	return []string{
+	var names []string
+	for _, v := range []Column{
 		Timestamp,
 		Level,
 		Message,
@@ -38,7 +42,10 @@ func Names() []string {
 		Context,
 		Entity,
 		Error,
+	} {
+		names = append(names, string(v))
 	}
+	return names
 }
 
 const (

@@ -3,8 +3,9 @@ package column
 import (
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/sink"
+	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink/layout"
+	"github.com/pandich/couture/theme"
 )
 
 type extractor func(event model.SinkEvent) []interface{}
@@ -15,9 +16,9 @@ type extractorColumn struct {
 }
 
 func newWeightedColumn(
-	columnName string,
+	columnName schema.Column,
 	layout layout.ColumnLayout,
-	style sink.Style,
+	style theme.Style,
 	value func(event model.SinkEvent) []interface{},
 ) extractorColumn {
 	col := extractorColumn{
@@ -27,7 +28,7 @@ func newWeightedColumn(
 		},
 		extractor: value,
 	}
-	registerStyle(col.columnName, style, layout)
+	registerStyle(string(col.columnName), style, layout)
 	return col
 }
 

@@ -3,11 +3,11 @@ package column
 import (
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/sink/layout"
+	"github.com/pandich/couture/theme"
 )
 
-func newApplicationColumn(style sink.Style, layout layout.ColumnLayout) column {
+func newApplicationColumn(style theme.Style, layout layout.ColumnLayout) column {
 	return newWeightedColumn(
 		schema.Application,
 		layout,

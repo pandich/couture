@@ -32,7 +32,7 @@ func (schema *Schema) initCanHandle() {
 	case Text:
 		var pattern = schema.predicatePatternsByField[textRootField].String()
 		re := regexp.MustCompile(pattern)
-		names := map[string]bool{
+		names := map[Column]bool{
 			Timestamp:   false,
 			Level:       false,
 			Message:     false,
@@ -44,7 +44,7 @@ func (schema *Schema) initCanHandle() {
 			Error:       false,
 		}
 		for i := 0; i < re.NumSubexp(); i++ {
-			names[re.SubexpNames()[i+1]] = true
+			names[Column(re.SubexpNames()[i+1])] = true
 		}
 
 		for name, ok := range names {

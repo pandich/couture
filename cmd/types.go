@@ -5,7 +5,7 @@ import (
 	"github.com/araddon/dateparse"
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/sink"
+	"github.com/pandich/couture/theme"
 	errors2 "github.com/pkg/errors"
 	"reflect"
 	"regexp"
@@ -191,7 +191,7 @@ func (v *themeName) AfterApply() error {
 	if v == nil {
 		return nil
 	}
-	thm, ok := sink.Registry[string(*v)]
+	thm, ok := theme.Registry[string(*v)]
 	if !ok {
 		return errors2.Errorf("unknown theme: %s", *v)
 	}

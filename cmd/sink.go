@@ -3,13 +3,14 @@ package cmd
 import (
 	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/sink/layout"
+	"github.com/pandich/couture/theme"
 	"os"
 	"time"
 )
 
 var enabled = true
 var disabled = false
-var defaultTheme = sink.Registry[sink.Prince]
+var defaultTheme = theme.Registry[theme.Prince]
 var defaultLayout = layout.Registry[layout.Default]
 var defaultTimeFormat = time.Stamp
 

@@ -6,8 +6,8 @@ import (
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/sink/layout"
+	"github.com/pandich/couture/theme"
 )
 
 const (
@@ -32,8 +32,8 @@ func newMessageColumn(
 	highlight highlight,
 	expand expand,
 	multiLine multiLine,
-	errorStyle sink.Style,
-	messageStyles map[level.Level]sink.Style,
+	errorStyle theme.Style,
+	messageStyles map[level.Level]theme.Style,
 	layout layout.ColumnLayout,
 ) column {
 	col := messageColumn{
@@ -47,7 +47,7 @@ func newMessageColumn(
 	}
 	for _, lvl := range level.Levels {
 		style := messageStyles[lvl]
-		errStyle := sink.Style{
+		errStyle := theme.Style{
 			Fg: errorStyle.Bg,
 			Bg: style.Bg,
 		}
@@ -130,5 +130,5 @@ func (col messageColumn) levelSprintf(prefix string, suffix string, lvl level.Le
 }
 
 func (col messageColumn) levelStyleName(suffix string, lvl level.Level) string {
-	return col.name() + suffix + string(lvl)
+	return string(col.name()) + suffix + string(lvl)
 }

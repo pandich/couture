@@ -1,4 +1,4 @@
-package sink
+package theme
 
 import (
 	"embed"
@@ -17,7 +17,7 @@ const Prince = "prince"
 var fs embed.FS
 
 // Registry is the registry of theme names to their structs.
-var Registry = map[string]theme{
+var Registry = map[string]Theme{
 	Prince: mustLoad(Prince),
 }
 
@@ -30,7 +30,6 @@ func Names() []string {
 	return names
 }
 
-// Style ...
 type (
 	// Style ...
 	Style struct {
@@ -38,8 +37,8 @@ type (
 		Bg string `yaml:"bg"`
 	}
 
-	theme struct {
-		Legend          Style                 `yaml:"legend"`
+	// Theme ...
+	Theme struct {
 		Source          []Style               `yaml:"source"`
 		Timestamp       Style                 `yaml:"timestamp"`
 		Application     Style                 `yaml:"application"`
@@ -56,7 +55,7 @@ type (
 
 // SourceStyle returns a color for a source. When consistentColors is true, sources will get the same
 // color across invocations of the application. Otherwise, the color selection randomized for each run.
-func (theme theme) SourceStyle(consistentColors bool, src source.Source) Style {
+func (theme Theme) SourceStyle(consistentColors bool, src source.Source) Style {
 	//nolint:gosec
 	var index = rand.Intn(len(theme.Source))
 	if consistentColors {
@@ -65,13 +64,13 @@ func (theme theme) SourceStyle(consistentColors bool, src source.Source) Style {
 	return theme.Source[index]
 }
 
-func load(name string) (*theme, error) {
+func load(name string) (*Theme, error) {
 	b, err := fs.ReadFile(path.Join("themes", name+".yaml"))
 	if err != nil {
 		return nil, err
 	}
 
-	var theme theme
+	var theme Theme
 	err = yaml.Unmarshal(b, &theme)
 	if err != nil {
 		return nil, err
@@ -79,7 +78,7 @@ func load(name string) (*theme, error) {
 	return &theme, nil
 }
 
-func mustLoad(name string) theme {
+func mustLoad(name string) Theme {
 	theme, err := load(name)
 	if err != nil {
 		panic(err)

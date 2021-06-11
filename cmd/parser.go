@@ -6,7 +6,7 @@ import (
 	"github.com/pandich/couture/manager"
 	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/sink"
+	"github.com/pandich/couture/theme"
 	"reflect"
 	"strings"
 	"time"
@@ -19,8 +19,8 @@ var maybeDie = parser.FatalIfErrorf
 var parserVars = kong.Vars{
 	"timeFormatNames": strings.Join(timeFormatNames, ","),
 	"columnNames":     strings.Join(schema.Names(), ","),
-	"themeNames":      strings.Join(sink.Names(), ","),
-	"defaultTheme":    sink.Prince,
+	"themeNames":      strings.Join(theme.Names(), ","),
+	"defaultTheme":    theme.Prince,
 	"logLevels":       strings.Join(level.LowerNames(), ","),
 	"defaultLogLevel": level.Info.LowerName(),
 }

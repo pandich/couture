@@ -5,17 +5,17 @@ import (
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/sink/layout"
+	"github.com/pandich/couture/theme"
 )
 
 type levelColumn struct {
 	extractorColumn
 }
 
-func newLevelColumn(styles map[level.Level]sink.Style, layout layout.ColumnLayout) column {
+func newLevelColumn(styles map[level.Level]theme.Style, layout layout.ColumnLayout) column {
 	for _, lvl := range level.Levels {
-		formatLevel := schema.Level + string(lvl)
+		formatLevel := string(schema.Level) + string(lvl)
 		cfmt.RegisterStyle(formatLevel, styles[lvl].Format())
 	}
 	return levelColumn{

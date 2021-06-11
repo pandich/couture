@@ -3,9 +3,9 @@ package column
 import (
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/sink/layout"
 	"github.com/pandich/couture/source"
+	"github.com/pandich/couture/theme"
 )
 
 const sourcePseudoColumn = "source"
@@ -24,7 +24,7 @@ func (col sourceColumn) render(event model.SinkEvent) string {
 
 // RegisterSourceStyle ...
 func RegisterSourceStyle(
-	style sink.Style,
+	style theme.Style,
 	layout layout.ColumnLayout,
 	src source.Source,
 ) {

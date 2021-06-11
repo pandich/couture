@@ -74,7 +74,11 @@ func getOptions() ([]interface{}, error) {
 	}
 
 	if len(doricConfig.Columns) == 0 {
-		doricConfig.Columns = column.DefaultColumns
+		var defaultColumnNames []string
+		for i := range column.DefaultColumns {
+			defaultColumnNames = append(defaultColumnNames, string(column.DefaultColumns[i]))
+		}
+		doricConfig.Columns = defaultColumnNames
 	}
 	if doricConfig.TimeFormat == nil {
 		tf := time.Stamp

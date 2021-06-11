@@ -5,8 +5,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/sink/layout"
+	"github.com/pandich/couture/theme"
 )
 
 const (
@@ -23,11 +23,11 @@ type callerColumn struct {
 }
 
 func newCallerColumn(
-	entityStyle sink.Style,
-	actionDelimiterStyle sink.Style,
-	actionStyle sink.Style,
-	lineDelimiterStyle sink.Style,
-	lineStyle sink.Style,
+	entityStyle theme.Style,
+	actionDelimiterStyle theme.Style,
+	actionStyle theme.Style,
+	lineDelimiterStyle theme.Style,
+	lineStyle theme.Style,
 	entityLayout layout.ColumnLayout,
 ) column {
 	col := callerColumn{baseColumn{columnName: callerPsuedoColumn, colLayout: entityLayout}}
