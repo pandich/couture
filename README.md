@@ -1,6 +1,6 @@
 ![Couture](docs/couture.png)
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/pandich/couture)](https://goreportcard.com/badge/github.com/pandich/couture)
+[![Go Report Card](http://goreportcard.com/badge/github.com/pandich/couture)](https://goreportcard.com/badge/github.com/pandich/couture)
 [![goreleaser](https://github.com/pandich/couture/actions/workflows/goreleaser.yml/badge.svg)](https://github.com/pandich/couture/actions/workflows/goreleaser.yml)
 
 ---
@@ -8,13 +8,8 @@
 Couture combines multiple log streams from disparate sources into human-friendly output.
 
 ### Installation
-
+	
 	go get -u github.com/pandich/couture	
-
-or
-
-	make install
-	make install-shell-completions # optional
 
 ### Usage:
 
