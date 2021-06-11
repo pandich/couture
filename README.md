@@ -37,7 +37,6 @@ Couture combines multiple log streams from disparate sources into human-friendly
 #### Multi-line
 
 	couture --expand --multiline \
-		--highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa \ 
 		fake://?style=hacker \
 		fake://?style=lorem \
 		fake://?style=hipster
