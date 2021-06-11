@@ -20,7 +20,7 @@ default: all
 #
 # External Commands
 
-.PHONY: golangci-lint goreleaser gocmt scc statik gocomplete
+.PHONY: golangci-lint goreleaser gocmt scc gocomplete
 golangci-lint:
 	@command -v $@ > /dev/null || $(GO_GET) github.com/golangci/golangci-lint/cmd/golangci-lint
 goreleaser:
@@ -29,8 +29,6 @@ gocmt:
 	@command -v $@ > /dev/null || $(GO_GET) github.com/cuonglm/gocmt
 scc:
 	@command -v $@ > /dev/null || $(GO_GET) github.com/boyter/scc
-statik:
-	@command -v $@ > /dev/null || $(GO_GET) github.com/rakyll/statik
 gocomplete:
 	@command -v $@ > /dev/null || $(GO_GET) github.com/posener/complete/v2/gocomplete
 #
@@ -42,13 +40,9 @@ all: clean build
 clean:
 	@echo cleaning
 	@rm -rf dist/
-	@find $(SOURCES) -name statik.go -exec rm {} \;
 build: neat assets
 	@echo building
 	@$(GO) build -o dist/$(APPLICATION) $(COMMAND)
-assets: statik
-	@echo assets
-	@statik -dest=internal/pkg -src=assets -f -p assets
 
 # Release
 .PHONY: install uninstall release
@@ -67,10 +61,8 @@ release: goreleaser build
 neat:
 	@echo tidying
 	@go mod tidy
-	@echo commenting
-	@find $(SOURCES) -type d -exec gocmt -p -i -d {} \; 2> /dev/null
 	@echo formatting
-	@gofmt -l -s -w $(SOURCES)
+	@gofmt -l -s -w .
 lint: golangci-lint neat
 	@echo linting
 	@golangci-lint run
@@ -79,7 +71,7 @@ metrics: scc
 
 # Utility
 .PHONY: setup-env install-shell-completions
-setup-env: golangci-lint goreleaser scc gocmt statik gocomplete
+setup-env: golangci-lint goreleaser scc gocmt gocomplete
 	@git config --local core.hooksPath .githooks
 install-shell-completions: gocomplete
 	@echo installing completions

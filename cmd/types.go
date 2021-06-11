@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"couture/internal/pkg/model"
-	"couture/internal/pkg/model/level"
-	"couture/internal/pkg/sink"
 	"github.com/alecthomas/kong"
 	"github.com/araddon/dateparse"
+	"github.com/pandich/couture/model"
+	"github.com/pandich/couture/model/level"
+	"github.com/pandich/couture/sink"
 	errors2 "github.com/pkg/errors"
 	"reflect"
 	"regexp"

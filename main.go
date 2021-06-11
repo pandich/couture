@@ -1,7 +1,7 @@
 package main
 
 import (
-	"couture/cmd"
+	"github.com/pandich/couture/cmd"
 )
 
 func main() {

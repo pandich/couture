@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"couture/internal/pkg/couture"
 	"github.com/alecthomas/kong"
 	"github.com/iancoleman/strcase"
+	"github.com/pandich/couture/couture"
 	"github.com/posener/complete/v2"
 	"github.com/posener/complete/v2/predict"
 	"reflect"

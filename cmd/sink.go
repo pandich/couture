@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"couture/internal/pkg/sink"
-	"couture/internal/pkg/sink/layout"
+	"github.com/pandich/couture/sink"
+	"github.com/pandich/couture/sink/layout"
 	"os"
 	"time"
 )
