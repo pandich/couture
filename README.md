@@ -26,12 +26,20 @@ Couture combines multiple log streams from disparate sources into human-friendly
 
 #### Single-line
 
-	couture --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa @@fake
+	couture \
+		--highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa \ 
+		fake://?style=hacker \
+		fake://?style=lorem \
+		fake://?style=hipster
 
 ![Couture](docs/example-fake-single-line.gif)
 
 #### Multi-line
 
-	couture --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa --expand --multiline @@fake
+	couture --expand --multiline \
+		--highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa \ 
+		fake://?style=hacker \
+		fake://?style=lorem \
+		fake://?style=hipster
 
 ![Couture](docs/example-fake-multi-line.gif)
