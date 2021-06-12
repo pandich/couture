@@ -1,5 +1,7 @@
 package theme
 
+// TODO every thing must have a light and dark mode
+
 import (
 	"embed"
 	"github.com/i582/cfmt/cmd/cfmt"
@@ -13,7 +15,7 @@ import (
 // Prince ...
 const Prince = "prince"
 
-//go:embed themes/prince.yaml
+//go:embed themes/*.yaml
 var fs embed.FS
 
 // Registry is the registry of theme names to their structs.

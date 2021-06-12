@@ -1,7 +1,3 @@
-legend:
-  fg: "#ffffff"
-  bg: "#808080"
-
 timestamp:
   fg: "#b2a73e"
   bg: "#0c0a05"

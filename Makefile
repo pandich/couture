@@ -35,12 +35,12 @@ gocomplete:
 # Targets
 
 # Build
-.PHONY: all clean build assets
+.PHONY: all clean build
 all: clean build
 clean:
 	@echo cleaning
 	@rm -rf dist/
-build: neat assets
+build: neat
 	@echo building
 	@$(GO) build -o dist/$(APPLICATION) $(COMMAND)
 

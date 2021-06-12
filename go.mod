@@ -21,16 +21,18 @@ require (
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
 	github.com/godbus/dbus/v5 v5.0.4 // indirect
-	github.com/gookit/color v1.4.2 // indirect
+	github.com/gookit/color v1.4.2
 	github.com/gopherjs/gopherjs v0.0.0-20210603182125-eeedf4a0e899 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/i582/cfmt v1.3.0
 	github.com/iancoleman/strcase v0.1.3
 	github.com/joomcode/errorx v1.0.3
+	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mattn/go-isatty v0.0.13
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/melbahja/goph v1.2.1
+	github.com/muesli/gamut v0.2.0
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.8.1
 	github.com/olekukonko/ts v0.0.0-20171002115256-78ecb04241c0
