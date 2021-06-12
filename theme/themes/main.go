@@ -1,17 +1,17 @@
 package main
 
 import (
-	"github.com/pandich/couture/color"
 	"github.com/pandich/couture/theme"
+	color2 "github.com/pandich/couture/theme/color"
 	"gopkg.in/yaml.v3"
 	"io"
 	"log"
 	"os"
 )
 
-var definitions = map[string]theme.Template{
-	"prince__dark":  theme.SplitComplementary(color.DarkMode, color.Hex("#9b99bf")),
-	"prince__light": theme.SplitComplementary(color.LightMode, color.Hex("#9b99bf")),
+var definitions = map[string]theme.Generator{
+	"prince__dark":  theme.SplitComplementaryGenerator(color2.DarkMode, color2.Hex("#9b99bf")),
+	"prince__light": theme.SplitComplementaryGenerator(color2.LightMode, color2.Hex("#9b99bf")),
 }
 
 func writeThemeToFile(name string, th theme.Theme) error {
