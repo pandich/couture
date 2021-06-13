@@ -17,10 +17,12 @@ func Names() []string {
 }
 
 var themeColors = map[string]string{
-	"prince":    "Logan",
 	"halloween": "Burnt Orange",
+	"land":      "Ochre",
+	"prince":    "Logan",
+	"sea":       "Ocean Blue",
+	"sky":       "Sky Blue",
 	"tango":     "Tangerine",
-	"":          "",
 }
 
 // GenerateTheme ...
