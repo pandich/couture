@@ -50,8 +50,8 @@ func Run() {
 	parser.FatalIfErrorf(err)
 
 	cliDoricConfig.
-		FillMissing(loadDoricConfigFile()).
-		FillMissing(defaultDoricConfig)
+		PopulateMissing(loadDoricConfigFile()).
+		PopulateMissing(defaultDoricConfig)
 
 	options, err := parseOptions()
 	parser.FatalIfErrorf(err)

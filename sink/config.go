@@ -51,8 +51,8 @@ func (config Config) EffectiveIsTTY() bool {
 	return isatty.IsTerminal(config.Out.Fd()) || config.TTY
 }
 
-// FillMissing ...
-func (config *Config) FillMissing(other Config) *Config {
+// PopulateMissing ...
+func (config *Config) PopulateMissing(other Config) *Config {
 	if config.AutoResize == nil {
 		config.AutoResize = other.AutoResize
 	}
