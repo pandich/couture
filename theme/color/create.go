@@ -12,7 +12,7 @@ import (
 func ByHex(hex string) AdaptorColor {
 	values := color.Hex(hex).Values()
 	r, g, b := uint8(values[0]), uint8(values[1]), uint8(values[2])
-	return rgbColor{r, g, b}
+	return rgbAdaptorColor{r, g, b}
 }
 
 // ByName ...

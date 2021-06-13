@@ -9,45 +9,45 @@ import (
 )
 
 // AsRGBColor ...
-func (rgb rgbColor) AsRGBColor() color.RGBColor {
+func (rgb rgbAdaptorColor) AsRGBColor() color.RGBColor {
 	return color.RGB(rgb[0], rgb[1], rgb[2])
 }
 
 // AsHexColor ...
-func (rgb rgbColor) AsHexColor() string {
+func (rgb rgbAdaptorColor) AsHexColor() string {
 	return "#" + rgb.AsRGBColor().Hex()
 }
 
 // AsGoColor ...
-func (rgb rgbColor) AsGoColor() color.Color {
+func (rgb rgbAdaptorColor) AsGoColor() color.Color {
 	return rgb.AsRGBColor().Color()
 }
 
 // AsImageColor ...
-func (rgb rgbColor) AsImageColor() imgcolor.Color {
+func (rgb rgbAdaptorColor) AsImageColor() imgcolor.Color {
 	return gamut.Hex(rgb.AsHexColor())
 }
 
 // AsColorfulColor ...
-func (rgb rgbColor) AsColorfulColor() colorful.Color {
+func (rgb rgbAdaptorColor) AsColorfulColor() colorful.Color {
 	cf, _ := colorful.Hex(rgb.AsHexColor())
 	return cf
 }
 
 // AsTermenvColor ...
-func (rgb rgbColor) AsTermenvColor() termenv.Color {
+func (rgb rgbAdaptorColor) AsTermenvColor() termenv.Color {
 	return termenv.ANSI256.FromColor(rgb.AsImageColor())
 }
 
 // AsPrettyJSONColor ...
-func (rgb rgbColor) AsPrettyJSONColor() [2]string {
+func (rgb rgbAdaptorColor) AsPrettyJSONColor() [2]string {
 	start := termenv.CSI + rgb.AsTermenvColor().Sequence(false) + "m"
 	end := termenv.CSI + "39m"
 	return [2]string{start, end}
 }
 
 // AsHexPair ...
-func (rgb rgbColor) AsHexPair() HexPair {
+func (rgb rgbAdaptorColor) AsHexPair() HexPair {
 	return HexPair{
 		Bg: rgb.AsHexColor(),
 		Fg: rgb.Contrast().AsHexColor(),

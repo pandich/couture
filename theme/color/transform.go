@@ -5,12 +5,12 @@ import (
 )
 
 // Complementary ...
-func (rgb rgbColor) Complementary() AdaptorColor {
+func (rgb rgbAdaptorColor) Complementary() AdaptorColor {
 	return ByImageColor(gamut.Complementary(rgb.AsImageColor()))
 }
 
 // Analogous ...
-func (rgb rgbColor) Analogous() analogous {
+func (rgb rgbAdaptorColor) Analogous() analogous {
 	raw := gamut.Analogous(rgb.AsImageColor())
 	return analogous{
 		ByImageColor(raw[0]),
@@ -19,7 +19,7 @@ func (rgb rgbColor) Analogous() analogous {
 }
 
 // Triadic ...
-func (rgb rgbColor) Triadic() triadic {
+func (rgb rgbAdaptorColor) Triadic() triadic {
 	raw := gamut.Triadic(rgb.AsImageColor())
 	return triadic{
 		ByImageColor(raw[0]),
@@ -28,17 +28,17 @@ func (rgb rgbColor) Triadic() triadic {
 }
 
 // Lighter ...
-func (rgb rgbColor) Lighter(percent float64) AdaptorColor {
-	return ByImageColor(gamut.Lighter(rgb.AsImageColor(), percent))
+func (rgb rgbAdaptorColor) Lighter(percent percent) AdaptorColor {
+	return ByImageColor(gamut.Lighter(rgb.AsImageColor(), percent.asFloat64()))
 }
 
 // Darker ...
-func (rgb rgbColor) Darker(percent float64) AdaptorColor {
-	return ByImageColor(gamut.Darker(rgb.AsImageColor(), percent))
+func (rgb rgbAdaptorColor) Darker(percent percent) AdaptorColor {
+	return ByImageColor(gamut.Darker(rgb.AsImageColor(), percent.asFloat64()))
 }
 
 // SplitComplementary ...
-func (rgb rgbColor) SplitComplementary() splitComplementary {
+func (rgb rgbAdaptorColor) SplitComplementary() splitComplementary {
 	raw := gamut.SplitComplementary(rgb.AsImageColor())
 	return splitComplementary{
 		ByImageColor(raw[0]),
@@ -47,7 +47,7 @@ func (rgb rgbColor) SplitComplementary() splitComplementary {
 }
 
 // Monochromatic ...
-func (rgb rgbColor) Monochromatic() shades {
+func (rgb rgbAdaptorColor) Monochromatic() shades {
 	const count = 256
 	imageColors := gamut.Monochromatic(rgb.AsImageColor(), count)
 	colors := shades{}
@@ -58,7 +58,7 @@ func (rgb rgbColor) Monochromatic() shades {
 }
 
 // AdjustConstrast ...
-func (rgb rgbColor) AdjustConstrast(polarity contrastPolarity, amount float64) AdaptorColor {
+func (rgb rgbAdaptorColor) AdjustConstrast(polarity contrastPolarity, percent percent) AdaptorColor {
 	var base AdaptorColor
 	switch polarity {
 	case LessNoticable:
@@ -80,12 +80,12 @@ func (rgb rgbColor) AdjustConstrast(polarity contrastPolarity, amount float64) A
 	}
 	return ByHex(rgb.
 		AsColorfulColor().
-		BlendHsv(base.AsColorfulColor(), amount).
+		BlendHsv(base.AsColorfulColor(), percent.asFloat64()).
 		Hex())
 }
 
 // Blend ...
-func (rgb rgbColor) Blend(other AdaptorColor, blendPercent int) AdaptorColor {
+func (rgb rgbAdaptorColor) Blend(other AdaptorColor, blendPercent percent) AdaptorColor {
 	const minPercent = 0
 	const maxPercent = 100
 	switch {
@@ -102,21 +102,21 @@ func (rgb rgbColor) Blend(other AdaptorColor, blendPercent int) AdaptorColor {
 }
 
 // Contrast ...
-func (rgb rgbColor) Contrast() AdaptorColor {
+func (rgb rgbAdaptorColor) Contrast() AdaptorColor {
 	return ByImageColor(gamut.Contrast(rgb.AsImageColor()))
 }
 
 // HueOffset ...
-func (rgb rgbColor) HueOffset(degrees int) AdaptorColor {
-	return ByImageColor(gamut.HueOffset(rgb.AsImageColor(), degrees))
+func (rgb rgbAdaptorColor) HueOffset(degrees º) AdaptorColor {
+	return ByImageColor(gamut.HueOffset(rgb.AsImageColor(), degrees.asInt()))
 }
 
-// SimiliarHues ...
-func (rgb rgbColor) SimiliarHues(count int) []AdaptorColor {
+// Similar ...
+func (rgb rgbAdaptorColor) Similar(count int) []AdaptorColor {
 	return rgb.generate(count, rgb.similarHueGenerator())
 }
 
-func (rgb rgbColor) generate(count int, generator gamut.ColorGenerator) []AdaptorColor {
+func (rgb rgbAdaptorColor) generate(count int, generator gamut.ColorGenerator) []AdaptorColor {
 	colors, err := gamut.Generate(count, generator)
 	if err != nil {
 		panic(err)
@@ -124,7 +124,7 @@ func (rgb rgbColor) generate(count int, generator gamut.ColorGenerator) []Adapto
 	return byImageColors(colors)
 }
 
-func (rgb rgbColor) similarHueGenerator() gamut.ColorGenerator {
+func (rgb rgbAdaptorColor) similarHueGenerator() gamut.ColorGenerator {
 	return gamut.SimilarHueGenerator{
 		FineGranularity: gamut.FineGranularity{},
 		Color:           rgb.AsImageColor(),

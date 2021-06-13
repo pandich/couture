@@ -22,15 +22,15 @@ func splitComplementaryGenerator(baseColor color.AdaptorColor, sourceStyle strin
 		SourceStyle: sourceStyle,
 		ApplicationColor: baseColor.
 			Analogous()[1].
-			AdjustConstrast(color.LessNoticable, 0.2),
+			AdjustConstrast(color.LessNoticable, 20),
 		TimestampColor: baseColor.
 			Complementary().
 			Monochromatic()[0xB0],
 		EntityColor: baseColor,
 		MessageColor: baseColor.
 			Triadic()[1].
-			AdjustConstrast(color.LessNoticable, 0.4).
-			Lighter(0.2),
+			AdjustConstrast(color.LessNoticable, 40).
+			Lighter(20),
 	}
 }
 
@@ -91,17 +91,17 @@ func (p generator) newSourcePalette(th *Theme) []color.AdaptorColor {
 func (p generator) applyHeader(th *Theme) {
 	th.Application = color.HexPair{
 		Fg: p.ApplicationColor.AsHexColor(),
-		Bg: p.ApplicationColor.AdjustConstrast(color.MoreNoticable, 0.9).AsHexColor(),
+		Bg: p.ApplicationColor.AdjustConstrast(color.MoreNoticable, 90).AsHexColor(),
 	}
 	th.Timestamp = color.HexPair{
 		Fg: p.TimestampColor.AsHexColor(),
-		Bg: p.TimestampColor.AdjustConstrast(color.MoreNoticable, 0.8).AsHexColor(),
+		Bg: p.TimestampColor.AdjustConstrast(color.MoreNoticable, 80).AsHexColor(),
 	}
 }
 
 func (p generator) applyEntity(th *Theme) {
 	entityFg := p.EntityColor
-	entityBg := entityFg.AdjustConstrast(color.MoreNoticable, 0.8)
+	entityBg := entityFg.AdjustConstrast(color.MoreNoticable, 80)
 
 	th.Entity = color.HexPair{
 		Fg: entityFg.AsHexColor(),
@@ -109,26 +109,26 @@ func (p generator) applyEntity(th *Theme) {
 	}
 	th.Context = color.HexPair{
 		Fg: entityFg.AsHexColor(),
-		Bg: entityFg.AdjustConstrast(color.MoreNoticable, 0.7).AsHexColor(),
+		Bg: entityFg.AdjustConstrast(color.MoreNoticable, 70).AsHexColor(),
 	}
 
 	th.Line = color.HexPair{
-		Fg: entityFg.AdjustConstrast(color.MoreNoticable, 0.2).AsHexColor(),
+		Fg: entityFg.AdjustConstrast(color.MoreNoticable, 20).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 
 	th.LineDelimiter = color.HexPair{
-		Fg: entityFg.AdjustConstrast(color.MoreNoticable, 0.2).AdjustConstrast(color.LessNoticable, 0.4).AsHexColor(),
+		Fg: entityFg.AdjustConstrast(color.MoreNoticable, 20).AdjustConstrast(color.LessNoticable, 40).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 
-	actionFg := entityFg.AdjustConstrast(color.LessNoticable, 0.2)
+	actionFg := entityFg.AdjustConstrast(color.LessNoticable, 20)
 	th.Action = color.HexPair{
 		Fg: actionFg.AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 	th.ActionDelimiter = color.HexPair{
-		Fg: actionFg.AdjustConstrast(color.LessNoticable, 0.4).AsHexColor(),
+		Fg: actionFg.AdjustConstrast(color.LessNoticable, 40).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 }
