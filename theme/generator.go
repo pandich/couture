@@ -19,6 +19,8 @@ func Names() []string {
 var themeColors = map[string]string{
 	"prince":    "Logan",
 	"halloween": "Burnt Orange",
+	"tango":     "Tangerine",
+	"":          "",
 }
 
 // GenerateTheme ...
@@ -33,21 +35,24 @@ func GenerateTheme(colorName string, sourceStyle string) (*Theme, error) {
 	return splitComplementaryGenerator(ac, sourceStyle).asTheme(), nil
 }
 
+//nolint: gomnd
 func splitComplementaryGenerator(baseColor color.AdaptorColor, sourceStyle string) generator {
-	//nolint: gomnd
+	var messageColorIndex = 1
+	if baseHue, _, _ := baseColor.AsColorfulColor().Hsl(); baseHue < 0.5 {
+		messageColorIndex = 0
+	}
 	return generator{
 		SourceStyle: sourceStyle,
 		ApplicationColor: baseColor.
 			Analogous()[1].
-			AdjustConstrast(color.LessNoticable, 20),
+			AdjustConstrast(color.MoreContrast, 20),
 		TimestampColor: baseColor.
 			Complementary().
 			Monochromatic()[0xB0],
 		EntityColor: baseColor,
 		MessageColor: baseColor.
-			Triadic()[1].
-			AdjustConstrast(color.LessNoticable, 40).
-			Lighter(20),
+			Triadic()[messageColorIndex].
+			AdjustConstrast(color.MoreContrast, 80),
 	}
 }
 
@@ -108,17 +113,17 @@ func (p generator) newSourcePalette(th *Theme) []color.AdaptorColor {
 func (p generator) applyHeader(th *Theme) {
 	th.Application = color.FgBgTuple{
 		Fg: p.ApplicationColor.AsHexColor(),
-		Bg: p.ApplicationColor.AdjustConstrast(color.MoreNoticable, 90).AsHexColor(),
+		Bg: p.ApplicationColor.AdjustConstrast(color.LessContrast, 90).AsHexColor(),
 	}
 	th.Timestamp = color.FgBgTuple{
 		Fg: p.TimestampColor.AsHexColor(),
-		Bg: p.TimestampColor.AdjustConstrast(color.MoreNoticable, 80).AsHexColor(),
+		Bg: p.TimestampColor.AdjustConstrast(color.LessContrast, 80).AsHexColor(),
 	}
 }
 
 func (p generator) applyEntity(th *Theme) {
 	entityFg := p.EntityColor
-	entityBg := entityFg.AdjustConstrast(color.MoreNoticable, 80)
+	entityBg := entityFg.AdjustConstrast(color.LessContrast, 80)
 
 	th.Entity = color.FgBgTuple{
 		Fg: entityFg.AsHexColor(),
@@ -126,26 +131,26 @@ func (p generator) applyEntity(th *Theme) {
 	}
 	th.Context = color.FgBgTuple{
 		Fg: entityFg.AsHexColor(),
-		Bg: entityFg.AdjustConstrast(color.MoreNoticable, 70).AsHexColor(),
+		Bg: entityFg.AdjustConstrast(color.LessContrast, 70).AsHexColor(),
 	}
 
 	th.Line = color.FgBgTuple{
-		Fg: entityFg.AdjustConstrast(color.MoreNoticable, 20).AsHexColor(),
+		Fg: entityFg.AdjustConstrast(color.LessContrast, 20).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 
 	th.LineDelimiter = color.FgBgTuple{
-		Fg: entityFg.AdjustConstrast(color.MoreNoticable, 20).AdjustConstrast(color.LessNoticable, 40).AsHexColor(),
+		Fg: entityFg.AdjustConstrast(color.LessContrast, 20).AdjustConstrast(color.MoreContrast, 40).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 
-	actionFg := entityFg.AdjustConstrast(color.LessNoticable, 20)
+	actionFg := entityFg.AdjustConstrast(color.MoreContrast, 20)
 	th.Action = color.FgBgTuple{
 		Fg: actionFg.AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 	th.ActionDelimiter = color.FgBgTuple{
-		Fg: actionFg.AdjustConstrast(color.LessNoticable, 40).AsHexColor(),
+		Fg: actionFg.AdjustConstrast(color.MoreContrast, 40).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 }

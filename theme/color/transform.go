@@ -61,14 +61,14 @@ func (rgb rgbAdaptorColor) Monochromatic() shades {
 func (rgb rgbAdaptorColor) AdjustConstrast(polarity contrastPolarity, percent percent) AdaptorColor {
 	var base AdaptorColor
 	switch polarity {
-	case LessNoticable:
+	case MoreContrast:
 		switch Mode {
 		case DarkMode:
 			base = White
 		default:
 			base = Black
 		}
-	case MoreNoticable:
+	case LessContrast:
 		fallthrough
 	default:
 		switch Mode {
