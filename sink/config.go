@@ -80,6 +80,9 @@ func (config *Config) FillMissing(other Config) {
 	if config.MultiLine == nil {
 		config.MultiLine = other.MultiLine
 	}
+	if config.ShowSchema == nil {
+		config.ShowSchema = other.ShowSchema
+	}
 	if config.Theme == nil {
 		config.Theme = other.Theme
 	}

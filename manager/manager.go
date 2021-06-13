@@ -9,7 +9,6 @@ import (
 	errors2 "github.com/pkg/errors"
 	"runtime"
 	"sync"
-	"time"
 )
 
 // New creates an empty Manager.
@@ -48,7 +47,6 @@ type (
 		DumpMetrics bool
 		DumpUnknown bool
 		Level       level.Level
-		Since       *time.Time
 		Filters     []model.Filter
 		Schemas     []schema.Schema
 		RateLimit   uint

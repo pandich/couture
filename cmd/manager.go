@@ -9,6 +9,7 @@ import (
 	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/sink/doric"
 	"github.com/pandich/couture/sink/doric/column"
+	"github.com/pandich/couture/theme"
 	"gopkg.in/multierror.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -23,31 +24,30 @@ var managerConfig = manager.Config{}
 func Run() {
 	var err error
 
-	managerConfig.Since = cli.Since
-
 	options := parseInputs()
 	managerConfig.Schemas, err = schema.LoadSchemas()
-	maybeDie(err)
+	parser.FatalIfErrorf(err)
 
 	mgr, err := manager.New(managerConfig, options...)
-	maybeDie(err)
+	parser.FatalIfErrorf(err)
 
-	maybeDie((*mgr).Run())
+	err = (*mgr).Run()
+	parser.FatalIfErrorf(err)
 }
 
 func parseInputs() []interface{} {
 	var args = os.Args[1:]
 	args, err := expandAliases(args)
-	maybeDie(err)
+	parser.FatalIfErrorf(err)
 
 	_, err = parser.Parse(args)
-	maybeDie(err)
+	parser.FatalIfErrorf(err)
 
 	err = loadSinkConfig()
-	maybeDie(err)
+	parser.FatalIfErrorf(err)
 
 	options, err := getOptions()
-	maybeDie(err)
+	parser.FatalIfErrorf(err)
 
 	return options
 }
@@ -85,6 +85,9 @@ func getOptions() ([]interface{}, error) {
 		doricConfig.TimeFormat = &tf
 	}
 
+	th, err := theme.GenerateTheme(string(cli.Theme), string(cli.SourceStyle))
+	parser.FatalIfErrorf(err)
+	doricConfig.Theme = th
 	var options = []interface{}{
 		doric.New(doricConfig),
 	}

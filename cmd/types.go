@@ -5,7 +5,6 @@ import (
 	"github.com/araddon/dateparse"
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/theme"
 	errors2 "github.com/pkg/errors"
 	"reflect"
 	"regexp"
@@ -37,6 +36,7 @@ var timeFormatNames = []string{
 type (
 	autoResize       bool
 	color            bool
+	sourceStyle      string
 	columns          []string
 	consistentColors bool
 	expand           bool
@@ -183,20 +183,6 @@ func (v levelLike) AfterApply() error { managerConfig.Level = level.Level(v); re
 func (f filterLike) AfterApply() (err error) {
 	managerConfig.Filters, err = f.asFilters()
 	return
-}
-
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v *themeName) AfterApply() error {
-	if v == nil {
-		*v = theme.Default
-	}
-	th, ok := theme.GenerateTheme(string(*v))
-	if !ok {
-		return errors2.Errorf("unknown theme: %s", *v)
-	}
-	doricConfig.Theme = th
-	return nil
 }
 
 // AfterApply ...

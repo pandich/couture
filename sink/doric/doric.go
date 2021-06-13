@@ -41,7 +41,7 @@ func (snk doricSink) Init(sources []*source.Source) {
 	var sourceColors = map[model.SourceURL]string{}
 	for _, src := range sources {
 		consistentColors := *snk.config.ConsistentColors
-		style := snk.config.Theme.SourceStyle(consistentColors, *src)
+		style := snk.config.Theme.AsHexPair(consistentColors, *src)
 		sourceColors[(*src).URL()] = style.Bg
 		column.RegisterSourceStyle(style, snk.config.Layout.Source, *src)
 	}

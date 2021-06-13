@@ -1,24 +1,25 @@
 package theme
 
 import (
-	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
 	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/theme/color"
+	errors2 "github.com/pkg/errors"
 )
 
 // GenerateTheme ...
-func GenerateTheme(base string) (*Theme, bool) {
+func GenerateTheme(base string, sourceStyle string) (*Theme, error) {
 	ac, ok := color.ByName(base)
 	if !ok {
-		return nil, false
+		return nil, errors2.Errorf("invalid theme color: %s", base)
 	}
-	return splitComplementaryGenerator(ac).asTheme(), true
+	return splitComplementaryGenerator(ac, sourceStyle).asTheme(), nil
 }
 
-func splitComplementaryGenerator(baseColor color.AdaptorColor) generator {
+func splitComplementaryGenerator(baseColor color.AdaptorColor, sourceStyle string) generator {
 	//nolint: gomnd
 	return generator{
+		SourceStyle: sourceStyle,
 		ApplicationColor: baseColor.
 			Analogous()[1].
 			AdjustConstrast(color.LessNoticable, 0.2),
@@ -38,10 +39,11 @@ type generator struct {
 	TimestampColor   color.AdaptorColor
 	EntityColor      color.AdaptorColor
 	MessageColor     color.AdaptorColor
+	SourceStyle      string
 }
 
 func (p generator) asTheme() *Theme {
-	th := Theme{}
+	th := Theme{SourceStyle: p.SourceStyle}
 	p.apply(&th)
 	return &th
 }
@@ -55,23 +57,35 @@ func (p generator) apply(th *Theme) {
 }
 
 func (p generator) applySources(th *Theme) {
-	const sourceColorCount = 180
-
-	var cp = colorful.SoftPalette
-	if gamut.Warm(p.EntityColor.AsImageColor()) {
-		cp = colorful.WarmPalette
+	blendColor := color.ByHex(th.Entity.Fg).Complementary()
+	for _, paletteColor := range p.newSourcePalette(th) {
+		th.Source = append(th.Source, paletteColor.
+			Blend(blendColor, 10).
+			AsHexPair())
 	}
-	paletteColors, _ := cp(sourceColorCount)
+}
 
-	for _, source := range paletteColors {
-		th.Source = append(
-			th.Source,
-			color.HexPair{
-				Bg: color.ByImageColor(source).AsHexColor(),
-				Fg: color.ByImageColor(source).Contrast().AsHexColor(),
-			},
-		)
+func (p generator) newSourcePalette(th *Theme) []color.AdaptorColor {
+	const sourceColorCount = 100
+	var generator gamut.ColorGenerator
+	switch th.SourceStyle {
+	case "warm":
+		generator = gamut.WarmGenerator{}
+	case "happy":
+		generator = gamut.HappyGenerator{}
+	case "similar":
+		generator = gamut.SimilarHueGenerator{Color: gamut.Hex(th.Entity.Fg)}
+	case "pastel":
+		fallthrough
+	default:
+		generator = gamut.PastelGenerator{}
 	}
+	paletteColors, _ := gamut.Generate(sourceColorCount, generator)
+	var out []color.AdaptorColor
+	for _, pc := range paletteColors {
+		out = append(out, color.ByImageColor(pc))
+	}
+	return out
 }
 
 func (p generator) applyHeader(th *Theme) {

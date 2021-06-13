@@ -24,11 +24,12 @@ type Theme struct {
 	Line            color.HexPair                 `yaml:"line"`
 	Level           map[level.Level]color.HexPair `yaml:"level"`
 	Message         map[level.Level]color.HexPair `yaml:"message"`
+	SourceStyle     string                        `yaml:"-"`
 }
 
-// SourceStyle returns a color for a source. When consistentColors is true, sources will get the same
+// AsHexPair returns a color for a source. When consistentColors is true, sources will get the same
 // color across invocations of the application. Otherwise, the color selection randomized for each run.
-func (theme Theme) SourceStyle(consistentColors bool, src source.Source) color.HexPair {
+func (theme Theme) AsHexPair(consistentColors bool, src source.Source) color.HexPair {
 	//nolint: gosec
 	var index = rand.Intn(len(theme.Source))
 	if consistentColors {
