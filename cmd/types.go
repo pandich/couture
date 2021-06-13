@@ -189,18 +189,18 @@ func (f filterLike) AfterApply() (err error) {
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v *themeName) AfterApply() error {
 	if v == nil {
-		return nil
+		*v = theme.Default
 	}
-	thm, ok := theme.Registry[string(*v)]
+	th, ok := theme.GenerateTheme(string(*v))
 	if !ok {
 		return errors2.Errorf("unknown theme: %s", *v)
 	}
-	doricConfig.Theme = &thm
+	doricConfig.Theme = th
 	return nil
 }
 
 // AfterApply ...
-//nolint:funlen
+//nolint: funlen
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (t *timeFormat) AfterApply() error {
 	if t == nil {

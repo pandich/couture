@@ -6,7 +6,7 @@ import (
 	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/pandich/couture/theme"
+	"github.com/pandich/couture/theme/color"
 )
 
 // DefaultColumns ...
@@ -63,7 +63,7 @@ func newRegistry(config sink.Config) registry {
 	}
 }
 
-func registerStyle(styleName string, style theme.Style, layout layout.ColumnLayout) {
+func registerStyle(styleName string, style color.HexPair, layout layout.ColumnLayout) {
 	rawFormat := "{{%s%%s%s}}::" + style.Fg + "|bg" + style.Bg
 	format := fmt.Sprintf(rawFormat, layout.Prefix(), layout.Suffix())
 	cfmt.RegisterStyle(styleName, func(s string) string {

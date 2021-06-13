@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-//nolint:lll
+//nolint: lll
 var cli struct {
 	DumpMetrics dumpMetrics `group:"diagnostic" hidden:"true"`
 	DumpUnknown dumpUnknown `group:"diagnostic" hidden:"true"`
@@ -18,7 +18,7 @@ var cli struct {
 	Width      width      `group:"terminal" help:"Wrap width. Default is the current terminal width." placeholder:"width" short:"W"`
 	AutoResize autoResize `group:"terminal" help:"Auto-resize columns when the terminal resizes." negatable:"true"`
 
-	Theme            themeName        `group:"display" help:"Specify the the color theme: ${enum}." placeholder:"theme" default:"${defaultTheme}" enum:"${themeNames}" env:"COUTURE_THEME"`
+	Theme            themeName        `group:"display" help:"Specify the the hex code or name of the theme base color. Any hex code or name found in Wikipedia, Crayola, CSS, RAL, Resene, or Monokai palettes is valid." placeholder:"(name|hex)" default:"${defaultTheme}" env:"COUTURE_THEME"`
 	ConsistentColors consistentColors `group:"display" help:"Maintain consistent source URL colors between runs." negatable:"true"`
 	MultiLine        multiLine        `group:"display" help:"Display each log event in multi-line format. (Enabled by --expand-json)" negatable:"true"`
 	Expand           expand           `group:"display" help:"Example structured message bodies (e.g. JSON)." negatable:"true"`

@@ -4,23 +4,22 @@ import (
 	"github.com/muesli/termenv"
 )
 
-// ContrastPolarity ...
-type ContrastPolarity int
+type contrastPolarity int
 
 const (
 	// DarkMode ...
-	DarkMode ContrastPolarity = iota
+	DarkMode contrastPolarity = iota
 	// LightMode ...
 	LightMode
 
-	// MoreContrast ...
-	MoreContrast = DarkMode
-	// LessContrast ...
-	LessContrast = LightMode
+	// MoreNoticable ...
+	MoreNoticable = DarkMode
+	// LessNoticable ...
+	LessNoticable = LightMode
 )
 
 // Mode ...
-var Mode ContrastPolarity
+var Mode contrastPolarity
 
 func init() {
 	Mode = DarkMode

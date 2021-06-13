@@ -6,14 +6,14 @@ import (
 	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/pandich/couture/theme"
+	"github.com/pandich/couture/theme/color"
 )
 
 type levelColumn struct {
 	extractorColumn
 }
 
-func newLevelColumn(styles map[level.Level]theme.Style, layout layout.ColumnLayout) column {
+func newLevelColumn(styles map[level.Level]color.HexPair, layout layout.ColumnLayout) column {
 	for _, lvl := range level.Levels {
 		formatLevel := string(schema.Level) + string(lvl)
 		cfmt.RegisterStyle(formatLevel, styles[lvl].Format())

@@ -5,7 +5,7 @@ import (
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/sink/layout"
 	"github.com/pandich/couture/source"
-	"github.com/pandich/couture/theme"
+	"github.com/pandich/couture/theme/color"
 )
 
 const sourcePseudoColumn = "source"
@@ -24,7 +24,7 @@ func (col sourceColumn) render(event model.SinkEvent) string {
 
 // RegisterSourceStyle ...
 func RegisterSourceStyle(
-	style theme.Style,
+	style color.HexPair,
 	layout layout.ColumnLayout,
 	src source.Source,
 ) {

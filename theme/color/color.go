@@ -1,50 +1,72 @@
 package color
 
-// TODO use this to deal with color in a clean central way
-
 import (
 	"fmt"
 	"github.com/gookit/color"
+	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
 	"github.com/muesli/gamut/palette"
 	"github.com/muesli/termenv"
 	imgcolor "image/color"
+	"regexp"
 )
 
-var (
-	colorfulWhite, _ = colorful.Hex("#ffffff")
-	colorfulBlack, _ = colorful.Hex("#000000")
-)
+// White ...
+var White = ByHex("#ffffff")
 
-// Hex ...
-func Hex(hex string) AdaptorColor {
+// Black ...
+var Black = ByHex("#000000")
+
+var specialNames = map[string]string{
+	"prince":    "Logan",
+	"halloween": "Burnt Orange",
+}
+
+// ByHex ...
+func ByHex(hex string) AdaptorColor {
 	values := color.Hex(hex).Values()
 	r, g, b := uint8(values[0]), uint8(values[1]), uint8(values[2])
 	return rgbColor{r, g, b}
 }
 
-func byName(name string) (AdaptorColor, bool) {
+// ByName ...
+func ByName(name string) (AdaptorColor, bool) {
+	hexPattern := regexp.MustCompile("^#?[0-9A-Fa-f]{6}$")
+	if hexPattern.MatchString(name) {
+		if name[0] != '#' {
+			name = "#" + name
+		}
+		return ByHex(name), true
+	}
+	if s, ok := specialNames[name]; ok {
+		name = s
+	}
 	if c, ok := palette.AllPalettes().Color(name); ok {
 		cf, _ := colorful.MakeColor(c)
-		return Hex(cf.Hex()), true
+		return ByHex(cf.Hex()), true
 	}
 	return nil, false
 }
 
-// FromImageColor ...
-func FromImageColor(imgColor imgcolor.Color) AdaptorColor {
-	cf, _ := colorful.MakeColor(imgColor)
-	return Hex(cf.Hex())
-}
-
 // MustByName ...
 func MustByName(name string) AdaptorColor {
-	if c, ok := byName(name); ok {
+	if c, ok := ByName(name); ok {
 		return c
 	}
 	panic(name)
 }
+
+// ByImageColor ...
+func ByImageColor(imgColor imgcolor.Color) AdaptorColor {
+	cf, _ := colorful.MakeColor(imgColor)
+	return ByHex(cf.Hex())
+}
+
+type shades [256]AdaptorColor
+type splitComplementary [2]AdaptorColor
+type analogous [2]AdaptorColor
+type triadic [2]AdaptorColor
 
 // AdaptorColor ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -58,9 +80,17 @@ type AdaptorColor interface {
 	AsPrettyJSONColor() [2]string
 	AsRGBColor() color.RGBColor
 	AsTermenvColor() termenv.Color
-	AdjustConstrast(mode ContrastPolarity, polarity ContrastPolarity, amount float64) AdaptorColor
+	AdjustConstrast(polarity contrastPolarity, amount float64) AdaptorColor
 	Blend(other AdaptorColor, blendPercent int) AdaptorColor
 	Contrast() AdaptorColor
+	HueOffset(degrees int) AdaptorColor
+	SplitComplementary() splitComplementary
+	Complementary() AdaptorColor
+	Analogous() analogous
+	Monochromatic() shades
+	Triadic() triadic
+	Lighter(percent float64) AdaptorColor
+	Darker(percent float64) AdaptorColor
 }
 
 type rgbColor [3]uint8
@@ -103,6 +133,59 @@ func (rgb rgbColor) AsPrettyJSONColor() [2]string {
 	return [2]string{start, end}
 }
 
+// Complementary ...
+func (rgb rgbColor) Complementary() AdaptorColor {
+	return ByImageColor(gamut.Complementary(rgb.AsImageColor()))
+}
+
+// Analogous ...
+func (rgb rgbColor) Analogous() analogous {
+	raw := gamut.Analogous(rgb.AsImageColor())
+	return analogous{
+		ByImageColor(raw[0]),
+		ByImageColor(raw[1]),
+	}
+}
+
+// Triadic ...
+func (rgb rgbColor) Triadic() triadic {
+	raw := gamut.Triadic(rgb.AsImageColor())
+	return triadic{
+		ByImageColor(raw[0]),
+		ByImageColor(raw[1]),
+	}
+}
+
+// Lighter ...
+func (rgb rgbColor) Lighter(percent float64) AdaptorColor {
+	return ByImageColor(gamut.Lighter(rgb.AsImageColor(), percent))
+}
+
+// Darker ...
+func (rgb rgbColor) Darker(percent float64) AdaptorColor {
+	return ByImageColor(gamut.Darker(rgb.AsImageColor(), percent))
+}
+
+// SplitComplementary ...
+func (rgb rgbColor) SplitComplementary() splitComplementary {
+	raw := gamut.SplitComplementary(rgb.AsImageColor())
+	return splitComplementary{
+		ByImageColor(raw[0]),
+		ByImageColor(raw[1]),
+	}
+}
+
+// Monochromatic ...
+func (rgb rgbColor) Monochromatic() shades {
+	const count = 256
+	imageColors := gamut.Monochromatic(rgb.AsImageColor(), count)
+	colors := shades{}
+	for i, imageColor := range imageColors {
+		colors[i] = ByImageColor(imageColor)
+	}
+	return colors
+}
+
 // String ...
 func (rgb rgbColor) String() string {
 	return rgb.AsColorfulColor().Hex()
@@ -117,26 +200,30 @@ func (rgb rgbColor) GoString() string {
 }
 
 // AdjustConstrast ...
-func (rgb rgbColor) AdjustConstrast(mode ContrastPolarity, polarity ContrastPolarity, amount float64) AdaptorColor {
-	var base colorful.Color
-	switch mode {
-	case DarkMode:
-		switch polarity {
-		case MoreContrast:
-			base = colorfulBlack
-		case LessContrast:
-			base = colorfulWhite
+func (rgb rgbColor) AdjustConstrast(polarity contrastPolarity, amount float64) AdaptorColor {
+	var base AdaptorColor
+	switch polarity {
+	case LessNoticable:
+		switch Mode {
+		case DarkMode:
+			base = White
+		default:
+			base = Black
 		}
-	case LightMode:
-		switch polarity {
-		case MoreContrast:
-			base = colorfulWhite
-		case LessContrast:
-			base = colorfulBlack
+	case MoreNoticable:
+		fallthrough
+	default:
+		switch Mode {
+		case DarkMode:
+			base = Black
+		default:
+			base = White
 		}
 	}
-	blended := rgb.AsColorfulColor().BlendHsv(base, amount)
-	return Hex(blended.Hex())
+	return ByHex(rgb.
+		AsColorfulColor().
+		BlendHsv(base.AsColorfulColor(), amount).
+		Hex())
 }
 
 // Blend ...
@@ -152,11 +239,37 @@ func (rgb rgbColor) Blend(other AdaptorColor, blendPercent int) AdaptorColor {
 
 		const blendCount = 100
 		blends := gamut.Blends(rgb.AsImageColor(), other.AsImageColor(), blendCount)
-		return FromImageColor(blends[blendPercent])
+		return ByImageColor(blends[blendPercent])
 	}
 }
 
 // Contrast ...
 func (rgb rgbColor) Contrast() AdaptorColor {
-	return FromImageColor(gamut.Contrast(rgb.AsImageColor()))
+	return ByImageColor(gamut.Contrast(rgb.AsImageColor()))
+}
+
+// HueOffset ...
+func (rgb rgbColor) HueOffset(degrees int) AdaptorColor {
+	return ByImageColor(gamut.HueOffset(rgb.AsImageColor(), degrees))
+}
+
+// HexPair ...
+type HexPair struct {
+	Fg string `yaml:"fg"`
+	Bg string `yaml:"bg"`
+}
+
+// Reverse ...
+func (s HexPair) Reverse() HexPair {
+	return HexPair{
+		Fg: s.Bg,
+		Bg: s.Fg,
+	}
+}
+
+// Format ...
+func (s HexPair) Format() func(value string) string {
+	return func(value string) string {
+		return cfmt.Sprintf("{{%s}}::"+s.Fg+"|bg"+s.Bg, value)
+	}
 }

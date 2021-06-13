@@ -4,10 +4,10 @@ import (
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/pandich/couture/theme"
+	"github.com/pandich/couture/theme/color"
 )
 
-func newContextColumn(style theme.Style, layout layout.ColumnLayout) column {
+func newContextColumn(style color.HexPair, layout layout.ColumnLayout) column {
 	return newWeightedColumn(
 		schema.Context,
 		layout,

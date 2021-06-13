@@ -7,37 +7,43 @@ import (
 	"github.com/pandich/couture/theme/color"
 )
 
-type baseColor string
-
-func splitComplementary(hex baseColor) Theme {
-	return splitComplementaryGenerator(color.Mode, color.Hex(string(hex))).asTheme()
+// GenerateTheme ...
+func GenerateTheme(base string) (*Theme, bool) {
+	ac, ok := color.ByName(base)
+	if !ok {
+		return nil, false
+	}
+	return splitComplementaryGenerator(ac).asTheme(), true
 }
 
-func splitComplementaryGenerator(mode color.ContrastPolarity, c color.AdaptorColor) generator {
-	a := gamut.Complementary(c.AsImageColor())
-	b := gamut.SplitComplementary(gamut.HueOffset(c.AsImageColor(), 120))
-	x := gamut.Analogous(c.AsImageColor())
+func splitComplementaryGenerator(baseColor color.AdaptorColor) generator {
+	//nolint: gomnd
 	return generator{
-		Mode:             mode,
-		ApplicationColor: color.FromImageColor(x[1]).AdjustConstrast(mode, color.LessContrast, 0.2),
-		TimestampColor:   color.FromImageColor(a).AdjustConstrast(mode, color.MoreContrast, 0.2),
-		EntityColor:      c,
-		MessageColor:     color.FromImageColor(b[1]),
+		ApplicationColor: baseColor.
+			Analogous()[1].
+			AdjustConstrast(color.LessNoticable, 0.2),
+		TimestampColor: baseColor.
+			Complementary().
+			Monochromatic()[0xB0],
+		EntityColor: baseColor,
+		MessageColor: baseColor.
+			Triadic()[1].
+			AdjustConstrast(color.LessNoticable, 0.4).
+			Lighter(0.2),
 	}
 }
 
 type generator struct {
-	Mode             color.ContrastPolarity
 	ApplicationColor color.AdaptorColor
 	TimestampColor   color.AdaptorColor
 	EntityColor      color.AdaptorColor
 	MessageColor     color.AdaptorColor
 }
 
-func (p generator) asTheme() Theme {
+func (p generator) asTheme() *Theme {
 	th := Theme{}
 	p.apply(&th)
-	return th
+	return &th
 }
 
 func (p generator) apply(th *Theme) {
@@ -60,66 +66,66 @@ func (p generator) applySources(th *Theme) {
 	for _, source := range paletteColors {
 		th.Source = append(
 			th.Source,
-			Style{
-				Bg: color.FromImageColor(source).AsHexColor(),
-				Fg: color.FromImageColor(source).Contrast().AsHexColor(),
+			color.HexPair{
+				Bg: color.ByImageColor(source).AsHexColor(),
+				Fg: color.ByImageColor(source).Contrast().AsHexColor(),
 			},
 		)
 	}
 }
 
 func (p generator) applyHeader(th *Theme) {
-	th.Application = Style{
+	th.Application = color.HexPair{
 		Fg: p.ApplicationColor.AsHexColor(),
-		Bg: p.ApplicationColor.AdjustConstrast(p.Mode, color.MoreContrast, 0.9).AsHexColor(),
+		Bg: p.ApplicationColor.AdjustConstrast(color.MoreNoticable, 0.9).AsHexColor(),
 	}
-	th.Timestamp = Style{
+	th.Timestamp = color.HexPair{
 		Fg: p.TimestampColor.AsHexColor(),
-		Bg: p.TimestampColor.AdjustConstrast(p.Mode, color.MoreContrast, 0.8).AsHexColor(),
+		Bg: p.TimestampColor.AdjustConstrast(color.MoreNoticable, 0.8).AsHexColor(),
 	}
 }
 
 func (p generator) applyEntity(th *Theme) {
 	entityFg := p.EntityColor
-	entityBg := entityFg.AdjustConstrast(p.Mode, color.MoreContrast, 0.8)
+	entityBg := entityFg.AdjustConstrast(color.MoreNoticable, 0.8)
 
-	th.Entity = Style{
+	th.Entity = color.HexPair{
 		Fg: entityFg.AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
-	th.Context = Style{
+	th.Context = color.HexPair{
 		Fg: entityFg.AsHexColor(),
-		Bg: entityFg.AdjustConstrast(p.Mode, color.MoreContrast, 0.7).AsHexColor(),
+		Bg: entityFg.AdjustConstrast(color.MoreNoticable, 0.7).AsHexColor(),
 	}
 
-	th.Line = Style{
-		Fg: entityFg.AdjustConstrast(p.Mode, color.MoreContrast, 0.2).AsHexColor(),
+	th.Line = color.HexPair{
+		Fg: entityFg.AdjustConstrast(color.MoreNoticable, 0.2).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 
-	th.LineDelimiter = Style{
-		Fg: entityFg.AdjustConstrast(p.Mode, color.MoreContrast, 0.2).AdjustConstrast(p.Mode, color.LessContrast, 0.4).AsHexColor(),
+	th.LineDelimiter = color.HexPair{
+		Fg: entityFg.AdjustConstrast(color.MoreNoticable, 0.2).AdjustConstrast(color.LessNoticable, 0.4).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 
-	actionFg := entityFg.AdjustConstrast(p.Mode, color.LessContrast, 0.2)
-	th.Action = Style{
+	actionFg := entityFg.AdjustConstrast(color.LessNoticable, 0.2)
+	th.Action = color.HexPair{
 		Fg: actionFg.AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
-	th.ActionDelimiter = Style{
-		Fg: actionFg.AdjustConstrast(p.Mode, color.LessContrast, 0.4).AsHexColor(),
+	th.ActionDelimiter = color.HexPair{
+		Fg: actionFg.AdjustConstrast(color.LessNoticable, 0.4).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 }
 
 func (p generator) applyLevels(th *Theme) {
-	styleForName := func(name string) Style {
+	styleForName := func(name string) color.HexPair {
 		c := color.MustByName(name).
 			Blend(p.EntityColor, 5)
-		return Style{Fg: c.Contrast().AsHexColor(), Bg: c.AsHexColor()}
+		return color.HexPair{Fg: c.Contrast().AsHexColor(), Bg: c.AsHexColor()}
 	}
-	th.Level = map[level.Level]Style{
+	th.Level = map[level.Level]color.HexPair{
 		level.Trace: styleForName("Charcoal Gray"),
 		level.Debug: styleForName("Gray"),
 		level.Info:  styleForName("White"),
@@ -130,19 +136,19 @@ func (p generator) applyLevels(th *Theme) {
 
 func (p generator) applyMessages(th *Theme) {
 	var blend color.AdaptorColor
-	switch p.Mode {
+	switch color.Mode {
 	case color.LightMode:
-		blend = color.Hex("#ffffff")
+		blend = color.White
 	case color.DarkMode:
 		fallthrough
 	default:
-		blend = color.Hex("#000000")
+		blend = color.Black
 	}
-	styleForName := func(name string) Style {
+	styleForName := func(name string) color.HexPair {
 		bg := color.MustByName(name).Blend(blend, 90)
-		return Style{Fg: p.MessageColor.AsHexColor(), Bg: bg.AsHexColor()}
+		return color.HexPair{Fg: p.MessageColor.AsHexColor(), Bg: bg.AsHexColor()}
 	}
-	th.Message = map[level.Level]Style{
+	th.Message = map[level.Level]color.HexPair{
 		level.Trace: styleForName("Charcoal Gray"),
 		level.Debug: styleForName("Gray"),
 		level.Info:  styleForName("White"),

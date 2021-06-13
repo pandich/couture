@@ -82,7 +82,7 @@ func dumpMetrics() {
 	defer os.Exit(0)
 
 	out := os.Stderr
-	defer bufio.NewWriter(out).Flush() //nolint:errcheck
+	defer bufio.NewWriter(out).Flush() //nolint: errcheck
 
 	metrics.DefaultRegistry.Each(func(name string, _ interface{}) {
 		switch metric := metrics.Get(name).(type) {

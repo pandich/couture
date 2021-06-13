@@ -5,7 +5,7 @@ import (
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/pandich/couture/theme"
+	"github.com/pandich/couture/theme/color"
 )
 
 type extractor func(event model.SinkEvent) []interface{}
@@ -18,7 +18,7 @@ type extractorColumn struct {
 func newWeightedColumn(
 	columnName schema.Column,
 	layout layout.ColumnLayout,
-	style theme.Style,
+	style color.HexPair,
 	value func(event model.SinkEvent) []interface{},
 ) extractorColumn {
 	col := extractorColumn{

@@ -5,11 +5,11 @@ import (
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/pandich/couture/theme"
+	"github.com/pandich/couture/theme/color"
 	"time"
 )
 
-func newTimestampColumn(timeFormat *string, style theme.Style, layout layout.ColumnLayout) column {
+func newTimestampColumn(timeFormat *string, style color.HexPair, layout layout.ColumnLayout) column {
 	return newWeightedColumn(
 		schema.Timestamp,
 		layout,

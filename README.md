@@ -9,7 +9,7 @@
 Couture combines multiple log streams from disparate sources into human-friendly output.
 
 ### Installation
-	
+
 	go get -u github.com/pandich/couture	
 
 ### Usage:
@@ -18,8 +18,8 @@ Couture combines multiple log streams from disparate sources into human-friendly
 
 ### Configuration
 
-SSH logging depends on passwordless login. See [ssh-copy-id](https://www.ssh.com/academy/ssh/copy-id) for information
-on how to easily do so. 
+SSH logging depends on passwordless login. See [ssh-copy-id](https://www.ssh.com/academy/ssh/copy-id) for information on
+how to easily do so.
 
 [comment]: <> (TODO config doc)
 

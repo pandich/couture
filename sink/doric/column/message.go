@@ -8,6 +8,7 @@ import (
 	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink/layout"
 	"github.com/pandich/couture/theme"
+	"github.com/pandich/couture/theme/color"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
 	"strconv"
@@ -52,7 +53,7 @@ func newMessageColumn(
 	}
 	for _, lvl := range level.Levels {
 		style := th.Message[lvl]
-		errStyle := theme.Style{
+		errStyle := color.HexPair{
 			Fg: th.Level[level.Error].Bg,
 			Bg: style.Bg,
 		}

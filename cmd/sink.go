@@ -10,8 +10,10 @@ import (
 
 var enabled = true
 var disabled = false
-var defaultTheme = theme.Registry[theme.Default]
+
 var defaultLayout = layout.Registry[layout.Default]
+var defaultOut = os.Stdout
+var defaultTheme *theme.Theme
 var defaultTimeFormat = time.Stamp
 
 var doricConfig = sink.Config{}
@@ -22,12 +24,13 @@ var doricConfigDefaults = sink.Config{
 	Expand:           &disabled,
 	Highlight:        &disabled,
 	MultiLine:        &disabled,
-	Out:              os.Stdout,
 	ShowSchema:       &disabled,
-	Theme:            &defaultTheme,
-	Layout:           &defaultLayout,
-	TimeFormat:       &defaultTimeFormat,
 	Wrap:             &disabled,
+
+	Layout:     &defaultLayout,
+	Out:        defaultOut,
+	Theme:      defaultTheme,
+	TimeFormat: &defaultTimeFormat,
 }
 
 func loadSinkConfig() error {

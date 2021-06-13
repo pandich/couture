@@ -6,7 +6,7 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/pandich/couture/theme"
+	"github.com/pandich/couture/theme/color"
 )
 
 const (
@@ -23,11 +23,11 @@ type callerColumn struct {
 }
 
 func newCallerColumn(
-	entityStyle theme.Style,
-	actionDelimiterStyle theme.Style,
-	actionStyle theme.Style,
-	lineDelimiterStyle theme.Style,
-	lineStyle theme.Style,
+	entityStyle color.HexPair,
+	actionDelimiterStyle color.HexPair,
+	actionStyle color.HexPair,
+	lineDelimiterStyle color.HexPair,
+	lineStyle color.HexPair,
 	entityLayout layout.ColumnLayout,
 ) column {
 	col := callerColumn{baseColumn{columnName: callerPsuedoColumn, colLayout: entityLayout}}
