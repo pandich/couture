@@ -5,6 +5,8 @@ import (
 	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/theme/color"
 	errors2 "github.com/pkg/errors"
+	"sort"
+	"strings"
 )
 
 // Names ...
@@ -13,6 +15,7 @@ func Names() []string {
 	for name := range themeColors {
 		names = append(names, name)
 	}
+	sort.Slice(names, func(i, j int) bool { return strings.Compare(names[i], names[j]) < 0 })
 	return names
 }
 
@@ -39,19 +42,25 @@ func GenerateTheme(colorName string, sourceStyle string) (*Theme, error) {
 
 //nolint: gomnd
 func splitComplementaryGenerator(baseColor color.AdaptorColor, sourceStyle string) generator {
+	const triadicDirectionCutoff = 0.5 // 180º
 	var messageColorIndex = 1
-	if baseHue, _, _ := baseColor.AsColorfulColor().Hsl(); baseHue < 0.5 {
+	if h, _, _ := baseColor.AsColorfulColor().Hsl(); h < triadicDirectionCutoff {
 		messageColorIndex = 0
 	}
+
 	return generator{
 		SourceStyle: sourceStyle,
+
 		ApplicationColor: baseColor.
 			Analogous()[1].
 			AdjustConstrast(color.MoreContrast, 20),
+
 		TimestampColor: baseColor.
 			Complementary().
 			Monochromatic()[0xB0],
+
 		EntityColor: baseColor,
+
 		MessageColor: baseColor.
 			Triadic()[messageColorIndex].
 			AdjustConstrast(color.MoreContrast, 80),
