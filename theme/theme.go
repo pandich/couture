@@ -7,6 +7,8 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/source"
+	"github.com/pandich/couture/theme/color"
+	"github.com/tidwall/pretty"
 	"gopkg.in/yaml.v3"
 	"math/rand"
 	"path"
@@ -64,6 +66,22 @@ func (theme Theme) SourceStyle(consistentColors bool, src source.Source) Style {
 		index = src.URL().Hash() % len(theme.Source)
 	}
 	return theme.Source[index]
+}
+
+// AsPrettyJSONStyle ...
+func (theme Theme) AsPrettyJSONStyle() *pretty.Style {
+	valueColor := color.Hex(theme.Action.Fg).AsPrettyJSONColor()
+	keyColor := color.Hex(theme.Timestamp.Fg).AsPrettyJSONColor()
+	dimValueColor := color.Hex(theme.Level[level.Trace].Bg).AsPrettyJSONColor()
+	return &pretty.Style{
+		Key:    keyColor,
+		String: valueColor,
+		Number: valueColor,
+		True:   valueColor,
+		False:  valueColor,
+		Null:   dimValueColor,
+		Escape: dimValueColor,
+	}
 }
 
 func load(name string) (*Theme, error) {

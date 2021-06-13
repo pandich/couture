@@ -8,6 +8,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
 	"github.com/muesli/gamut/palette"
+	"github.com/muesli/termenv"
 	imgcolor "image/color"
 )
 
@@ -65,11 +66,13 @@ func MustByName(name string) AdaptorColor {
 type AdaptorColor interface {
 	fmt.Stringer
 	fmt.GoStringer
-	AsRGBColor() color.RGBColor
-	AsHexColor() string
-	AsGoColor() color.Color
-	AsImageColor() imgcolor.Color
 	AsColorfulColor() colorful.Color
+	AsGoColor() color.Color
+	AsHexColor() string
+	AsImageColor() imgcolor.Color
+	AsPrettyJSONColor() [2]string
+	AsRGBColor() color.RGBColor
+	AsTermenvColor() termenv.Color
 	AdjustConstrast(mode ContrastPolarity, polarity ContrastPolarity, amount float64) AdaptorColor
 	Blend(other AdaptorColor, blendPercent int) AdaptorColor
 	Contrast() AdaptorColor
@@ -101,6 +104,18 @@ func (rgb rgbColor) AsImageColor() imgcolor.Color {
 func (rgb rgbColor) AsColorfulColor() colorful.Color {
 	cf, _ := colorful.Hex(rgb.AsHexColor())
 	return cf
+}
+
+// AsTermenvColor ...
+func (rgb rgbColor) AsTermenvColor() termenv.Color {
+	return termenv.ANSI256.FromColor(rgb.AsImageColor())
+}
+
+// AsPrettyJSONColor ...
+func (rgb rgbColor) AsPrettyJSONColor() [2]string {
+	start := termenv.CSI + rgb.AsTermenvColor().Sequence(false) + "m"
+	end := termenv.CSI + "39m"
+	return [2]string{start, end}
 }
 
 // String ...

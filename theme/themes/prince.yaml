@@ -19,11 +19,11 @@ action_delimiter:
   bg: "#202020"
 
 action:
-  fg: "#493858"
+  fg: "#bf99bd"
   bg: "#202020"
 
 line_delimiter:
-  fg: "#916d90"
+  fg: "#493858"
   bg: "#202020"
 
 line:

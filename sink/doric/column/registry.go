@@ -3,7 +3,6 @@ package column
 import (
 	"fmt"
 	"github.com/i582/cfmt/cmd/cfmt"
-	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/sink/layout"
@@ -24,7 +23,6 @@ var DefaultColumns = []schema.Column{
 type registry map[schema.Column]column
 
 func newRegistry(config sink.Config) registry {
-	errorStyle := config.Theme.Level[level.Error]
 	return registry{
 		sourcePseudoColumn: newSourceColumn(
 			config.Layout.Source,
@@ -58,8 +56,8 @@ func newRegistry(config sink.Config) registry {
 			highlight(config.Highlight != nil && *config.Highlight),
 			expand(config.Expand != nil && *config.Expand),
 			multiLine(config.MultiLine != nil && *config.MultiLine),
-			errorStyle,
-			config.Theme.Message,
+			useColor(config.Color != nil && *config.Color),
+			config.Theme,
 			config.Layout.Message,
 		),
 	}
