@@ -1,9 +1,5 @@
 package level
 
-import (
-	"strings"
-)
-
 const (
 	// Trace log level for tracing
 	Trace Level = "TRACE"
@@ -45,15 +41,6 @@ var priorities = map[Level]int{
 // Default ...
 var Default = Info
 
-// LowerNames ...
-func LowerNames() []string {
-	var logLevels []string
-	for _, level := range Levels {
-		logLevels = append(logLevels, level.LowerName())
-	}
-	return logLevels
-}
-
 // Level a log level.
 type Level string
 
@@ -65,11 +52,6 @@ func (level Level) IsAtLeast(l Level) bool {
 // priority is the relative priority of this level.
 func (level Level) priority() int {
 	return priorities[level]
-}
-
-// LowerName returns a name that is more simple for the user to enter.
-func (level Level) LowerName() string {
-	return strings.ToLower(string(level))
 }
 
 // ByName ...

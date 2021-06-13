@@ -18,13 +18,13 @@ var cli struct {
 	Width      width      `group:"terminal" help:"Wrap width. Default is the current terminal width." placeholder:"width" short:"W" env:"COUTURE_WIDTH"`
 	AutoResize autoResize `group:"terminal" help:"Auto-resize columns when the terminal resizes." negatable:"true" env:"COUTURE_AUTO_RESIZE"`
 
-	Theme            themeName        `group:"display" help:"Specify the the hex code or name of the theme base noColor. Any hex code or name. Custom names: ${specialThemes}." default:"${defaultTheme}" env:"COUTURE_THEME"`
+	Theme            themeName        `group:"display" help:"Specify the the hex code or name of the theme base noColor. Any hex code or name. Custom names: ${specialThemes}." default:"prince" env:"COUTURE_THEME"`
 	SourceStyle      sourceStyle      `group:"display" help:"Select the theme for generating distinct source field background colors: ${enum}." enum:"happy,pastel,similar,warm" short:"S" default:"pastel"`
 	ConsistentColors consistentColors `group:"display" help:"Maintain consistent source URL colors between runs." negatable:"true" env:"COUTURE_CONSISTENT_COLORS"`
 	MultiLine        multiLine        `group:"display" help:"Display each log event in multi-line format. (Enabled by --expand-json)" negatable:"true"`
 	Expand           expand           `group:"display" help:"Example structured message bodies (e.g. JSON)." negatable:"true" env:"COUTURE_EXPAND"`
 
-	Level     levelLike  `group:"filter" help:"The minimum log level to display: ${enum}." default:"${defaultLogLevel}" short:"l" enum:"${logLevels}" env:"COUTURE_LEVEL"`
+	Level     levelLike  `group:"filter" help:"The minimum log level to display: ${enum}." default:"trace" short:"l" enum:"trace,debug,info,warn,error" env:"COUTURE_LEVEL"`
 	Since     *time.Time `group:"filter" help:"How far back to look for events. Parses most time and duration formats including human friendly." placeholder:"(time|duration)" short:"s"`
 	Highlight highlight  `group:"filter" help:"Highlight matches from the patterns specified in --include." negatable:"true" env:"COUTURE_HIGHLIGHT"`
 	Filter    filterLike `group:"filter" help:"Filter regular expressions. Format." placeholder:"[+|-|!]regex" short:"f" sep:"|"`

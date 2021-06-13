@@ -4,9 +4,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/iancoleman/strcase"
 	"github.com/pandich/couture/couture"
-	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/theme"
+	"github.com/pkg/errors"
 	"github.com/posener/complete/v2"
 	"github.com/posener/complete/v2/predict"
 	"reflect"
@@ -32,16 +30,14 @@ func completionsHook(_ *kong.Kong) error {
 		case enum == "":
 			flagPredictors[flagName+"="] = predict.Nothing
 		default:
-			if enum[0] == '$' {
-				enum = enum[2 : len(enum)-1]
-				if s, ok := (kong.Vars{
-					"timeFormatNames": strings.Join(timeFormatNames, ","),
-					"columnNames":     strings.Join(schema.Names(), ","),
-					"defaultTheme":    theme.Default,
-					"logLevels":       strings.Join(level.LowerNames(), ","),
-					"defaultLogLevel": level.Info.LowerName(),
-				})[enum]; ok {
-					enum = s
+			const start = "${"
+			const end = "}"
+			if strings.HasPrefix(enum, start) && strings.HasSuffix(enum, end) {
+				varName := strings.TrimSuffix(strings.TrimPrefix(enum, start), end)
+				if varValue, ok := parserVars[varName]; ok {
+					enum = varValue
+				} else {
+					return errors.Errorf("could not parse alias: %s", varValue)
 				}
 			}
 			for _, s := range strings.Split(enum, ",") {

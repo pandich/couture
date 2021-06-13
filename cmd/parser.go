@@ -4,15 +4,12 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/pandich/couture/couture"
 	"github.com/pandich/couture/manager"
-	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/theme"
 	"reflect"
 	"strings"
 	"time"
 )
-
-const helpSummary = "Tails one or more event sources."
 
 var parser = kong.Must(&cli,
 	kong.Name(couture.Name),
@@ -31,15 +28,16 @@ var parser = kong.Must(&cli,
 		"filter":     "Filter Options",
 	},
 	kong.PostBuild(completionsHook),
-	kong.Vars{
-		"timeFormatNames": strings.Join(timeFormatNames, ","),
-		"columnNames":     strings.Join(schema.Names(), ","),
-		"defaultTheme":    theme.Default,
-		"specialThemes":   strings.Join(theme.Names(), ","),
-		"logLevels":       strings.Join(level.LowerNames(), ","),
-		"defaultLogLevel": level.Info.LowerName(),
-	},
+	parserVars,
 )
+
+var parserVars = kong.Vars{
+	"timeFormatNames": strings.Join(timeFormatNames, ","),
+	"columnNames":     strings.Join(schema.Names(), ","),
+	"specialThemes":   strings.Join(theme.Names(), ","),
+}
+
+const helpSummary = "Tails one or more event sources."
 
 func helpDescription() string {
 	var lines = []string{

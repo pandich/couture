@@ -8,9 +8,6 @@ import (
 	"math/rand"
 )
 
-// Default ...
-const Default = "prince"
-
 // Theme ...
 type Theme struct {
 	Source          []color.FgBgTuple               `yaml:"source"`
