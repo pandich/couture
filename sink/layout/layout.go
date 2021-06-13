@@ -6,12 +6,7 @@ import (
 )
 
 // Default ...
-const Default = "default"
-
-// Registry is the registry of layout names to their structs.
-var Registry = map[string]Layout{
-	Default: mustLoad(Default),
-}
+var Default = mustLoad("default")
 
 // Layout ...
 type Layout struct {

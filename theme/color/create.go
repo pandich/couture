@@ -36,13 +36,16 @@ func ByName(name string) (AdaptorColor, bool) {
 }
 
 func normalizeColorName(name string) string {
-	var wordSeparators = regexp.MustCompile(`[ \t_./\-]+`)
-	nameWords := wordSeparators.Split(name, -1)
-	for i, word := range nameWords {
-		first, rest := strings.ToUpper(word[0:1]), word[1:]
-		nameWords[i] = first + rest
+	var wordBreaks = regexp.MustCompile(`[ \t_./\-]+`)
+	words := wordBreaks.Split(name, -1)
+	for i, word := range words {
+		if len(word) > 1 {
+			words[i] = strings.ToUpper(word[0:1]) + word[1:]
+		} else {
+			words[i] = strings.ToUpper(word)
+		}
 	}
-	name = strings.Join(nameWords, " ")
+	name = strings.Join(words, " ")
 	return name
 }
 

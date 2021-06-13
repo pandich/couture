@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/coreos/etcd/pkg/fileutil"
 	"github.com/pandich/couture/couture"
 	"github.com/pandich/couture/manager"
@@ -9,7 +10,9 @@ import (
 	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/sink/doric"
 	"github.com/pandich/couture/sink/doric/column"
+	"github.com/pandich/couture/sink/layout"
 	"github.com/pandich/couture/theme"
+	"github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -18,13 +21,41 @@ import (
 	"time"
 )
 
-var managerConfig = manager.Config{}
+var (
+	managerConfig      = manager.Config{}
+	defaultDoricConfig = sink.Config{
+		AutoResize:       &enabled,
+		Color:            &enabled,
+		ConsistentColors: &enabled,
+		Expand:           &disabled,
+		Highlight:        &disabled,
+		MultiLine:        &disabled,
+		ShowSchema:       &disabled,
+		Wrap:             &disabled,
+		Layout:           &layout.Default,
+		Out:              os.Stdout,
+		Theme:            nil,
+		TimeFormat:       &defaultTimeFormat,
+	}
+)
 
 // Run runs the manager using the CLI arguments.
 func Run() {
 	var err error
 
-	options := parseInputs()
+	args, err := expandAliases(os.Args[1:])
+	parser.FatalIfErrorf(err)
+
+	_, err = parser.Parse(args)
+	parser.FatalIfErrorf(err)
+
+	cliDoricConfig.
+		FillMissing(loadDoricConfigFile()).
+		FillMissing(defaultDoricConfig)
+
+	options, err := parseOptions()
+	parser.FatalIfErrorf(err)
+
 	managerConfig.Schemas, err = schema.LoadSchemas()
 	parser.FatalIfErrorf(err)
 
@@ -35,24 +66,7 @@ func Run() {
 	parser.FatalIfErrorf(err)
 }
 
-func parseInputs() []interface{} {
-	var args = os.Args[1:]
-	args, err := expandAliases(args)
-	parser.FatalIfErrorf(err)
-
-	_, err = parser.Parse(args)
-	parser.FatalIfErrorf(err)
-
-	err = loadSinkConfig()
-	parser.FatalIfErrorf(err)
-
-	options, err := getOptions()
-	parser.FatalIfErrorf(err)
-
-	return options
-}
-
-func getOptions() ([]interface{}, error) {
+func parseOptions() ([]interface{}, error) {
 	sourceArgs := func() ([]interface{}, error) {
 		var sources []interface{}
 		var violations []error
@@ -73,23 +87,23 @@ func getOptions() ([]interface{}, error) {
 		return sources, nil
 	}
 
-	if len(doricConfig.Columns) == 0 {
+	if len(cliDoricConfig.Columns) == 0 {
 		var defaultColumnNames []string
 		for i := range column.DefaultColumns {
 			defaultColumnNames = append(defaultColumnNames, string(column.DefaultColumns[i]))
 		}
-		doricConfig.Columns = defaultColumnNames
+		cliDoricConfig.Columns = defaultColumnNames
 	}
-	if doricConfig.TimeFormat == nil {
+	if cliDoricConfig.TimeFormat == nil {
 		tf := time.Stamp
-		doricConfig.TimeFormat = &tf
+		cliDoricConfig.TimeFormat = &tf
 	}
 
 	th, err := theme.GenerateTheme(string(cli.Theme), string(cli.SourceStyle))
 	parser.FatalIfErrorf(err)
-	doricConfig.Theme = th
+	cliDoricConfig.Theme = th
 	var options = []interface{}{
-		doric.New(doricConfig),
+		doric.New(cliDoricConfig),
 	}
 	sources, err := sourceArgs()
 	if err != nil {
@@ -102,31 +116,43 @@ func getOptions() ([]interface{}, error) {
 	return options, nil
 }
 
-func loadConfig() (*sink.Config, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
+func loadDoricConfigFile() sink.Config {
+	tryLoad := func() (*sink.Config, error) {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
 
-	filename := path.Join(home, ".config", couture.Name, "config.yaml")
-	if !fileutil.Exist(filename) {
-		return &sink.Config{}, nil
-	}
+		filename := path.Join(home, ".config", couture.Name, "config.yaml")
+		if !fileutil.Exist(filename) {
+			return &sink.Config{}, nil
+		}
 
-	f, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
+		f, err := os.Open(filename)
+		if err != nil {
+			return nil, err
+		}
 
-	defer f.Close()
-	text, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, err
+		defer f.Close()
+		text, err := ioutil.ReadAll(f)
+		if err != nil {
+			return nil, err
+		}
+		var c sink.Config
+		err = yaml.Unmarshal(text, &c)
+		if err != nil {
+			return nil, err
+		}
+		return &c, nil
 	}
-	var c sink.Config
-	err = yaml.Unmarshal(text, &c)
+	cfg, err := tryLoad()
 	if err != nil {
-		return nil, err
+		_, _ = fmt.Fprintf(
+			os.Stderr,
+			"%s\n",
+			errors.Wrapf(err, "error processing configuration file"),
+		)
+		return sink.Config{}
 	}
-	return &c, nil
+	return *cfg
 }

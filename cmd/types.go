@@ -12,26 +12,38 @@ import (
 	"time"
 )
 
-var timeFormatNames = []string{
-	model.HumanTimeFormat,
-	"c",
-	"iso8601",
-	"iso8601-nanos",
-	"kitchen",
-	"rfc1123",
-	"rfc1123-utc",
-	"rfc3339",
-	"rfc3339-nanos",
-	"rfc822",
-	"rfc822-utc",
-	"rfc850",
-	"ruby",
-	"stamp",
-	"stamp-micros",
-	"stamp-millis",
-	"stamp-nanos",
-	"unix",
-}
+import (
+	"github.com/pandich/couture/sink"
+)
+
+var (
+	enabled, disabled = true, false
+
+	defaultTimeFormat = time.Stamp
+
+	cliDoricConfig = sink.Config{}
+
+	timeFormatNames = []string{
+		model.HumanTimeFormat,
+		"c",
+		"iso8601",
+		"iso8601-nanos",
+		"kitchen",
+		"rfc1123",
+		"rfc1123-utc",
+		"rfc3339",
+		"rfc3339-nanos",
+		"rfc822",
+		"rfc822-utc",
+		"rfc850",
+		"ruby",
+		"stamp",
+		"stamp-micros",
+		"stamp-millis",
+		"stamp-nanos",
+		"unix",
+	}
+)
 
 type (
 	autoResize       bool
@@ -62,7 +74,7 @@ func (v *autoResize) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	doricConfig.AutoResize = &b
+	cliDoricConfig.AutoResize = &b
 	return nil
 }
 
@@ -73,13 +85,13 @@ func (v *noColor) AfterApply() error {
 		return nil
 	}
 	b := !bool(*v)
-	doricConfig.Color = &b
+	cliDoricConfig.Color = &b
 	return nil
 }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v columns) AfterApply() error { doricConfig.Columns = v; return nil }
+func (v columns) AfterApply() error { cliDoricConfig.Columns = v; return nil }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -88,7 +100,7 @@ func (v *consistentColors) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	doricConfig.ConsistentColors = &b
+	cliDoricConfig.ConsistentColors = &b
 	return nil
 }
 
@@ -99,7 +111,7 @@ func (v *expand) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	doricConfig.Expand = &b
+	cliDoricConfig.Expand = &b
 	return nil
 }
 
@@ -110,7 +122,7 @@ func (v *highlight) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	doricConfig.Highlight = &b
+	cliDoricConfig.Highlight = &b
 	return nil
 }
 
@@ -121,13 +133,13 @@ func (v *multiLine) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	doricConfig.MultiLine = &b
+	cliDoricConfig.MultiLine = &b
 	return nil
 }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v tty) AfterApply() error { doricConfig.TTY = bool(v); return nil }
+func (v tty) AfterApply() error { cliDoricConfig.TTY = bool(v); return nil }
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -136,7 +148,7 @@ func (v *width) AfterApply() error {
 		return nil
 	}
 	ui := uint(*v)
-	doricConfig.Width = &ui
+	cliDoricConfig.Width = &ui
 	return nil
 }
 
@@ -147,7 +159,7 @@ func (v *wrap) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	doricConfig.Wrap = &b
+	cliDoricConfig.Wrap = &b
 	return nil
 }
 
@@ -166,7 +178,7 @@ func (v *showSchema) AfterApply() error {
 		return nil
 	}
 	b := bool(*v)
-	doricConfig.ShowSchema = &b
+	cliDoricConfig.ShowSchema = &b
 	return nil
 }
 
@@ -195,55 +207,55 @@ func (t *timeFormat) AfterApply() error {
 	format := strings.ToLower(string(*t))
 	switch format {
 	case model.HumanTimeFormat:
-		doricConfig.TimeFormat = &format
+		cliDoricConfig.TimeFormat = &format
 	case "c":
 		s := time.ANSIC
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "unix":
 		s := time.UnixDate
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "ruby":
 		s := time.RubyDate
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "rfc822":
 		s := time.RFC822
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "rfc822-utc":
 		s := time.RFC822Z
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "rfc850":
 		s := time.RFC850
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "rfc1123":
 		s := time.RFC1123
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "rfc1123-utc":
 		s := time.RFC1123Z
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "rfc3339", "iso8601":
 		s := time.RFC3339
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "rfc3339-nanos", "iso8601-nanos":
 		s := time.RFC3339Nano
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "kitchen":
 		s := time.Kitchen
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "stamp":
 		s := time.Stamp
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "stamp-millis":
 		s := time.StampMilli
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "stamp-micros":
 		s := time.StampMicro
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	case "stamp-nanos":
 		s := time.StampNano
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	default:
 		s := "stamp"
-		doricConfig.TimeFormat = &s
+		cliDoricConfig.TimeFormat = &s
 	}
 	return nil
 }

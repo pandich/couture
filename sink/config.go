@@ -52,7 +52,7 @@ func (config Config) EffectiveIsTTY() bool {
 }
 
 // FillMissing ...
-func (config *Config) FillMissing(other Config) {
+func (config *Config) FillMissing(other Config) *Config {
 	if config.AutoResize == nil {
 		config.AutoResize = other.AutoResize
 	}
@@ -98,4 +98,5 @@ func (config *Config) FillMissing(other Config) {
 	if config.Out == nil {
 		config.Out = other.Out
 	}
+	return config
 }
