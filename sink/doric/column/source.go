@@ -24,7 +24,7 @@ func (col sourceColumn) render(event model.SinkEvent) string {
 
 // RegisterSourceStyle ...
 func RegisterSourceStyle(
-	style color.HexPair,
+	style color.FgBgTuple,
 	layout layout.ColumnLayout,
 	src source.Source,
 ) {

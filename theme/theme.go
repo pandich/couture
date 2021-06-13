@@ -13,23 +13,23 @@ const Default = "prince"
 
 // Theme ...
 type Theme struct {
-	Source          []color.HexPair               `yaml:"source"`
-	Timestamp       color.HexPair                 `yaml:"timestamp"`
-	Application     color.HexPair                 `yaml:"application"`
-	Context         color.HexPair                 `yaml:"context"`
-	Entity          color.HexPair                 `yaml:"entity"`
-	ActionDelimiter color.HexPair                 `yaml:"action_delimiter"`
-	Action          color.HexPair                 `yaml:"action"`
-	LineDelimiter   color.HexPair                 `yaml:"line_delimiter"`
-	Line            color.HexPair                 `yaml:"line"`
-	Level           map[level.Level]color.HexPair `yaml:"level"`
-	Message         map[level.Level]color.HexPair `yaml:"message"`
-	SourceStyle     string                        `yaml:"-"`
+	Source          []color.FgBgTuple               `yaml:"source"`
+	Timestamp       color.FgBgTuple                 `yaml:"timestamp"`
+	Application     color.FgBgTuple                 `yaml:"application"`
+	Context         color.FgBgTuple                 `yaml:"context"`
+	Entity          color.FgBgTuple                 `yaml:"entity"`
+	ActionDelimiter color.FgBgTuple                 `yaml:"action_delimiter"`
+	Action          color.FgBgTuple                 `yaml:"action"`
+	LineDelimiter   color.FgBgTuple                 `yaml:"line_delimiter"`
+	Line            color.FgBgTuple                 `yaml:"line"`
+	Level           map[level.Level]color.FgBgTuple `yaml:"level"`
+	Message         map[level.Level]color.FgBgTuple `yaml:"message"`
+	SourceStyle     string                          `yaml:"-"`
 }
 
 // AsHexPair returns a color for a source. When consistentColors is true, sources will get the same
 // color across invocations of the application. Otherwise, the color selection randomized for each run.
-func (theme Theme) AsHexPair(consistentColors bool, src source.Source) color.HexPair {
+func (theme Theme) AsHexPair(consistentColors bool, src source.Source) color.FgBgTuple {
 	//nolint: gosec
 	var index = rand.Intn(len(theme.Source))
 	if consistentColors {

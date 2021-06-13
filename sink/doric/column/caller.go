@@ -23,11 +23,11 @@ type callerColumn struct {
 }
 
 func newCallerColumn(
-	entityStyle color.HexPair,
-	actionDelimiterStyle color.HexPair,
-	actionStyle color.HexPair,
-	lineDelimiterStyle color.HexPair,
-	lineStyle color.HexPair,
+	entityStyle color.FgBgTuple,
+	actionDelimiterStyle color.FgBgTuple,
+	actionStyle color.FgBgTuple,
+	lineDelimiterStyle color.FgBgTuple,
+	lineStyle color.FgBgTuple,
 	entityLayout layout.ColumnLayout,
 ) column {
 	col := callerColumn{baseColumn{columnName: callerPsuedoColumn, colLayout: entityLayout}}

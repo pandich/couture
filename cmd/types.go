@@ -35,7 +35,7 @@ var timeFormatNames = []string{
 
 type (
 	autoResize       bool
-	color            bool
+	noColor          bool
 	sourceStyle      string
 	columns          []string
 	consistentColors bool
@@ -68,11 +68,11 @@ func (v *autoResize) AfterApply() error {
 
 // AfterApply ...
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v *color) AfterApply() error {
+func (v *noColor) AfterApply() error {
 	if v == nil {
 		return nil
 	}
-	b := bool(*v)
+	b := !bool(*v)
 	doricConfig.Color = &b
 	return nil
 }

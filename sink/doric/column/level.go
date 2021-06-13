@@ -13,7 +13,7 @@ type levelColumn struct {
 	extractorColumn
 }
 
-func newLevelColumn(styles map[level.Level]color.HexPair, layout layout.ColumnLayout) column {
+func newLevelColumn(styles map[level.Level]color.FgBgTuple, layout layout.ColumnLayout) column {
 	for _, lvl := range level.Levels {
 		formatLevel := string(schema.Level) + string(lvl)
 		cfmt.RegisterStyle(formatLevel, styles[lvl].Format())

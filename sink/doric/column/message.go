@@ -53,7 +53,7 @@ func newMessageColumn(
 	}
 	for _, lvl := range level.Levels {
 		style := th.Message[lvl]
-		errStyle := color.HexPair{
+		errStyle := color.FgBgTuple{
 			Fg: th.Level[level.Error].Bg,
 			Bg: style.Bg,
 		}

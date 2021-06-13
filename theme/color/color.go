@@ -16,11 +16,6 @@ var White = ByHex("#ffffff")
 // Black ...
 var Black = ByHex("#000000")
 
-var specialNames = map[string]string{
-	"prince":    "Logan",
-	"halloween": "Burnt Orange",
-}
-
 type shades [256]AdaptorColor
 type splitComplementary [2]AdaptorColor
 type analogous [2]AdaptorColor
@@ -39,7 +34,7 @@ type (
 		AsColorfulColor() colorful.Color
 		AsGoColor() color.Color
 		AsHexColor() string
-		AsHexPair() HexPair
+		AsHexPair() FgBgTuple
 		AsImageColor() imgcolor.Color
 		AsPrettyJSONColor() [2]string
 		AsRGBColor() color.RGBColor
@@ -58,8 +53,8 @@ type (
 
 	rgbAdaptorColor [3]uint8
 
-	// HexPair ...
-	HexPair struct {
+	// FgBgTuple ...
+	FgBgTuple struct {
 		Fg string `yaml:"fg"`
 		Bg string `yaml:"bg"`
 	}
@@ -79,15 +74,15 @@ func (rgb rgbAdaptorColor) GoString() string {
 }
 
 // Reverse ...
-func (s HexPair) Reverse() HexPair {
-	return HexPair{
+func (s FgBgTuple) Reverse() FgBgTuple {
+	return FgBgTuple{
 		Fg: s.Bg,
 		Bg: s.Fg,
 	}
 }
 
 // Format ...
-func (s HexPair) Format() func(value string) string {
+func (s FgBgTuple) Format() func(value string) string {
 	return func(value string) string {
 		return cfmt.Sprintf("{{%s}}::"+s.Fg+"|bg"+s.Bg, value)
 	}

@@ -18,7 +18,7 @@ type extractorColumn struct {
 func newWeightedColumn(
 	columnName schema.Column,
 	layout layout.ColumnLayout,
-	style color.HexPair,
+	style color.FgBgTuple,
 	value func(event model.SinkEvent) []interface{},
 ) extractorColumn {
 	col := extractorColumn{

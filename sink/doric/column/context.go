@@ -7,7 +7,7 @@ import (
 	"github.com/pandich/couture/theme/color"
 )
 
-func newContextColumn(style color.HexPair, layout layout.ColumnLayout) column {
+func newContextColumn(style color.FgBgTuple, layout layout.ColumnLayout) column {
 	return newWeightedColumn(
 		schema.Context,
 		layout,

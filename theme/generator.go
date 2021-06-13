@@ -7,11 +7,28 @@ import (
 	errors2 "github.com/pkg/errors"
 )
 
+// Names ...
+func Names() []string {
+	var names []string
+	for name := range themeColors {
+		names = append(names, name)
+	}
+	return names
+}
+
+var themeColors = map[string]string{
+	"prince":    "Logan",
+	"halloween": "Burnt Orange",
+}
+
 // GenerateTheme ...
-func GenerateTheme(base string, sourceStyle string) (*Theme, error) {
-	ac, ok := color.ByName(base)
+func GenerateTheme(colorName string, sourceStyle string) (*Theme, error) {
+	if s, ok := themeColors[colorName]; ok {
+		colorName = s
+	}
+	ac, ok := color.ByName(colorName)
 	if !ok {
-		return nil, errors2.Errorf("invalid theme color: %s", base)
+		return nil, errors2.Errorf("invalid theme color: %s", colorName)
 	}
 	return splitComplementaryGenerator(ac, sourceStyle).asTheme(), nil
 }
@@ -89,11 +106,11 @@ func (p generator) newSourcePalette(th *Theme) []color.AdaptorColor {
 }
 
 func (p generator) applyHeader(th *Theme) {
-	th.Application = color.HexPair{
+	th.Application = color.FgBgTuple{
 		Fg: p.ApplicationColor.AsHexColor(),
 		Bg: p.ApplicationColor.AdjustConstrast(color.MoreNoticable, 90).AsHexColor(),
 	}
-	th.Timestamp = color.HexPair{
+	th.Timestamp = color.FgBgTuple{
 		Fg: p.TimestampColor.AsHexColor(),
 		Bg: p.TimestampColor.AdjustConstrast(color.MoreNoticable, 80).AsHexColor(),
 	}
@@ -103,43 +120,43 @@ func (p generator) applyEntity(th *Theme) {
 	entityFg := p.EntityColor
 	entityBg := entityFg.AdjustConstrast(color.MoreNoticable, 80)
 
-	th.Entity = color.HexPair{
+	th.Entity = color.FgBgTuple{
 		Fg: entityFg.AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
-	th.Context = color.HexPair{
+	th.Context = color.FgBgTuple{
 		Fg: entityFg.AsHexColor(),
 		Bg: entityFg.AdjustConstrast(color.MoreNoticable, 70).AsHexColor(),
 	}
 
-	th.Line = color.HexPair{
+	th.Line = color.FgBgTuple{
 		Fg: entityFg.AdjustConstrast(color.MoreNoticable, 20).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 
-	th.LineDelimiter = color.HexPair{
+	th.LineDelimiter = color.FgBgTuple{
 		Fg: entityFg.AdjustConstrast(color.MoreNoticable, 20).AdjustConstrast(color.LessNoticable, 40).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 
 	actionFg := entityFg.AdjustConstrast(color.LessNoticable, 20)
-	th.Action = color.HexPair{
+	th.Action = color.FgBgTuple{
 		Fg: actionFg.AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
-	th.ActionDelimiter = color.HexPair{
+	th.ActionDelimiter = color.FgBgTuple{
 		Fg: actionFg.AdjustConstrast(color.LessNoticable, 40).AsHexColor(),
 		Bg: entityBg.AsHexColor(),
 	}
 }
 
 func (p generator) applyLevels(th *Theme) {
-	styleForName := func(name string) color.HexPair {
+	styleForName := func(name string) color.FgBgTuple {
 		c := color.MustByName(name).
 			Blend(p.EntityColor, 5)
-		return color.HexPair{Fg: c.Contrast().AsHexColor(), Bg: c.AsHexColor()}
+		return color.FgBgTuple{Fg: c.Contrast().AsHexColor(), Bg: c.AsHexColor()}
 	}
-	th.Level = map[level.Level]color.HexPair{
+	th.Level = map[level.Level]color.FgBgTuple{
 		level.Trace: styleForName("Charcoal Gray"),
 		level.Debug: styleForName("Gray"),
 		level.Info:  styleForName("White"),
@@ -158,11 +175,11 @@ func (p generator) applyMessages(th *Theme) {
 	default:
 		blend = color.Black
 	}
-	styleForName := func(name string) color.HexPair {
+	styleForName := func(name string) color.FgBgTuple {
 		bg := color.MustByName(name).Blend(blend, 90)
-		return color.HexPair{Fg: p.MessageColor.AsHexColor(), Bg: bg.AsHexColor()}
+		return color.FgBgTuple{Fg: p.MessageColor.AsHexColor(), Bg: bg.AsHexColor()}
 	}
-	th.Message = map[level.Level]color.HexPair{
+	th.Message = map[level.Level]color.FgBgTuple{
 		level.Trace: styleForName("Charcoal Gray"),
 		level.Debug: styleForName("Gray"),
 		level.Info:  styleForName("White"),

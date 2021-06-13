@@ -47,8 +47,8 @@ func (rgb rgbAdaptorColor) AsPrettyJSONColor() [2]string {
 }
 
 // AsHexPair ...
-func (rgb rgbAdaptorColor) AsHexPair() HexPair {
-	return HexPair{
+func (rgb rgbAdaptorColor) AsHexPair() FgBgTuple {
+	return FgBgTuple{
 		Bg: rgb.AsHexColor(),
 		Fg: rgb.Contrast().AsHexColor(),
 	}

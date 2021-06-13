@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func newTimestampColumn(timeFormat *string, style color.HexPair, layout layout.ColumnLayout) column {
+func newTimestampColumn(timeFormat *string, style color.FgBgTuple, layout layout.ColumnLayout) column {
 	return newWeightedColumn(
 		schema.Timestamp,
 		layout,

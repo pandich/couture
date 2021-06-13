@@ -6,7 +6,10 @@ import (
 	"github.com/muesli/gamut/palette"
 	imgcolor "image/color"
 	"regexp"
+	"strings"
 )
+
+var sourcePalettes = palette.AllPalettes()
 
 // ByHex ...
 func ByHex(hex string) AdaptorColor {
@@ -17,21 +20,30 @@ func ByHex(hex string) AdaptorColor {
 
 // ByName ...
 func ByName(name string) (AdaptorColor, bool) {
-	hexPattern := regexp.MustCompile("^#?[0-9A-Fa-f]{6}$")
-	if hexPattern.MatchString(name) {
-		if name[0] != '#' {
-			name = "#" + name
-		}
-		return ByHex(name), true
+	if hex, ok := tryHex(name); ok {
+		return ByHex(hex), true
 	}
-	if s, ok := specialNames[name]; ok {
-		name = s
+
+	if c, ok := sourcePalettes.Color(name); ok {
+		return ByImageColor(c), true
 	}
-	if c, ok := palette.AllPalettes().Color(name); ok {
-		cf, _ := colorful.MakeColor(c)
-		return ByHex(cf.Hex()), true
+
+	if c, ok := sourcePalettes.Color(normalizeColorName(name)); ok {
+		return ByImageColor(c), true
 	}
+
 	return nil, false
+}
+
+func normalizeColorName(name string) string {
+	var wordSeparators = regexp.MustCompile(`[ \t_./\-]+`)
+	nameWords := wordSeparators.Split(name, -1)
+	for i, word := range nameWords {
+		first, rest := strings.ToUpper(word[0:1]), word[1:]
+		nameWords[i] = first + rest
+	}
+	name = strings.Join(nameWords, " ")
+	return name
 }
 
 // MustByName ...
@@ -54,4 +66,15 @@ func byImageColors(in []imgcolor.Color) []AdaptorColor {
 		out = append(out, ByImageColor(c))
 	}
 	return out
+}
+
+func tryHex(hex string) (string, bool) {
+	hexPattern := regexp.MustCompile("^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$")
+	if hexPattern.MatchString(hex) {
+		if hex[0] != '#' {
+			hex = "#" + hex
+		}
+		return hex, true
+	}
+	return hex, false
 }
