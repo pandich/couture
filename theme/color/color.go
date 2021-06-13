@@ -17,21 +17,6 @@ var (
 	colorfulBlack, _ = colorful.Hex("#000000")
 )
 
-// ContrastPolarity ...
-type ContrastPolarity int
-
-const (
-	// DarkMode ...
-	DarkMode ContrastPolarity = iota
-	// LightMode ...
-	LightMode
-
-	// MoreContrast ...
-	MoreContrast = DarkMode
-	// LessContrast ...
-	LessContrast = LightMode
-)
-
 // Hex ...
 func Hex(hex string) AdaptorColor {
 	values := color.Hex(hex).Values()

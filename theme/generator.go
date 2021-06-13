@@ -7,12 +7,17 @@ import (
 	"github.com/pandich/couture/theme/color"
 )
 
-// SplitComplementaryGenerator ...
-func SplitComplementaryGenerator(mode color.ContrastPolarity, c color.AdaptorColor) Generator {
+type baseColor string
+
+func splitComplementary(hex baseColor) Theme {
+	return splitComplementaryGenerator(color.Mode, color.Hex(string(hex))).asTheme()
+}
+
+func splitComplementaryGenerator(mode color.ContrastPolarity, c color.AdaptorColor) generator {
 	a := gamut.Complementary(c.AsImageColor())
 	b := gamut.SplitComplementary(gamut.HueOffset(c.AsImageColor(), 120))
 	x := gamut.Analogous(c.AsImageColor())
-	return Generator{
+	return generator{
 		Mode:             mode,
 		ApplicationColor: color.FromImageColor(x[1]).AdjustConstrast(mode, color.LessContrast, 0.2),
 		TimestampColor:   color.FromImageColor(a).AdjustConstrast(mode, color.MoreContrast, 0.2),
@@ -21,8 +26,7 @@ func SplitComplementaryGenerator(mode color.ContrastPolarity, c color.AdaptorCol
 	}
 }
 
-// Generator ...
-type Generator struct {
+type generator struct {
 	Mode             color.ContrastPolarity
 	ApplicationColor color.AdaptorColor
 	TimestampColor   color.AdaptorColor
@@ -30,14 +34,13 @@ type Generator struct {
 	MessageColor     color.AdaptorColor
 }
 
-// AsTheme ...
-func (p Generator) AsTheme() Theme {
+func (p generator) asTheme() Theme {
 	th := Theme{}
 	p.apply(&th)
 	return th
 }
 
-func (p Generator) apply(th *Theme) {
+func (p generator) apply(th *Theme) {
 	p.applySources(th)
 	p.applyHeader(th)
 	p.applyEntity(th)
@@ -45,7 +48,7 @@ func (p Generator) apply(th *Theme) {
 	p.applyMessages(th)
 }
 
-func (p Generator) applySources(th *Theme) {
+func (p generator) applySources(th *Theme) {
 	const sourceColorCount = 180
 
 	var cp = colorful.SoftPalette
@@ -65,7 +68,7 @@ func (p Generator) applySources(th *Theme) {
 	}
 }
 
-func (p Generator) applyHeader(th *Theme) {
+func (p generator) applyHeader(th *Theme) {
 	th.Application = Style{
 		Fg: p.ApplicationColor.AsHexColor(),
 		Bg: p.ApplicationColor.AdjustConstrast(p.Mode, color.MoreContrast, 0.9).AsHexColor(),
@@ -76,7 +79,7 @@ func (p Generator) applyHeader(th *Theme) {
 	}
 }
 
-func (p Generator) applyEntity(th *Theme) {
+func (p generator) applyEntity(th *Theme) {
 	entityFg := p.EntityColor
 	entityBg := entityFg.AdjustConstrast(p.Mode, color.MoreContrast, 0.8)
 
@@ -110,7 +113,7 @@ func (p Generator) applyEntity(th *Theme) {
 	}
 }
 
-func (p Generator) applyLevels(th *Theme) {
+func (p generator) applyLevels(th *Theme) {
 	styleForName := func(name string) Style {
 		c := color.MustByName(name).
 			Blend(p.EntityColor, 5)
@@ -125,10 +128,15 @@ func (p Generator) applyLevels(th *Theme) {
 	}
 }
 
-func (p Generator) applyMessages(th *Theme) {
-	var blend = color.Hex("#000000")
-	if p.Mode == color.LightMode {
+func (p generator) applyMessages(th *Theme) {
+	var blend color.AdaptorColor
+	switch p.Mode {
+	case color.LightMode:
 		blend = color.Hex("#ffffff")
+	case color.DarkMode:
+		fallthrough
+	default:
+		blend = color.Hex("#000000")
 	}
 	styleForName := func(name string) Style {
 		bg := color.MustByName(name).Blend(blend, 90)

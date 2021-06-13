@@ -10,7 +10,7 @@ import (
 
 var enabled = true
 var disabled = false
-var defaultTheme = theme.Registry[theme.Prince]
+var defaultTheme = theme.Registry[theme.Default]
 var defaultLayout = layout.Registry[layout.Default]
 var defaultTimeFormat = time.Stamp
 

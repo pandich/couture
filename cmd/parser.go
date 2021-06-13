@@ -20,7 +20,7 @@ var parserVars = kong.Vars{
 	"timeFormatNames": strings.Join(timeFormatNames, ","),
 	"columnNames":     strings.Join(schema.Names(), ","),
 	"themeNames":      strings.Join(theme.Names(), ","),
-	"defaultTheme":    theme.Prince,
+	"defaultTheme":    theme.Default,
 	"logLevels":       strings.Join(level.LowerNames(), ","),
 	"defaultLogLevel": level.Info.LowerName(),
 }

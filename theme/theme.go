@@ -1,28 +1,26 @@
 package theme
 
-// TODO every thing must have a light and dark mode
-
 import (
-	"embed"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/source"
 	"github.com/pandich/couture/theme/color"
 	"github.com/tidwall/pretty"
-	"gopkg.in/yaml.v3"
 	"math/rand"
-	"path"
 )
 
-// Prince ...
-const Prince = "prince"
+const (
+	// Default ...
+	Default = "prince"
 
-//go:embed themes/*.yaml
-var fs embed.FS
+	purpleRain baseColor = "#9b99bf"
+)
 
 // Registry is the registry of theme names to their structs.
-var Registry = map[string]Theme{
-	Prince: mustLoad(Prince),
+var Registry = map[string]Theme{}
+
+func init() {
+	Registry["prince"] = splitComplementary(purpleRain)
 }
 
 // Names all available theme names.
@@ -82,28 +80,6 @@ func (theme Theme) AsPrettyJSONStyle() *pretty.Style {
 		Null:   dimValueColor,
 		Escape: dimValueColor,
 	}
-}
-
-func load(name string) (*Theme, error) {
-	b, err := fs.ReadFile(path.Join("themes", name+".yaml"))
-	if err != nil {
-		return nil, err
-	}
-
-	var theme Theme
-	err = yaml.Unmarshal(b, &theme)
-	if err != nil {
-		return nil, err
-	}
-	return &theme, nil
-}
-
-func mustLoad(name string) Theme {
-	theme, err := load(name)
-	if err != nil {
-		panic(err)
-	}
-	return *theme
 }
 
 // Reverse ...
