@@ -19,30 +19,24 @@ func GenerateTheme(colorName string, sourceStyle string) (*Theme, error) {
 	return splitComplementaryGenerator(ac, sourceStyle).asTheme(), nil
 }
 
-// TODO http://colormind.io/ ?
-
 func splitComplementaryGenerator(baseColor color.AdaptorColor, sourceStyle string) generator {
 	const triadicDirectionCutoff = 0.5 // 180º
-	var messageColorIndex = 1
+	var messageColorTriadicIndex = 1
 	if h, _, _ := baseColor.AsColorfulColor().Hsl(); h < triadicDirectionCutoff {
-		messageColorIndex = 0
+		messageColorTriadicIndex = 0
 	}
 
 	return generator{
 		SourceStyle: sourceStyle,
-
 		ApplicationColor: baseColor.
 			Analogous()[1].
 			AdjustConstrast(color.MoreContrast, 20),
-
 		TimestampColor: baseColor.
 			Complementary().
 			Monochromatic()[0xB0],
-
 		EntityColor: baseColor,
-
 		MessageColor: baseColor.
-			Triadic()[messageColorIndex].
+			Triadic()[messageColorTriadicIndex].
 			AdjustConstrast(color.MoreContrast, 80),
 	}
 }
