@@ -87,10 +87,11 @@ func (p generator) newSourcePalette(th *Theme) []color.AdaptorColor {
 	default:
 		generator = gamut.PastelGenerator{}
 	}
+	blendColor := color.ByHex(th.Entity.Fg)
 	paletteColors, _ := gamut.Generate(sourceColorCount, generator)
 	var out []color.AdaptorColor
 	for _, pc := range paletteColors {
-		out = append(out, color.ByImageColor(pc))
+		out = append(out, color.ByImageColor(pc).Blend(blendColor, 30))
 	}
 	return out
 }

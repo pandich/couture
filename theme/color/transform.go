@@ -94,7 +94,6 @@ func (rgb rgbAdaptorColor) Blend(other AdaptorColor, blendPercent percent) Adapt
 	case blendPercent >= maxPercent:
 		return other
 	default:
-
 		const blendCount = 100
 		blends := gamut.Blends(rgb.AsImageColor(), other.AsImageColor(), blendCount)
 		return ByImageColor(blends[blendPercent])
