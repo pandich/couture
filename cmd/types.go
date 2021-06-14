@@ -54,6 +54,7 @@ type (
 	expand           bool
 	levelLike        level.Level
 	highlight        bool
+	levelMeter       bool
 	multiLine        bool
 	themeName        string
 	timeFormat       string
@@ -134,6 +135,17 @@ func (v *multiLine) AfterApply() error {
 	}
 	b := bool(*v)
 	cliDoricConfig.MultiLine = &b
+	return nil
+}
+
+// AfterApply ...
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (v *levelMeter) AfterApply() error {
+	if v == nil {
+		return nil
+	}
+	b := bool(*v)
+	cliDoricConfig.LevelMeter = &b
 	return nil
 }
 

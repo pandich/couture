@@ -18,6 +18,7 @@ type Config struct {
 	Expand           *bool          `yaml:"expand,omitempty"`
 	Highlight        *bool          `yaml:"highlight,omitempty"`
 	MultiLine        *bool          `yaml:"multi_line,omitempty"`
+	LevelMeter       *bool          `yaml:"level_meter,omitempty"`
 	Theme            *theme.Theme   `yaml:"theme,omitempty"`
 	Layout           *layout.Layout `yaml:"-"`
 	TimeFormat       *string        `yaml:"time_format,omitempty"`
@@ -76,6 +77,9 @@ func (config *Config) PopulateMissing(other Config) *Config {
 	}
 	if config.Layout == nil {
 		config.Layout = other.Layout
+	}
+	if config.LevelMeter == nil {
+		config.LevelMeter = other.LevelMeter
 	}
 	if config.MultiLine == nil {
 		config.MultiLine = other.MultiLine

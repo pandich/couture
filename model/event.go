@@ -54,25 +54,49 @@ func (event Event) AsCodeLocation() CodeLocation {
 
 // Mark ...
 func (cl CodeLocation) Mark(category string) {
-	cl.get(category).Mark(1)
+	cl.meter(category).Mark(1)
 }
 
-func (cl CodeLocation) get(category string) metrics.Meter {
+func (cl CodeLocation) meter(category string) metrics.Meter {
 	meterName := fmt.Sprintf("%s.%s.meter", cl, category)
 	return metrics.GetOrRegister(meterName, metrics.NewMeter()).(metrics.Meter)
 }
 
+func (cl CodeLocation) eventsPerMinute(lvl level.Level) float64 {
+	const secondsPerMinute = 60.0
+	meter := cl.meter(string(lvl))
+	eventsPersSecond := meter.Rate1()
+	return eventsPersSecond * secondsPerMinute
+}
+
+// BucketMax ...
+const BucketMax = Bucket8
+
+const (
+	// Bucket1 ...
+	Bucket1 = iota
+	// Bucket2 ...
+	Bucket2
+	// Bucket3 ...
+	Bucket3
+	// Bucket4 ...
+	Bucket4
+	// Bucket5 ...
+	Bucket5
+	// Bucket6 ...
+	Bucket6
+	// Bucket7 ...
+	Bucket7
+	// Bucket8 ...
+	Bucket8
+)
+
 // LevelMeterBucket ...
 func (event SinkEvent) LevelMeterBucket() uint8 {
-	const maxBucket = 10
-	const secondsPerMinute = 60.0
-
-	errorMeter := event.Event.AsCodeLocation().get(string(event.Level))
-	eventsPersSecond := errorMeter.Rate1()
-	eventsPerMinute := eventsPersSecond * secondsPerMinute
-	var logBucket = uint8(math.Log2(eventsPerMinute))
-	if logBucket > maxBucket {
-		logBucket = maxBucket
+	eventsPerMinute := event.Event.AsCodeLocation().eventsPerMinute(event.Level)
+	var bucket = uint8(math.Log2(eventsPerMinute))
+	if bucket > BucketMax {
+		bucket = BucketMax
 	}
-	return logBucket
+	return bucket
 }

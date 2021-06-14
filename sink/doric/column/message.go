@@ -23,22 +23,36 @@ const (
 type (
 	highlight     bool
 	multiLine     bool
+	levelMeter    bool
 	expand        bool
 	useColor      bool
 	messageColumn struct {
 		baseColumn
 		highlight       highlight
 		multiLine       multiLine
+		levelMeter      levelMeter
 		expand          expand
 		prettyJSONStyle *pretty.Style
 		useColor        useColor
 	}
 )
 
+var levelMeterSigils = map[uint8]string{
+	model.Bucket1: " ",
+	model.Bucket2: "▏",
+	model.Bucket3: "▎",
+	model.Bucket4: "▍",
+	model.Bucket5: "▌",
+	model.Bucket6: "▋",
+	model.Bucket7: "▊",
+	model.Bucket8: "▉",
+}
+
 func newMessageColumn(
 	highlight highlight,
 	expand expand,
 	multiLine multiLine,
+	levelMeter levelMeter,
 	useColor useColor,
 	th *theme.Theme,
 	layout layout.ColumnLayout,
@@ -46,6 +60,7 @@ func newMessageColumn(
 	col := messageColumn{
 		baseColumn:      baseColumn{columnName: schema.Message, colLayout: layout},
 		highlight:       highlight,
+		levelMeter:      levelMeter,
 		multiLine:       multiLine,
 		expand:          expand,
 		useColor:        useColor,
@@ -89,8 +104,12 @@ func (col messageColumn) render(event model.SinkEvent) string {
 
 	if col.highlight {
 		message = event.Filters.ReplaceAllStringFunc(message, func(s string) string {
-			return col.levelSprintf("", highlightSuffix, event.Level, s)
+			return col.levelSprintf(highlightSuffix, event.Level, s)
 		})
+	}
+
+	if col.levelMeter {
+		message = col.renderLevelMeter(event) + message
 	}
 
 	if message != "" {
@@ -100,8 +119,16 @@ func (col messageColumn) render(event model.SinkEvent) string {
 			message = " " + message
 		}
 	}
-	// TODO use event.LevelMeterBucket() to vary display of lines based upon 1min avg
+
 	return cfmt.Sprint(message)
+}
+
+func (col messageColumn) renderLevelMeter(event model.SinkEvent) string {
+	var bucketSigil, ok = levelMeterSigils[event.LevelMeterBucket()]
+	if !ok {
+		bucketSigil = levelMeterSigils[model.BucketMax]
+	}
+	return col.levelSprintf("", event.Level, bucketSigil) + " "
 }
 
 func (col messageColumn) renderMessage(event model.SinkEvent) (string, bool) {
@@ -113,7 +140,7 @@ func (col messageColumn) renderMessage(event model.SinkEvent) (string, bool) {
 			message = s
 		}
 	}
-	message = col.levelSprintf("", "", event.Level, message)
+	message = col.levelSprintf("", event.Level, message)
 	return message, expanded
 }
 
@@ -127,13 +154,13 @@ func (col messageColumn) renderErrorMessage(event model.SinkEvent) string {
 			errString = s
 		}
 	}
-	errString = col.levelSprintf("", errorSuffix, event.Level, errString)
+	errString = col.levelSprintf(errorSuffix, event.Level, errString)
 	errString = indent.String(errString, 4)
 	return errString
 }
 
-func (col messageColumn) levelSprintf(prefix string, suffix string, lvl level.Level, s interface{}) string {
-	return cfmt.Sprintf("{{"+prefix+"%s}}::"+col.levelStyleName(suffix, lvl), s)
+func (col messageColumn) levelSprintf(suffix string, lvl level.Level, s interface{}) string {
+	return cfmt.Sprintf("{{%s}}::"+col.levelStyleName(suffix, lvl), s)
 }
 
 func (col messageColumn) levelStyleName(suffix string, lvl level.Level) string {

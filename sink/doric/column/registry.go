@@ -56,6 +56,7 @@ func newRegistry(config sink.Config) registry {
 			highlight(config.Highlight != nil && *config.Highlight),
 			expand(config.Expand != nil && *config.Expand),
 			multiLine(config.MultiLine != nil && *config.MultiLine),
+			levelMeter(config.LevelMeter != nil && *config.LevelMeter),
 			useColor(config.Color != nil && *config.Color),
 			config.Theme,
 			config.Layout.Message,
