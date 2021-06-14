@@ -8,7 +8,7 @@ import (
 )
 
 // GenerateTheme ...
-func GenerateTheme(colorName string, sourceStyle string) (*Theme, error) {
+func GenerateTheme(colorName string) (*Theme, error) {
 	if s, ok := themeColors[colorName]; ok {
 		colorName = s
 	}
@@ -16,10 +16,10 @@ func GenerateTheme(colorName string, sourceStyle string) (*Theme, error) {
 	if !ok {
 		return nil, errors2.Errorf("invalid theme color: %s", colorName)
 	}
-	return splitComplementaryGenerator(ac, sourceStyle).asTheme(), nil
+	return splitComplementaryGenerator(ac).asTheme(), nil
 }
 
-func splitComplementaryGenerator(baseColor color.AdaptorColor, sourceStyle string) generator {
+func splitComplementaryGenerator(baseColor color.AdaptorColor) generator {
 	const triadicDirectionCutoff = 0.5 // 180º
 	var messageColorTriadicIndex = 1
 	if h, _, _ := baseColor.AsColorfulColor().Hsl(); h < triadicDirectionCutoff {
@@ -27,7 +27,6 @@ func splitComplementaryGenerator(baseColor color.AdaptorColor, sourceStyle strin
 	}
 
 	return generator{
-		SourceStyle: sourceStyle,
 		ApplicationColor: baseColor.
 			Analogous()[1].
 			AdjustConstrast(color.MoreContrast, 20),
@@ -46,21 +45,20 @@ type generator struct {
 	TimestampColor   color.AdaptorColor
 	EntityColor      color.AdaptorColor
 	MessageColor     color.AdaptorColor
-	SourceStyle      string
 }
 
 func (p generator) asTheme() *Theme {
-	th := Theme{SourceStyle: p.SourceStyle}
+	th := Theme{}
 	p.apply(&th)
 	return &th
 }
 
 func (p generator) apply(th *Theme) {
-	p.applySources(th)
-	p.applyHeader(th)
 	p.applyEntity(th)
+	p.applyHeader(th)
 	p.applyLevels(th)
 	p.applyMessages(th)
+	p.applySources(th)
 }
 
 func (p generator) applySources(th *Theme) {
@@ -74,26 +72,41 @@ func (p generator) applySources(th *Theme) {
 
 func (p generator) newSourcePalette(th *Theme) []color.AdaptorColor {
 	const sourceColorCount = 100
-	var generator gamut.ColorGenerator
-	switch th.SourceStyle {
-	case "warm":
-		generator = gamut.WarmGenerator{}
-	case "happy":
-		generator = gamut.HappyGenerator{}
-	case "similar":
-		generator = gamut.SimilarHueGenerator{Color: gamut.Hex(th.Entity.Fg)}
-	case "pastel":
-		fallthrough
-	default:
-		generator = gamut.PastelGenerator{}
-	}
+
 	blendColor := color.ByHex(th.Entity.Fg)
-	paletteColors, _ := gamut.Generate(sourceColorCount, generator)
+	paletteColors, _ := gamut.Generate(sourceColorCount, p.getGenerator(blendColor))
+
 	var out []color.AdaptorColor
 	for _, pc := range paletteColors {
-		out = append(out, color.ByImageColor(pc).Blend(blendColor, 30))
+		out = append(out, color.ByImageColor(pc).Blend(blendColor, 20))
 	}
 	return out
+}
+
+func (p generator) getGenerator(blendColor color.AdaptorColor) gamut.ColorGenerator {
+	colorDistance := blendColor.DistancesRgb()
+	const distanceCutoff = 0.7
+	meetsDistanceCutoff := colorDistance.Min() > distanceCutoff
+	switch {
+	// pastel or blue-dominant
+	case blendColor.IsPastel(),
+		meetsDistanceCutoff && colorDistance.ClosestToBlue():
+		return gamut.PastelGenerator{}
+
+	// warm or green-dominant
+	case blendColor.IsWarm(),
+		meetsDistanceCutoff && colorDistance.ClosestToGreen():
+		return gamut.WarmGenerator{}
+
+	// happy or red-dominant
+	case blendColor.IsHappy(),
+		meetsDistanceCutoff && colorDistance.ClosestToRed():
+		return gamut.HappyGenerator{}
+
+	// default to pastel
+	default:
+		return gamut.PastelGenerator{}
+	}
 }
 
 func (p generator) applyHeader(th *Theme) {

@@ -102,7 +102,7 @@ func parseOptions() ([]interface{}, error) {
 		cliDoricConfig.TimeFormat = &tf
 	}
 
-	th, err := theme.GenerateTheme(string(cli.Theme), string(cli.SourceStyle))
+	th, err := theme.GenerateTheme(string(cli.Theme))
 	parser.FatalIfErrorf(err)
 	cliDoricConfig.Theme = th
 	var options = []interface{}{

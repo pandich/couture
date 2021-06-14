@@ -21,7 +21,6 @@ type Theme struct {
 	Line            color.FgBgTuple                 `yaml:"line"`
 	Level           map[level.Level]color.FgBgTuple `yaml:"level"`
 	Message         map[level.Level]color.FgBgTuple `yaml:"message"`
-	SourceStyle     string                          `yaml:"-"`
 }
 
 // AsHexPair returns a color for a source. When consistentColors is true, sources will get the same
