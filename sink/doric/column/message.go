@@ -74,6 +74,7 @@ func newMessageColumn(
 			style.Reverse().Format(),
 		)
 	}
+
 	return col
 }
 
@@ -99,7 +100,7 @@ func (col messageColumn) render(event model.SinkEvent) string {
 			message = " " + message
 		}
 	}
-
+	// TODO use event.LevelMeterBucket() to vary display of lines based upon 1min avg
 	return cfmt.Sprint(message)
 }
 

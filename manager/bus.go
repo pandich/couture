@@ -116,6 +116,7 @@ func (mgr *busManager) makeSrcChan(
 			}
 			modelEvent := unmarshallEvent(sch, sourceEvent.Event)
 			filterKind := mgr.filter(modelEvent)
+			modelEvent.AsCodeLocation().Mark(string(modelEvent.Level))
 			evt := model.SinkEvent{
 				SourceURL: sourceURL,
 				Event:     *modelEvent,

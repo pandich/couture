@@ -19,6 +19,8 @@ func GenerateTheme(colorName string, sourceStyle string) (*Theme, error) {
 	return splitComplementaryGenerator(ac, sourceStyle).asTheme(), nil
 }
 
+// TODO http://colormind.io/ ?
+
 func splitComplementaryGenerator(baseColor color.AdaptorColor, sourceStyle string) generator {
 	const triadicDirectionCutoff = 0.5 // 180º
 	var messageColorIndex = 1

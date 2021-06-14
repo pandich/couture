@@ -1,8 +1,11 @@
 package model
 
 import (
+	"fmt"
 	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/schema"
+	"github.com/rcrowley/go-metrics"
+	"math"
 )
 
 // Event a log event
@@ -33,4 +36,43 @@ type SinkEvent struct {
 	SourceURL SourceURL
 	Filters   filters
 	Schema    *schema.Schema
+}
+
+// CodeLocation ...
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+type CodeLocation string
+
+// AsCodeLocation ...
+func (event Event) AsCodeLocation() CodeLocation {
+	return CodeLocation(fmt.Sprintf(
+		"%s.%s.%d",
+		event.Entity,
+		event.Action,
+		event.Line,
+	))
+}
+
+// Mark ...
+func (cl CodeLocation) Mark(category string) {
+	cl.get(category).Mark(1)
+}
+
+func (cl CodeLocation) get(category string) metrics.Meter {
+	meterName := fmt.Sprintf("%s.%s.meter", cl, category)
+	return metrics.GetOrRegister(meterName, metrics.NewMeter()).(metrics.Meter)
+}
+
+// LevelMeterBucket ...
+func (event SinkEvent) LevelMeterBucket() uint8 {
+	const maxBucket = 10
+	const secondsPerMinute = 60.0
+
+	errorMeter := event.Event.AsCodeLocation().get(string(event.Level))
+	eventsPersSecond := errorMeter.Rate1()
+	eventsPerMinute := eventsPersSecond * secondsPerMinute
+	var logBucket = uint8(math.Log2(eventsPerMinute))
+	if logBucket > maxBucket {
+		logBucket = maxBucket
+	}
+	return logBucket
 }
