@@ -12,6 +12,7 @@ import (
 	"github.com/pandich/couture/sink/doric/column"
 	"github.com/pandich/couture/sink/layout"
 	"github.com/pandich/couture/theme"
+	"github.com/pandich/couture/theme/color"
 	"github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
 	"gopkg.in/yaml.v2"
@@ -48,6 +49,8 @@ func Run() {
 
 	_, err = parser.Parse(args)
 	parser.FatalIfErrorf(err)
+
+	setColorMode()
 
 	cliDoricConfig.
 		PopulateMissing(loadDoricConfigFile()).
@@ -155,4 +158,15 @@ func loadDoricConfigFile() sink.Config {
 		return sink.Config{}
 	}
 	return *cfg
+}
+
+func setColorMode() {
+	switch cli.ColorMode {
+	case "auto":
+		break
+	case "dark":
+		color.Mode = color.DarkMode
+	case "light":
+		color.Mode = color.LightMode
+	}
 }

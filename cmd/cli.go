@@ -18,6 +18,7 @@ var cli struct {
 	Width      width      `group:"terminal" help:"Wrap width. Default is the current terminal width." placeholder:"width" short:"W" env:"COUTURE_WIDTH"`
 	AutoResize autoResize `group:"terminal" help:"Auto-resize columns when the terminal resizes." negatable:"true" env:"COUTURE_AUTO_RESIZE"`
 
+	ColorMode        string           `group:"display" optional:"true" help:"Specify the the color mode: ${enum}." enum:"auto,dark,light" default:"auto" env:"COUTURE_COLOR_MODE"`
 	Theme            themeName        `group:"display" help:"Specify the the hex code or name of the theme base noColor. Any hex code or name. Custom names: ${specialThemes}." default:"prince" env:"COUTURE_THEME"`
 	SourceStyle      sourceStyle      `group:"display" help:"Select the theme for generating distinct source field background colors: ${enum}." enum:"happy,pastel,similar,warm" short:"S" default:"pastel"`
 	ConsistentColors consistentColors `group:"display" help:"Maintain consistent source URL colors between runs." negatable:"true" env:"COUTURE_CONSISTENT_COLORS"`
