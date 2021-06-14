@@ -2,8 +2,8 @@ package theme
 
 import (
 	"github.com/pandich/couture/model/level"
+	"github.com/pandich/couture/sink/color"
 	"github.com/pandich/couture/source"
-	"github.com/pandich/couture/theme/color"
 	"github.com/tidwall/pretty"
 	"math/rand"
 )
@@ -48,4 +48,8 @@ func (theme Theme) AsPrettyJSONStyle() *pretty.Style {
 		Null:   dimValueColor,
 		Escape: dimValueColor,
 	}
+}
+
+func (theme Theme) base() color.AdaptorColor {
+	return color.ByHex(theme.Entity.Fg)
 }

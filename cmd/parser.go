@@ -5,7 +5,7 @@ import (
 	"github.com/pandich/couture/couture"
 	"github.com/pandich/couture/manager"
 	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/theme"
+	theme2 "github.com/pandich/couture/sink/theme"
 	"reflect"
 	"strings"
 	"time"
@@ -34,7 +34,7 @@ var parser = kong.Must(&cli,
 var parserVars = kong.Vars{
 	"timeFormatNames": strings.Join(timeFormatNames, ","),
 	"columnNames":     strings.Join(schema.Names(), ","),
-	"specialThemes":   strings.Join(theme.Names(), ","),
+	"specialThemes":   strings.Join(theme2.Names(), ","),
 }
 
 const helpSummary = "Tails one or more event sources."

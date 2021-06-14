@@ -36,6 +36,7 @@ type (
 	triadic            [2]AdaptorColor
 	percent            uint8
 	º                  int
+
 	// AdaptorColor ...
 	AdaptorColor interface {
 		fmt.Stringer
@@ -43,7 +44,8 @@ type (
 		AdjustConstrast(polarity contrastPolarity, percent percent) AdaptorColor
 		Analogous() analogous
 		AsColorfulColor() colorful.Color
-		AsGoColor() color.Color
+		AsGamutColor() gamut.Color
+		AsGooKitColor() color.Color
 		AsHexColor() string
 		AsHexPair() FgBgTuple
 		AsImageColor() imgcolor.Color
@@ -59,12 +61,14 @@ type (
 		Monochromatic() shades
 		DistanceRgb(other AdaptorColor) float64
 		DistancesRgb() Distance
-		Similar(count int) []AdaptorColor
+		Similar(count int) adaptorPalette
 		SplitComplementary() splitComplementary
 		Triadic() triadic
 		IsPastel() bool
 		IsHappy() bool
+		IsCool() bool
 		IsWarm() bool
+		PleasingPalette(colorCount uint) adaptorPalette
 	}
 	rgbAdaptorColor [3]uint8
 	// FgBgTuple ...
@@ -88,9 +92,14 @@ func (rgb rgbAdaptorColor) DistancesRgb() Distance {
 	}
 }
 
+// IsCool ,,,
+func (rgb rgbAdaptorColor) IsCool() bool {
+	return gamut.Cool(rgb.AsColorfulColor())
+}
+
 // IsWarm ,,,
 func (rgb rgbAdaptorColor) IsWarm() bool {
-	return gamut.WarmGenerator{}.Valid(rgb.AsColorfulColor())
+	return gamut.Warm(rgb.AsColorfulColor())
 }
 
 // IsHappy ...
@@ -145,8 +154,7 @@ func (d º) asInt() int {
 	return int(i)
 }
 
-// Min ...
-func (d Distance) Min() float64 {
+func (d Distance) min() float64 {
 	var m float64
 	for f, v := range []float64{d.R, d.G, d.B} {
 		if f == 0 || v < m {
@@ -156,11 +164,8 @@ func (d Distance) Min() float64 {
 	return m
 }
 
-// ClosestToRed ...
-func (d Distance) ClosestToRed() bool { return d.R == d.Min() }
+func (d Distance) closestToRed() bool { return d.R == d.min() }
 
-// ClosestToGreen ...
-func (d Distance) ClosestToGreen() bool { return d.G == d.Min() }
+func (d Distance) closestToGreen() bool { return d.G == d.min() }
 
-// ClosestToBlue ...
-func (d Distance) ClosestToBlue() bool { return d.B == d.Min() }
+func (d Distance) closestToBlue() bool { return d.B == d.min() }

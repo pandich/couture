@@ -1,59 +1,46 @@
-APPLICATION = couture
+APPLICATION 	= $(shell go list -m | sed 's/^.*\///')
 
-#
-# Variables
+GO_MODULE 		= $(shell go list -m)
+GOPATH			?= $(shell go env GOPATH)
+GOHOSTOS		?= $(shell go env GOHOSTOS)
+GOHOSTARCH		?= $(shell go env GOHOSTARCH)
 
-# Core
-COMMAND		= main.go
-SOURCES	= $(COMMAND) cmd internal
-
-# Go
-GO 				= go
-GOPATH			?= $(shell $(GO) env GOPATH)
-GOHOSTOS		?= $(shell $(GO) env GOHOSTOS)
-GOHOSTARCH		?= $(shell $(GO) env GOHOSTARCH)
-GO_GET 			= $(GO) get -u
-
-.PHONY: default
-default: all
+.PHONY: all
+all: clean build
 
 #
 # External Commands
 
 .PHONY: golangci-lint goreleaser gocmt scc gocomplete
 golangci-lint:
-	@command -v $@ > /dev/null || $(GO_GET) github.com/golangci/golangci-lint/cmd/golangci-lint
+	@command -v $@ > /dev/null || go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 goreleaser:
-	@command -v $@ > /dev/null || $(GO_GET) github.com/goreleaser/goreleaser
+	@command -v $@ > /dev/null || go get -u github.com/goreleaser/goreleaser
 gocmt:
-	@command -v $@ > /dev/null || $(GO_GET) github.com/cuonglm/gocmt
+	@command -v $@ > /dev/null || go get -u github.com/cuonglm/gocmt
 scc:
-	@command -v $@ > /dev/null || $(GO_GET) github.com/boyter/scc
+	@command -v $@ > /dev/null || go get -u github.com/boyter/scc
 gocomplete:
-	@command -v $@ > /dev/null || $(GO_GET) github.com/posener/complete/v2/gocomplete
+	@command -v $@ > /dev/null || go get -u github.com/posener/complete/v2/gocomplete
+
 #
 # Targets
 
 # Build
-.PHONY: all clean build
-all: clean build
+.PHONY: clean build pre-build
+build: pre-build
+	@go build -o dist/$(APPLICATION) .
 clean:
-	@echo cleaning
 	@rm -rf dist/
-build: neat
-	@echo building
-	@$(GO) build -o dist/$(APPLICATION) $(COMMAND)
+pre-build: neat
 
 # Release
 .PHONY: install uninstall release
-install: build
-	@echo installing
-	@$(GO) install $(APPLICATION)
+install:
+	@go install .
 uninstall:
-	@echo uninstalling
-	@$(GO) clean -i $(APPLICATION)
-release: goreleaser build
-	@echo releasing
+	@go clean -i .
+release: goreleaser pre-build
 	@goreleaser build --snapshot --rm-dist
 
 # Code Quality
@@ -64,10 +51,12 @@ neat:
 	@echo formatting
 	@gofmt -l -s -w .
 lint: golangci-lint neat
+	@echo vetting
+	@go vet
 	@echo linting
 	@golangci-lint run
 metrics: scc
-	@scc --wide --by-file --no-gen --sort lines $(SOURCES)
+	@scc --wide --by-file --sort code --include-ext go
 
 # Utility
 .PHONY: setup-env install-shell-completions
@@ -83,11 +72,11 @@ install-shell-completions: gocomplete
 record-examples: example-fake-multi-line example-fake-single-line
 .PHONY: example-fake-multi-line
 example-fake-multi-line:
-	@asciinema rec --overwrite --command="github.com/pandich/couture --rate-limit=5 --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa --expand --multiline @@fake" docs/$@.cast
+	@asciinema rec --overwrite --command="$(GO_MODULE) --rate-limit=5 --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa --expand --multiline @@fake" docs/$@.cast
 	@make docs/$@.gif
 .PHONY: example-fake-single-line
 example-fake-single-line:
-	@asciinema rec --overwrite --command="github.com/pandich/couture --rate-limit=5 --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa @@fake" docs/$@.cast
+	@asciinema rec --overwrite --command="$(GO_MODULE) --rate-limit=5 --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa @@fake" docs/$@.cast
 	@make docs/$@.gif
 .PHONY: %.gif
 %.gif:

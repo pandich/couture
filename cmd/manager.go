@@ -8,11 +8,11 @@ import (
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink"
+	"github.com/pandich/couture/sink/color"
 	"github.com/pandich/couture/sink/doric"
 	"github.com/pandich/couture/sink/doric/column"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/pandich/couture/theme"
-	"github.com/pandich/couture/theme/color"
+	theme2 "github.com/pandich/couture/sink/theme"
 	"github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
 	"gopkg.in/yaml.v2"
@@ -102,7 +102,7 @@ func parseOptions() ([]interface{}, error) {
 		cliDoricConfig.TimeFormat = &tf
 	}
 
-	th, err := theme.GenerateTheme(string(cli.Theme))
+	th, err := theme2.GenerateTheme(string(cli.Theme))
 	parser.FatalIfErrorf(err)
 	cliDoricConfig.Theme = th
 	var options = []interface{}{

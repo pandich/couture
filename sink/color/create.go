@@ -3,6 +3,7 @@ package color
 import (
 	"github.com/gookit/color"
 	"github.com/lucasb-eyer/go-colorful"
+	"github.com/muesli/gamut"
 	"github.com/muesli/gamut/palette"
 	imgcolor "image/color"
 	"regexp"
@@ -25,11 +26,11 @@ func ByName(name string) (AdaptorColor, bool) {
 	}
 
 	if c, ok := sourcePalettes.Color(name); ok {
-		return ByImageColor(c), true
+		return byImageColor(c), true
 	}
 
 	if c, ok := sourcePalettes.Color(normalizeColorName(name)); ok {
-		return ByImageColor(c), true
+		return byImageColor(c), true
 	}
 
 	return nil, false
@@ -57,16 +58,19 @@ func MustByName(name string) AdaptorColor {
 	panic(name)
 }
 
-// ByImageColor ...
-func ByImageColor(imgColor imgcolor.Color) AdaptorColor {
+func byGamutColor(c gamut.Color) AdaptorColor {
+	return byImageColor(c.Color)
+}
+
+func byImageColor(imgColor imgcolor.Color) AdaptorColor {
 	cf, _ := colorful.MakeColor(imgColor)
 	return ByHex(cf.Hex())
 }
 
-func byImageColors(in []imgcolor.Color) []AdaptorColor {
-	var out []AdaptorColor
+func byImageColors(in []imgcolor.Color) adaptorPalette {
+	var out adaptorPalette
 	for _, c := range in {
-		out = append(out, ByImageColor(c))
+		out = append(out, byImageColor(c))
 	}
 	return out
 }

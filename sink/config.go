@@ -4,7 +4,7 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/olekukonko/ts"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/pandich/couture/theme"
+	theme2 "github.com/pandich/couture/sink/theme"
 	"os"
 )
 
@@ -19,7 +19,7 @@ type Config struct {
 	Highlight        *bool          `yaml:"highlight,omitempty"`
 	MultiLine        *bool          `yaml:"multi_line,omitempty"`
 	LevelMeter       *bool          `yaml:"level_meter,omitempty"`
-	Theme            *theme.Theme   `yaml:"theme,omitempty"`
+	Theme            *theme2.Theme  `yaml:"theme,omitempty"`
 	Layout           *layout.Layout `yaml:"-"`
 	TimeFormat       *string        `yaml:"time_format,omitempty"`
 	TTY              bool           `yaml:"-"`

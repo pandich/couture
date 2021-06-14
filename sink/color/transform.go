@@ -6,15 +6,15 @@ import (
 
 // Complementary ...
 func (rgb rgbAdaptorColor) Complementary() AdaptorColor {
-	return ByImageColor(gamut.Complementary(rgb.AsImageColor()))
+	return byImageColor(gamut.Complementary(rgb.AsImageColor()))
 }
 
 // Analogous ...
 func (rgb rgbAdaptorColor) Analogous() analogous {
 	raw := gamut.Analogous(rgb.AsImageColor())
 	return analogous{
-		ByImageColor(raw[0]),
-		ByImageColor(raw[1]),
+		byImageColor(raw[0]),
+		byImageColor(raw[1]),
 	}
 }
 
@@ -22,27 +22,27 @@ func (rgb rgbAdaptorColor) Analogous() analogous {
 func (rgb rgbAdaptorColor) Triadic() triadic {
 	raw := gamut.Triadic(rgb.AsImageColor())
 	return triadic{
-		ByImageColor(raw[0]),
-		ByImageColor(raw[1]),
+		byImageColor(raw[0]),
+		byImageColor(raw[1]),
 	}
 }
 
 // Lighter ...
 func (rgb rgbAdaptorColor) Lighter(percent percent) AdaptorColor {
-	return ByImageColor(gamut.Lighter(rgb.AsImageColor(), percent.asFloat64()))
+	return byImageColor(gamut.Lighter(rgb.AsImageColor(), percent.asFloat64()))
 }
 
 // Darker ...
 func (rgb rgbAdaptorColor) Darker(percent percent) AdaptorColor {
-	return ByImageColor(gamut.Darker(rgb.AsImageColor(), percent.asFloat64()))
+	return byImageColor(gamut.Darker(rgb.AsImageColor(), percent.asFloat64()))
 }
 
 // SplitComplementary ...
 func (rgb rgbAdaptorColor) SplitComplementary() splitComplementary {
 	raw := gamut.SplitComplementary(rgb.AsImageColor())
 	return splitComplementary{
-		ByImageColor(raw[0]),
-		ByImageColor(raw[1]),
+		byImageColor(raw[0]),
+		byImageColor(raw[1]),
 	}
 }
 
@@ -52,7 +52,7 @@ func (rgb rgbAdaptorColor) Monochromatic() shades {
 	imageColors := gamut.Monochromatic(rgb.AsImageColor(), count)
 	colors := shades{}
 	for i, imageColor := range imageColors {
-		colors[i] = ByImageColor(imageColor)
+		colors[i] = byImageColor(imageColor)
 	}
 	return colors
 }
@@ -86,36 +86,34 @@ func (rgb rgbAdaptorColor) AdjustConstrast(polarity contrastPolarity, percent pe
 
 // Blend ...
 func (rgb rgbAdaptorColor) Blend(other AdaptorColor, blendPercent percent) AdaptorColor {
-	const minPercent = 0
-	const maxPercent = 100
+	const minPercent percent = 0
+	const maxPercent percent = 100
 	switch {
 	case blendPercent <= minPercent:
 		return rgb
 	case blendPercent >= maxPercent:
 		return other
-	default:
-		const blendCount = 100
-		blends := gamut.Blends(rgb.AsImageColor(), other.AsImageColor(), blendCount)
-		return ByImageColor(blends[blendPercent])
 	}
+	blends := gamut.Blends(rgb.AsImageColor(), other.AsImageColor(), int(maxPercent))
+	return byImageColor(blends[blendPercent])
 }
 
 // Contrast ...
 func (rgb rgbAdaptorColor) Contrast() AdaptorColor {
-	return ByImageColor(gamut.Contrast(rgb.AsImageColor()))
+	return byImageColor(gamut.Contrast(rgb.AsImageColor()))
 }
 
 // HueOffset ...
 func (rgb rgbAdaptorColor) HueOffset(degrees º) AdaptorColor {
-	return ByImageColor(gamut.HueOffset(rgb.AsImageColor(), degrees.asInt()))
+	return byImageColor(gamut.HueOffset(rgb.AsImageColor(), degrees.asInt()))
 }
 
 // Similar ...
-func (rgb rgbAdaptorColor) Similar(count int) []AdaptorColor {
+func (rgb rgbAdaptorColor) Similar(count int) adaptorPalette {
 	return rgb.generate(count, rgb.similarHueGenerator())
 }
 
-func (rgb rgbAdaptorColor) generate(count int, generator gamut.ColorGenerator) []AdaptorColor {
+func (rgb rgbAdaptorColor) generate(count int, generator gamut.ColorGenerator) adaptorPalette {
 	colors, err := gamut.Generate(count, generator)
 	if err != nil {
 		panic(err)

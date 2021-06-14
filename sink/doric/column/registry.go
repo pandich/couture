@@ -5,8 +5,8 @@ import (
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink"
+	"github.com/pandich/couture/sink/color"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/pandich/couture/theme/color"
 )
 
 // DefaultColumns ...

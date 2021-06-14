@@ -1,9 +1,9 @@
 package theme
 
 import (
-	"github.com/muesli/gamut"
+	"github.com/muesli/gamut/palette"
 	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/theme/color"
+	"github.com/pandich/couture/sink/color"
 	errors2 "github.com/pkg/errors"
 )
 
@@ -49,66 +49,29 @@ type generator struct {
 
 func (p generator) asTheme() *Theme {
 	th := Theme{}
-	p.apply(&th)
+
+	// order is important in this block
+	p.applyEntity(&th)
+	p.applyHeader(&th)
+	p.applyLevels(&th)
+	p.applyMessages(&th)
+	p.applySources(&th)
+
 	return &th
 }
 
-func (p generator) apply(th *Theme) {
-	p.applyEntity(th)
-	p.applyHeader(th)
-	p.applyLevels(th)
-	p.applyMessages(th)
-	p.applySources(th)
-}
-
 func (p generator) applySources(th *Theme) {
-	blendColor := color.ByHex(th.Entity.Fg).Complementary()
-	for _, paletteColor := range p.newSourcePalette(th) {
-		th.Source = append(th.Source, paletteColor.
-			Blend(blendColor, 10).
-			AsHexPair())
+	const sourcePaletteSize = 100
+	baseColor := th.base()
+	complementaryColor := baseColor.Complementary()
+	sourcePalette := baseColor.
+		PleasingPalette(sourcePaletteSize).
+		Clamped(palette.Crayola)
+	for _, paletteColor := range sourcePalette {
+		sourceColor := paletteColor.Blend(complementaryColor, 10)
+		th.Source = append(th.Source, sourceColor.AsHexPair())
 	}
 }
-
-func (p generator) newSourcePalette(th *Theme) []color.AdaptorColor {
-	const sourceColorCount = 100
-
-	blendColor := color.ByHex(th.Entity.Fg)
-	paletteColors, _ := gamut.Generate(sourceColorCount, p.getGenerator(blendColor))
-
-	var out []color.AdaptorColor
-	for _, pc := range paletteColors {
-		out = append(out, color.ByImageColor(pc).Blend(blendColor, 20))
-	}
-	return out
-}
-
-func (p generator) getGenerator(blendColor color.AdaptorColor) gamut.ColorGenerator {
-	colorDistance := blendColor.DistancesRgb()
-	const distanceCutoff = 0.7
-	meetsDistanceCutoff := colorDistance.Min() > distanceCutoff
-	switch {
-	// pastel or blue-dominant
-	case blendColor.IsPastel(),
-		meetsDistanceCutoff && colorDistance.ClosestToBlue():
-		return gamut.PastelGenerator{}
-
-	// warm or green-dominant
-	case blendColor.IsWarm(),
-		meetsDistanceCutoff && colorDistance.ClosestToGreen():
-		return gamut.WarmGenerator{}
-
-	// happy or red-dominant
-	case blendColor.IsHappy(),
-		meetsDistanceCutoff && colorDistance.ClosestToRed():
-		return gamut.HappyGenerator{}
-
-	// default to pastel
-	default:
-		return gamut.PastelGenerator{}
-	}
-}
-
 func (p generator) applyHeader(th *Theme) {
 	th.Application = color.FgBgTuple{
 		Fg: p.ApplicationColor.AsHexColor(),

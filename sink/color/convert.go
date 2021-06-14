@@ -18,8 +18,13 @@ func (rgb rgbAdaptorColor) AsHexColor() string {
 	return "#" + rgb.AsRGBColor().Hex()
 }
 
-// AsGoColor ...
-func (rgb rgbAdaptorColor) AsGoColor() color.Color {
+// AsGamutColor ...
+func (rgb rgbAdaptorColor) AsGamutColor() gamut.Color {
+	return gamut.Color{Color: rgb.AsImageColor()}
+}
+
+// AsGooKitColor ...
+func (rgb rgbAdaptorColor) AsGooKitColor() color.Color {
 	return rgb.AsRGBColor().Color()
 }
 

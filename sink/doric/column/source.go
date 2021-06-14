@@ -3,9 +3,9 @@ package column
 import (
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/pandich/couture/model"
+	"github.com/pandich/couture/sink/color"
 	"github.com/pandich/couture/sink/layout"
 	"github.com/pandich/couture/source"
-	"github.com/pandich/couture/theme/color"
 )
 
 const sourcePseudoColumn = "source"

@@ -6,9 +6,9 @@ import (
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/model/level"
 	"github.com/pandich/couture/schema"
+	"github.com/pandich/couture/sink/color"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/pandich/couture/theme"
-	"github.com/pandich/couture/theme/color"
+	theme2 "github.com/pandich/couture/sink/theme"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
 	"strconv"
@@ -54,7 +54,7 @@ func newMessageColumn(
 	multiLine multiLine,
 	levelMeter levelMeter,
 	useColor useColor,
-	th *theme.Theme,
+	th *theme2.Theme,
 	layout layout.ColumnLayout,
 ) column {
 	col := messageColumn{
