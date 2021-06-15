@@ -1,54 +1,38 @@
 package color
 
 import (
+	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/gamut"
 	imgcolor "image/color"
 )
 
 type adaptorPalette []AdaptorColor
 
-// PleasingPalette ...
-func (rgb rgbAdaptorColor) PleasingPalette(colorCount uint) adaptorPalette {
-	const distanceCutoff = 0.7
+func byColorfulColors(colors []colorful.Color) adaptorPalette {
+	var p adaptorPalette
+	for _, c := range colors {
+		p = append(p, byColorfulColor(c))
+	}
+	return p
+}
 
-	colorDistance := rgb.DistancesRgb()
-	meetsDistanceCutoff := colorDistance.min() > distanceCutoff
-
-	var generator gamut.ColorGenerator
+// ToPleasingPalette ...
+func (rgb rgbAdaptorColor) ToPleasingPalette(count uint) adaptorPalette {
 	switch {
-	// cool or blue-dominant
-	case rgb.IsCool(),
-		meetsDistanceCutoff && colorDistance.closestToBlue():
-		generator = gamut.PastelGenerator{}
+	case rgb.IsCool():
+		colors, _ := colorful.HappyPalette(int(count))
+		return byColorfulColors(colors)
 
-	// pastel or green-dominant
-	case rgb.IsPastel(),
-		meetsDistanceCutoff && colorDistance.closestToGreen():
-		generator = gamut.WarmGenerator{}
-
-	// warm
 	case rgb.IsWarm():
-		switch {
-		// red dominant
-		case meetsDistanceCutoff && colorDistance.closestToRed():
-			generator = gamut.HappyGenerator{}
-		// other warm
-		default:
-			generator = gamut.WarmGenerator{}
-		}
+		colors, _ := colorful.WarmPalette(int(count))
+		return byColorfulColors(colors)
 
-	// default to pastel
+	case rgb.IsPastel():
+		fallthrough
 	default:
-		generator = gamut.PastelGenerator{}
+		colors, _ := colorful.SoftPalette(int(count))
+		return byColorfulColors(colors)
 	}
-
-	paletteColors, _ := gamut.Generate(int(colorCount), generator)
-
-	var out adaptorPalette
-	for _, pc := range paletteColors {
-		out = append(out, byImageColor(pc).Blend(rgb.Complementary(), 20))
-	}
-	return out
 }
 
 // Clamped ...

@@ -12,6 +12,8 @@ import (
 
 var sourcePalettes = palette.AllPalettes()
 
+// ByTuple ...
+
 // ByHex ...
 func ByHex(hex string) AdaptorColor {
 	values := color.Hex(hex).Values()
@@ -62,9 +64,13 @@ func byGamutColor(c gamut.Color) AdaptorColor {
 	return byImageColor(c.Color)
 }
 
+func byColorfulColor(colorfulColor colorful.Color) AdaptorColor {
+	return ByHex(colorfulColor.Hex())
+}
+
 func byImageColor(imgColor imgcolor.Color) AdaptorColor {
 	cf, _ := colorful.MakeColor(imgColor)
-	return ByHex(cf.Hex())
+	return byColorfulColor(cf)
 }
 
 func byImageColors(in []imgcolor.Color) adaptorPalette {

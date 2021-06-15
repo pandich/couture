@@ -65,7 +65,7 @@ func (p generator) applySources(th *Theme) {
 	baseColor := th.base()
 	complementaryColor := baseColor.Complementary()
 	sourcePalette := baseColor.
-		PleasingPalette(sourcePaletteSize).
+		ToPleasingPalette(sourcePaletteSize).
 		Clamped(palette.Crayola)
 	for _, paletteColor := range sourcePalette {
 		sourceColor := paletteColor.Blend(complementaryColor, 10)

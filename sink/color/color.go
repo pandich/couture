@@ -17,12 +17,6 @@ var (
 	White = ByHex("#ffffff")
 	// Black ...
 	Black = ByHex("#000000")
-	// Red ...
-	Red = ByHex("#FF0000")
-	// Green ...
-	Green = ByHex("#00FF00")
-	// Blue ...
-	Blue = ByHex("#0000FF")
 )
 
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -59,8 +53,6 @@ type (
 		HueOffset(degrees º) AdaptorColor
 		Lighter(percent percent) AdaptorColor
 		Monochromatic() shades
-		DistanceRgb(other AdaptorColor) float64
-		DistancesRgb() Distance
 		Similar(count int) adaptorPalette
 		SplitComplementary() splitComplementary
 		Triadic() triadic
@@ -68,7 +60,7 @@ type (
 		IsHappy() bool
 		IsCool() bool
 		IsWarm() bool
-		PleasingPalette(colorCount uint) adaptorPalette
+		ToPleasingPalette(colorCount uint) adaptorPalette
 	}
 	rgbAdaptorColor [3]uint8
 	// FgBgTuple ...
@@ -77,20 +69,6 @@ type (
 		Bg string `yaml:"bg"`
 	}
 )
-
-// DistanceRgb ...
-func (rgb rgbAdaptorColor) DistanceRgb(other AdaptorColor) float64 {
-	return rgb.AsColorfulColor().DistanceRgb(other.AsColorfulColor())
-}
-
-// DistancesRgb ...
-func (rgb rgbAdaptorColor) DistancesRgb() Distance {
-	return Distance{
-		R: rgb.DistanceRgb(Red),
-		G: rgb.DistanceRgb(Green),
-		B: rgb.DistanceRgb(Blue),
-	}
-}
 
 // IsCool ,,,
 func (rgb rgbAdaptorColor) IsCool() bool {
@@ -153,19 +131,3 @@ func (d º) asInt() int {
 	}
 	return int(i)
 }
-
-func (d Distance) min() float64 {
-	var m float64
-	for f, v := range []float64{d.R, d.G, d.B} {
-		if f == 0 || v < m {
-			m = v
-		}
-	}
-	return m
-}
-
-func (d Distance) closestToRed() bool { return d.R == d.min() }
-
-func (d Distance) closestToGreen() bool { return d.G == d.min() }
-
-func (d Distance) closestToBlue() bool { return d.B == d.min() }

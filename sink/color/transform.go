@@ -4,6 +4,8 @@ import (
 	"github.com/muesli/gamut"
 )
 
+// see: https://www.thespruce.com/easy-color-schemes-from-color-wheel-797784
+
 // Complementary ...
 func (rgb rgbAdaptorColor) Complementary() AdaptorColor {
 	return byImageColor(gamut.Complementary(rgb.AsImageColor()))
