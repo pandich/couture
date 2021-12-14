@@ -39,7 +39,7 @@ how to easily do so.
 
 #### Multi-line
 
-	couture --expand --multiline \
+	couture --expand --multi-line \
 		fake://?style=hacker \
 		fake://?style=lorem \
 		fake://?style=hipster
