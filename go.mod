@@ -41,7 +41,7 @@ require (
 	github.com/pkg/sftp v1.13.0 // indirect
 	github.com/posener/complete/v2 v2.0.1-alpha.13
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
-	github.com/tidwall/gjson v1.8.0
+	github.com/tidwall/gjson v1.9.3
 	github.com/tidwall/pretty v1.2.0
 	go.uber.org/ratelimit v0.2.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
