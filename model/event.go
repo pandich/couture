@@ -39,6 +39,7 @@ type SinkEvent struct {
 }
 
 // CodeLocation ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 type CodeLocation string
 

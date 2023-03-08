@@ -69,6 +69,7 @@ type (
 )
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v *autoResize) AfterApply() error {
 	if v == nil {
@@ -80,6 +81,7 @@ func (v *autoResize) AfterApply() error {
 }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v *noColor) AfterApply() error {
 	if v == nil {
@@ -91,10 +93,12 @@ func (v *noColor) AfterApply() error {
 }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v columns) AfterApply() error { cliDoricConfig.Columns = v; return nil }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v *consistentColors) AfterApply() error {
 	if v == nil {
@@ -106,6 +110,7 @@ func (v *consistentColors) AfterApply() error {
 }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v *expand) AfterApply() error {
 	if v == nil {
@@ -117,6 +122,7 @@ func (v *expand) AfterApply() error {
 }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v *highlight) AfterApply() error {
 	if v == nil {
@@ -128,6 +134,7 @@ func (v *highlight) AfterApply() error {
 }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v *multiLine) AfterApply() error {
 	if v == nil {
@@ -139,6 +146,7 @@ func (v *multiLine) AfterApply() error {
 }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v *levelMeter) AfterApply() error {
 	if v == nil {
@@ -150,10 +158,12 @@ func (v *levelMeter) AfterApply() error {
 }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v tty) AfterApply() error { cliDoricConfig.TTY = bool(v); return nil }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v *width) AfterApply() error {
 	if v == nil {
@@ -165,6 +175,7 @@ func (v *width) AfterApply() error {
 }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v *wrap) AfterApply() error {
 	if v == nil {
@@ -176,14 +187,17 @@ func (v *wrap) AfterApply() error {
 }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v dumpMetrics) AfterApply() error { managerConfig.DumpMetrics = bool(v); return nil }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v dumpUnknown) AfterApply() error { managerConfig.DumpUnknown = bool(v); return nil }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v *showSchema) AfterApply() error {
 	if v == nil {
@@ -195,14 +209,17 @@ func (v *showSchema) AfterApply() error {
 }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v rateLimit) AfterApply() error { managerConfig.RateLimit = uint(v); return nil }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (v levelLike) AfterApply() error { managerConfig.Level = level.Level(v); return nil }
 
 // AfterApply ...
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (f filterLike) AfterApply() (err error) {
 	managerConfig.Filters, err = f.asFilters()
@@ -210,7 +227,8 @@ func (f filterLike) AfterApply() (err error) {
 }
 
 // AfterApply ...
-//nolint: funlen
+// nolint: funlen
+//
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (t *timeFormat) AfterApply() error {
 	if t == nil {
