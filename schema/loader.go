@@ -6,7 +6,6 @@ import (
 	"github.com/gagglepanda/couture/couture"
 	"gopkg.in/yaml.v3"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"sort"
@@ -55,7 +54,7 @@ func LoadSchemas() ([]Schema, error) {
 func loadSchemaFile(schemataFile io.ReadCloser) ([]Schema, error) {
 	var schemas []Schema
 	defer schemataFile.Close()
-	buf, err := ioutil.ReadAll(schemataFile)
+	buf, err := io.ReadAll(schemataFile)
 	if err != nil {
 		return nil, err
 	}

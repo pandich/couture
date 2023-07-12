@@ -7,7 +7,7 @@ import (
 	"github.com/gagglepanda/couture/couture"
 	errors2 "github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"os"
 	"path"
@@ -40,7 +40,7 @@ func expandAliases(args []string) ([]string, error) {
 		return nil, err
 	}
 	defer aliasFile.Close()
-	s, err := ioutil.ReadAll(aliasFile)
+	s, err := io.ReadAll(aliasFile)
 	if err != nil {
 		return nil, err
 	}

@@ -16,7 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"time"
@@ -144,7 +144,7 @@ func loadDoricConfigFile() sink.Config {
 		}
 
 		defer f.Close()
-		text, err := ioutil.ReadAll(f)
+		text, err := io.ReadAll(f)
 		if err != nil {
 			return nil, err
 		}
@@ -165,15 +165,4 @@ func loadDoricConfigFile() sink.Config {
 		return sink.Config{}
 	}
 	return *cfg
-}
-
-func initColorMode() {
-	switch cli.ColorMode {
-	case colorModeDark:
-		color.Mode = color.DarkMode
-	case colorModeLight:
-		color.Mode = color.LightMode
-	case colorModeAuto:
-		// leave unchanged
-	}
 }

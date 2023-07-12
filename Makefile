@@ -12,16 +12,16 @@ all: clean build
 # External Commands
 
 .PHONY: golangci-lint goreleaser gocmt scc gocomplete
-golangci-lint:
-	@command -v $@ > /dev/null || go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+staticcheck:
+	@command -v $@ > /dev/null || go install honnef.co/go/tools/cmd/staticcheck@latest
 goreleaser:
-	@command -v $@ > /dev/null || go get -u github.com/goreleaser/goreleaser
+	@command -v $@ > /dev/null || go install github.com/goreleaser/goreleaser
 gocmt:
-	@command -v $@ > /dev/null || go get -u github.com/cuonglm/gocmt
+	@command -v $@ > /dev/null || go install github.com/cuonglm/gocmt
 scc:
-	@command -v $@ > /dev/null || go get -u github.com/boyter/scc
+	@command -v $@ > /dev/null || go install github.com/boyter/scc
 gocomplete:
-	@command -v $@ > /dev/null || go get -u github.com/posener/complete/v2/gocomplete
+	@command -v $@ > /dev/null || go install github.com/posener/complete/v2/gocomplete
 
 #
 # Targets
@@ -50,11 +50,11 @@ neat:
 	@go mod tidy
 	@echo formatting
 	@gofmt -l -s -w .
-lint: golangci-lint neat
+lint: staticcheck neat
 	@echo vetting
 	@go vet
 	@echo linting
-	@golangci-lint run
+	@staticcheck ./...
 metrics: scc
 	@scc --wide --by-file --sort code --include-ext go
 

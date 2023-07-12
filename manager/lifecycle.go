@@ -51,7 +51,7 @@ func (mgr *busManager) TrapSignals() {
 		const stopGracePeriod = 250 * time.Millisecond
 		defer close(interrupt)
 
-		cleanup := func() { termenv.Reset(); os.Exit(0) }
+		cleanup := func() { termenv.DefaultOutput().Reset(); os.Exit(0) }
 
 		<-interrupt
 		(*mgr).Stop()
