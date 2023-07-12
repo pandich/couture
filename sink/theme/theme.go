@@ -1,9 +1,9 @@
 package theme
 
 import (
-	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/sink/color"
-	"github.com/pandich/couture/source"
+	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/sink/color"
+	"github.com/gagglepanda/couture/source"
 	"github.com/tidwall/pretty"
 	"math/rand"
 )

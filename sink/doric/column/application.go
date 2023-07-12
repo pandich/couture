@@ -1,10 +1,10 @@
 package column
 
 import (
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/sink/color"
-	"github.com/pandich/couture/sink/layout"
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/sink/color"
+	"github.com/gagglepanda/couture/sink/layout"
 )
 
 func newApplicationColumn(style color.FgBgTuple, layout layout.ColumnLayout) column {

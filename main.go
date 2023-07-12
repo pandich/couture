@@ -1,9 +1,7 @@
 package main
 
 import (
-	"github.com/pandich/couture/cmd"
+	"github.com/gagglepanda/couture/cmd"
 )
 
-func main() {
-	cmd.Run()
-}
+func main() { cmd.Run() }

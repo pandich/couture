@@ -3,7 +3,7 @@ package source
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/pandich/couture/model"
+	"github.com/gagglepanda/couture/model"
 	"net/url"
 	"reflect"
 	"strings"

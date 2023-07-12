@@ -18,7 +18,7 @@ var cli struct {
 	Width      width      `group:"terminal" help:"Wrap width. Default is the current terminal width." placeholder:"width" short:"W" env:"COUTURE_WIDTH"`
 	Wrap       wrap       `group:"terminal" help:"Wrap the output tp the terminal width, or that specified by --width." short:"w" negatable:"true" env:"COUTURE_WRAP"`
 
-	ColorMode        string           `group:"display" optional:"true" help:"Specify the the color mode: ${enum}." enum:"auto,dark,light" default:"auto" env:"COUTURE_COLOR_MODE"`
+	ColorMode        colorMode        `group:"display" optional:"true" help:"Specify the the color mode: ${enum}." enum:"auto,dark,light" default:"auto" env:"COUTURE_COLOR_MODE"`
 	ConsistentColors consistentColors `group:"display" help:"Maintain consistent source URL colors between runs." negatable:"true" env:"COUTURE_CONSISTENT_COLORS"`
 	Expand           expand           `group:"display" help:"Example structured message bodies (e.g. JSON)." negatable:"true" env:"COUTURE_EXPAND"`
 	LevelMeter       levelMeter       `group:"display" help:"Display a meter before each message indicating how often it has been called." negatable:"true" env:"COUTURE_LEVEL_METER"`

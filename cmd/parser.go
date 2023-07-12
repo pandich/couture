@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"github.com/alecthomas/kong"
-	"github.com/pandich/couture/couture"
-	"github.com/pandich/couture/manager"
-	"github.com/pandich/couture/schema"
-	theme2 "github.com/pandich/couture/sink/theme"
+	"github.com/gagglepanda/couture/couture"
+	"github.com/gagglepanda/couture/manager"
+	"github.com/gagglepanda/couture/schema"
+	theme2 "github.com/gagglepanda/couture/sink/theme"
 	"reflect"
 	"strings"
 	"time"

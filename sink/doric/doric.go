@@ -1,11 +1,11 @@
 package doric
 
 import (
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/sink"
+	"github.com/gagglepanda/couture/sink/doric/column"
+	"github.com/gagglepanda/couture/source"
 	"github.com/i582/cfmt/cmd/cfmt"
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/sink"
-	"github.com/pandich/couture/sink/doric/column"
-	"github.com/pandich/couture/source"
 )
 
 const sinkName = "doric"

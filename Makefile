@@ -29,7 +29,7 @@ gocomplete:
 # Build
 .PHONY: clean build pre-build
 build: pre-build
-	@go build -o dist/$(APPLICATION) .
+	@go build -o build/$(APPLICATION) .
 clean:
 	@rm -rf dist/
 pre-build: neat

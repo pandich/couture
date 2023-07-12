@@ -3,7 +3,7 @@ package schema
 import (
 	"embed"
 	"github.com/coreos/etcd/pkg/fileutil"
-	"github.com/pandich/couture/couture"
+	"github.com/gagglepanda/couture/couture"
 	"gopkg.in/yaml.v3"
 	"io"
 	"io/ioutil"

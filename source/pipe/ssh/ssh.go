@@ -1,10 +1,10 @@
 package ssh
 
 import (
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/source"
+	"github.com/gagglepanda/couture/source/pipe"
 	"github.com/melbahja/goph"
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/source"
-	"github.com/pandich/couture/source/pipe"
 	"reflect"
 	"sync"
 	"time"

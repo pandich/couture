@@ -1,12 +1,12 @@
 package column
 
 import (
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/sink/color"
+	"github.com/gagglepanda/couture/sink/layout"
 	"github.com/i582/cfmt/cmd/cfmt"
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/sink/color"
-	"github.com/pandich/couture/sink/layout"
 )
 
 type levelColumn struct {

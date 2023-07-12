@@ -1,9 +1,9 @@
 package theme
 
 import (
+	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/sink/color"
 	"github.com/muesli/gamut/palette"
-	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/sink/color"
 	errors2 "github.com/pkg/errors"
 )
 

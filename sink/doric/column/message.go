@@ -1,14 +1,14 @@
 package column
 
 import (
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/sink/color"
+	"github.com/gagglepanda/couture/sink/layout"
+	theme2 "github.com/gagglepanda/couture/sink/theme"
 	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/muesli/reflow/indent"
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/sink/color"
-	"github.com/pandich/couture/sink/layout"
-	theme2 "github.com/pandich/couture/sink/theme"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
 	"strconv"

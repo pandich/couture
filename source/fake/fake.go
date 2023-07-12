@@ -4,9 +4,9 @@ package fake
 import (
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/source"
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/source"
 	"math/rand"
 	"reflect"
 	"strings"

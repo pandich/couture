@@ -3,16 +3,16 @@ package cmd
 import (
 	"fmt"
 	"github.com/coreos/etcd/pkg/fileutil"
-	"github.com/pandich/couture/couture"
-	"github.com/pandich/couture/manager"
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/sink"
-	"github.com/pandich/couture/sink/color"
-	"github.com/pandich/couture/sink/doric"
-	"github.com/pandich/couture/sink/doric/column"
-	"github.com/pandich/couture/sink/layout"
-	theme2 "github.com/pandich/couture/sink/theme"
+	"github.com/gagglepanda/couture/couture"
+	"github.com/gagglepanda/couture/manager"
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/sink"
+	"github.com/gagglepanda/couture/sink/color"
+	"github.com/gagglepanda/couture/sink/doric"
+	"github.com/gagglepanda/couture/sink/doric/column"
+	"github.com/gagglepanda/couture/sink/layout"
+	theme2 "github.com/gagglepanda/couture/sink/theme"
 	"github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
 	"gopkg.in/yaml.v2"
@@ -23,20 +23,20 @@ import (
 )
 
 var (
-	managerConfig      = manager.Config{}
-	defaultDoricConfig = sink.Config{
-		AutoResize:       &enabled,
-		Color:            &enabled,
-		ConsistentColors: &enabled,
-		Expand:           &disabled,
-		Highlight:        &disabled,
-		MultiLine:        &disabled,
-		ShowSchema:       &disabled,
-		Wrap:             &disabled,
+	managerConfig     = manager.Config{}
+	defaultSinkConfig = sink.Config{
+		AutoResize:       &sink.Enabled,
+		Color:            &sink.Enabled,
+		ConsistentColors: &sink.Enabled,
+		Expand:           &sink.Disabled,
+		Highlight:        &sink.Disabled,
+		MultiLine:        &sink.Disabled,
+		ShowSchema:       &sink.Disabled,
+		Wrap:             &sink.Disabled,
 		Layout:           &layout.Default,
 		Out:              os.Stdout,
 		Theme:            nil,
-		TimeFormat:       &defaultTimeFormat,
+		TimeFormat:       &sink.DefaultTimeFormat,
 	}
 )
 
@@ -50,11 +50,18 @@ func Run() {
 	_, err = parser.Parse(args)
 	parser.FatalIfErrorf(err)
 
-	setColorMode()
+	switch cli.ColorMode {
+	case colorModeDark:
+		color.Mode = color.DarkMode
+	case colorModeLight:
+		color.Mode = color.LightMode
+	case colorModeAuto:
+		// leave unchanged
+	}
 
-	cliDoricConfig.
+	sinkConfig.
 		PopulateMissing(loadDoricConfigFile()).
-		PopulateMissing(defaultDoricConfig)
+		PopulateMissing(defaultSinkConfig)
 
 	options, err := parseOptions()
 	parser.FatalIfErrorf(err)
@@ -90,23 +97,23 @@ func parseOptions() ([]interface{}, error) {
 		return sources, nil
 	}
 
-	if len(cliDoricConfig.Columns) == 0 {
+	if len(sinkConfig.Columns) == 0 {
 		var defaultColumnNames []string
 		for i := range column.DefaultColumns {
 			defaultColumnNames = append(defaultColumnNames, string(column.DefaultColumns[i]))
 		}
-		cliDoricConfig.Columns = defaultColumnNames
+		sinkConfig.Columns = defaultColumnNames
 	}
-	if cliDoricConfig.TimeFormat == nil {
+	if sinkConfig.TimeFormat == nil {
 		tf := time.Stamp
-		cliDoricConfig.TimeFormat = &tf
+		sinkConfig.TimeFormat = &tf
 	}
 
 	th, err := theme2.GenerateTheme(string(cli.Theme))
 	parser.FatalIfErrorf(err)
-	cliDoricConfig.Theme = th
+	sinkConfig.Theme = th
 	var options = []interface{}{
-		doric.New(cliDoricConfig),
+		doric.New(sinkConfig),
 	}
 	sources, err := sourceArgs()
 	if err != nil {
@@ -160,13 +167,13 @@ func loadDoricConfigFile() sink.Config {
 	return *cfg
 }
 
-func setColorMode() {
+func initColorMode() {
 	switch cli.ColorMode {
-	case "auto":
-		break
-	case "dark":
+	case colorModeDark:
 		color.Mode = color.DarkMode
-	case "light":
+	case colorModeLight:
 		color.Mode = color.LightMode
+	case colorModeAuto:
+		// leave unchanged
 	}
 }

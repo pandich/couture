@@ -1,15 +1,15 @@
 package manager
 
 import (
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/source"
-	"github.com/pandich/couture/source/aws/cloudformation"
-	"github.com/pandich/couture/source/aws/cloudwatch"
-	"github.com/pandich/couture/source/aws/s3"
-	"github.com/pandich/couture/source/elasticsearch"
-	"github.com/pandich/couture/source/fake"
-	"github.com/pandich/couture/source/pipe/local"
-	"github.com/pandich/couture/source/pipe/ssh"
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/source"
+	"github.com/gagglepanda/couture/source/aws/cloudformation"
+	"github.com/gagglepanda/couture/source/aws/cloudwatch"
+	"github.com/gagglepanda/couture/source/aws/s3"
+	"github.com/gagglepanda/couture/source/elasticsearch"
+	"github.com/gagglepanda/couture/source/fake"
+	"github.com/gagglepanda/couture/source/pipe/local"
+	"github.com/gagglepanda/couture/source/pipe/ssh"
 	errors2 "github.com/pkg/errors"
 	"time"
 )

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/aymerick/raymond"
 	"github.com/coreos/etcd/pkg/fileutil"
-	"github.com/pandich/couture/couture"
+	"github.com/gagglepanda/couture/couture"
 	errors2 "github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"

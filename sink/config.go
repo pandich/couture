@@ -1,12 +1,41 @@
 package sink
 
 import (
+	"github.com/gagglepanda/couture/sink/layout"
+	theme2 "github.com/gagglepanda/couture/sink/theme"
 	"github.com/mattn/go-isatty"
 	"github.com/olekukonko/ts"
-	"github.com/pandich/couture/sink/layout"
-	theme2 "github.com/pandich/couture/sink/theme"
 	"os"
+	"time"
 )
+
+var (
+	// Enabled specifies that a feature is enabled.
+	Enabled = true
+	// Disabled specifies that a feature is disabled.
+	Disabled = false
+
+	// DefaultTimeFormat is the default time format used by the sink.
+	DefaultTimeFormat = time.Stamp
+)
+
+// DefaultConfig returns default configuration for the sink.
+func DefaultConfig() Config {
+	return Config{
+		AutoResize:       &Enabled,
+		Color:            &Enabled,
+		ConsistentColors: &Enabled,
+		Expand:           &Disabled,
+		Highlight:        &Disabled,
+		MultiLine:        &Disabled,
+		ShowSchema:       &Disabled,
+		Wrap:             &Disabled,
+		Layout:           &layout.Default,
+		Out:              os.Stdout,
+		Theme:            nil,
+		TimeFormat:       &DefaultTimeFormat,
+	}
+}
 
 // Config ...
 type Config struct {

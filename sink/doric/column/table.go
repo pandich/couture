@@ -1,12 +1,12 @@
 package column
 
 import (
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/sink"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/termenv"
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/sink"
 	"os"
 	"os/signal"
 	"syscall"

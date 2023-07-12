@@ -1,8 +1,8 @@
 package sink
 
 import (
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/source"
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/source"
 )
 
 // Sink of events. Responsible for consuming an event.

@@ -1,9 +1,9 @@
 package local
 
 import (
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/source"
-	"github.com/pandich/couture/source/pipe"
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/source"
+	"github.com/gagglepanda/couture/source/pipe"
 	"os/exec"
 	"path/filepath"
 	"reflect"

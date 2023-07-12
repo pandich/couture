@@ -1,8 +1,8 @@
 package ssh
 
 import (
+	"github.com/gagglepanda/couture/model"
 	"github.com/melbahja/goph"
-	"github.com/pandich/couture/model"
 	"net/url"
 	"os"
 	"os/user"

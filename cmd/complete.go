@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/alecthomas/kong"
+	"github.com/gagglepanda/couture/couture"
 	"github.com/iancoleman/strcase"
-	"github.com/pandich/couture/couture"
 	"github.com/pkg/errors"
 	"github.com/posener/complete/v2"
 	"github.com/posener/complete/v2/predict"

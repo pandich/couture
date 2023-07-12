@@ -2,11 +2,11 @@ package manager
 
 import (
 	"fmt"
+	"github.com/gagglepanda/couture/couture"
+	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/source"
 	"github.com/joomcode/errorx"
-	"github.com/pandich/couture/couture"
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/schema"
-	"github.com/pandich/couture/source"
 	"github.com/rcrowley/go-metrics"
 	"go.uber.org/ratelimit"
 	"os"
@@ -18,9 +18,11 @@ const (
 	snkChanMeterName = "manager.snkChan.in"
 )
 
-var errChanMeter = metrics.NewMeter()
-var snkChanMeter = metrics.NewMeter()
-var srcChanMeter = metrics.NewMeter()
+var (
+	errChanMeter = metrics.NewMeter()
+	snkChanMeter = metrics.NewMeter()
+	srcChanMeter = metrics.NewMeter()
+)
 
 func init() {
 	metrics.GetOrRegister(errChanMeterame, errChanMeter)
@@ -31,19 +33,22 @@ func init() {
 func (mgr *busManager) createChannels() (chan source.Event, chan model.SinkEvent, chan source.Error) {
 	errChan := mgr.makeErrChan()
 	alertChan := mgr.makeAlertChan(errChan)
-	unknownChan := mgr.makeUnknownhan()
+	unknownChan := mgr.makeUnknownChan()
 	snkChan := mgr.makeSnkChan(errChan)
 	srcChan := mgr.makeSrcChan(snkChan, alertChan, unknownChan)
 	return srcChan, snkChan, errChan
 }
 
-func (mgr *busManager) makeUnknownhan() chan string {
+func (mgr *busManager) makeUnknownChan() chan string {
 	unknownChan := make(chan string)
 	go func() {
 		for {
 			s := <-unknownChan
 			if mgr.config.DumpUnknown {
-				fmt.Fprintln(os.Stderr, s)
+				_, err := fmt.Fprintln(os.Stderr, s)
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}()

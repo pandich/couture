@@ -2,8 +2,8 @@ package model
 
 import (
 	"fmt"
-	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/schema"
+	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/schema"
 	"github.com/rcrowley/go-metrics"
 	"math"
 )
