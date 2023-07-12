@@ -1,4 +1,3 @@
-// nolint: gomnd,gosec
 package fake
 
 import (

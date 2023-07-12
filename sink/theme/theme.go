@@ -29,7 +29,8 @@ func (theme Theme) AsHexPair(consistentColors bool, src source.Source) color.FgB
 	//nolint: gosec
 	var index = rand.Intn(len(theme.Source))
 	if consistentColors {
-		index = src.URL().Hash() % len(theme.Source)
+		url := src.URL()
+		index = url.Hash() % len(theme.Source)
 	}
 	return theme.Source[index]
 }

@@ -14,8 +14,8 @@ import (
 type SourceURL url.URL
 
 // String ...
-func (u SourceURL) String() string {
-	u2 := url.URL(u)
+func (u *SourceURL) String() string {
+	u2 := url.URL(*u)
 	return u2.String()
 }
 
@@ -75,7 +75,7 @@ func (u *SourceURL) Normalize() {
 }
 
 // ShortForm ...
-func (u SourceURL) ShortForm() string {
+func (u *SourceURL) ShortForm() string {
 	const tldComponentCount = 2
 	var host = u.Host
 	u.RawQuery = strings.TrimRight(u.RawQuery, "&")
@@ -96,7 +96,7 @@ func (u SourceURL) ShortForm() string {
 }
 
 // Hash ...
-func (u SourceURL) Hash() int {
+func (u *SourceURL) Hash() int {
 	var sum int
 	for _, v := range sha256.Sum256([]byte(u.String())) {
 		sum += int(v)
@@ -105,7 +105,7 @@ func (u SourceURL) Hash() int {
 }
 
 // HashString ...
-func (u SourceURL) HashString() string {
+func (u *SourceURL) HashString() string {
 	hasher := sha256.New()
 	hasher.Write([]byte(u.String()))
 	return strings.ReplaceAll(hex.EncodeToString(hasher.Sum(nil)), "-", "")

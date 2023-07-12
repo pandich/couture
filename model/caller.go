@@ -16,9 +16,9 @@ type (
 	Application string
 	// Context a context name.
 	Context string
-	// Entity a entity name.
+	// Entity an entity name.
 	Entity string
-	// Action a action name.
+	// Action an action name.
 	Action string
 	// Line  a line number.
 	Line uint64

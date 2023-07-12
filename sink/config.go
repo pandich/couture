@@ -58,7 +58,7 @@ type Config struct {
 }
 
 // EffectiveTerminalWidth ...
-func (config Config) EffectiveTerminalWidth() uint {
+func (config *Config) EffectiveTerminalWidth() uint {
 	if config.Width != nil && *config.Width > 0 {
 		return *config.Width
 	}
@@ -77,7 +77,7 @@ func terminalWidth() int {
 }
 
 // EffectiveIsTTY ...
-func (config Config) EffectiveIsTTY() bool {
+func (config *Config) EffectiveIsTTY() bool {
 	return isatty.IsTerminal(config.Out.Fd()) || config.TTY
 }
 

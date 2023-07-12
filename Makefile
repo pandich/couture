@@ -60,7 +60,7 @@ metrics: scc
 
 # Utility
 .PHONY: setup-env install-shell-completions
-setup-env: golangci-lint goreleaser scc gocmt gocomplete
+setup-env: staticcheck goreleaser scc gocmt gocomplete
 	@git config --local core.hooksPath .githooks
 install-shell-completions: gocomplete
 	@echo installing completions

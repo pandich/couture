@@ -29,5 +29,6 @@ func RegisterSourceStyle(
 	src source.Source,
 ) {
 	layout.Sigil = string(src.Sigil())
-	registerStyle(sourcePseudoColumn+src.URL().HashString(), style, layout)
+	url := src.URL()
+	registerStyle(sourcePseudoColumn+url.HashString(), style, layout)
 }

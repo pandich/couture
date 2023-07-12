@@ -17,7 +17,7 @@ func GuessSchema(s string, schemasToCheck ...Schema) *Schema {
 	return nil
 }
 
-func (schema Schema) canHandleJSON(s string) bool {
+func (schema *Schema) canHandleJSON(s string) bool {
 	values := gjson.GetMany(s, schema.predicateFields...)
 	for i := range schema.predicateFields {
 		field := schema.predicateFields[i]
@@ -39,6 +39,6 @@ func (schema Schema) canHandleJSON(s string) bool {
 	return true
 }
 
-func (schema Schema) canHandleText(s string) bool {
+func (schema *Schema) canHandleText(s string) bool {
 	return schema.predicatePatternsByField[textRootField].MatchString(strings.TrimRight(s, "\n"))
 }

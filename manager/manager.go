@@ -7,15 +7,11 @@ import (
 	"github.com/gagglepanda/couture/sink"
 	"github.com/gagglepanda/couture/source"
 	errors2 "github.com/pkg/errors"
-	"runtime"
 	"sync"
 )
 
 // New creates an empty Manager.
 func New(config Config, opts ...interface{}) (*model.Manager, error) {
-	if runtime.GOOS == "windows" {
-		return nil, errors2.Errorf("unsupported operating system: %s", runtime.GOOS)
-	}
 	publisher := busManager{config: config, wg: &sync.WaitGroup{}}
 	if err := publisher.Register(opts...); err != nil {
 		return nil, err
@@ -29,7 +25,7 @@ type (
 	busManager struct {
 		// wg wait group for the Manager and its registry.
 		wg *sync.WaitGroup
-		// running whether or not this Manager has been started.
+		// running whether this Manager has been started.
 		running bool
 
 		// config contains general settings and toggles.

@@ -87,7 +87,7 @@ type (
 		aws.Source
 		// lookbackTime is how far back to look for log events.
 		lookbackTime *time.Time
-		// includeStackEvents specifies whether or not to include stack events in the log.
+		// includeStackEvents specifies whether to include stack events in the log.
 		includeStackEvents bool
 		// children represents all child sources added during stack-resource discovery.
 		// For example: a lambda's log group's cloudwatch.cloudwatchSource.
@@ -126,7 +126,7 @@ func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, err
 		children = append(children, cloudwatch.New(awsSource, since, logGroupName))
 	}
 
-	var src source.Source = cloudFormationSource{
+	var src source.Source = &cloudFormationSource{
 		Source:               awsSource,
 		lookbackTime:         since,
 		includeStackEvents:   sourceURL.QueryFlag(includeStackEventsFlag),
@@ -155,7 +155,7 @@ func normalizeURL(sourceURL *model.SourceURL) {
 }
 
 // Start ...
-func (src cloudFormationSource) Start(
+func (src *cloudFormationSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,

@@ -89,7 +89,7 @@ func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, err
 		scroll.Query(query)
 	}
 
-	var src source.Source = elasticSearch{
+	var src source.Source = &elasticSearch{
 		BaseSource: source.New('፨', sourceURL),
 		scroll:     scroll,
 		searchRateLimiter: ratelimit.New(
@@ -115,7 +115,7 @@ func normalizeURL(sourceURL *model.SourceURL) {
 }
 
 // Start ...
-func (src elasticSearch) Start(
+func (src *elasticSearch) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
