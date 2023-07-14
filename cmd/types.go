@@ -3,8 +3,9 @@ package cmd
 import (
 	"github.com/alecthomas/kong"
 	"github.com/araddon/dateparse"
+	"github.com/gagglepanda/couture/event"
+	"github.com/gagglepanda/couture/event/level"
 	"github.com/gagglepanda/couture/model"
-	"github.com/gagglepanda/couture/model/level"
 	errors2 "github.com/pkg/errors"
 	"reflect"
 	"regexp"
@@ -26,7 +27,7 @@ var (
 	sinkConfig = sink.DefaultConfig()
 
 	timeFormatNames = []string{
-		model.HumanTimeFormat,
+		event.HumanTimeFormat,
 		"c",
 		"iso8601",
 		"iso8601-nanos",
@@ -239,7 +240,7 @@ func (t *timeFormat) AfterApply() error {
 	}
 	format := strings.ToLower(string(*t))
 	switch format {
-	case model.HumanTimeFormat:
+	case event.HumanTimeFormat:
 		sinkConfig.TimeFormat = &format
 	case "c":
 		s := time.ANSIC

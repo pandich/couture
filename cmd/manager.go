@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/coreos/etcd/pkg/fileutil"
 	"github.com/gagglepanda/couture/couture"
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/manager"
-	"github.com/gagglepanda/couture/model"
 	"github.com/gagglepanda/couture/schema"
 	"github.com/gagglepanda/couture/sink"
 	"github.com/gagglepanda/couture/sink/color"
@@ -81,7 +81,7 @@ func parseOptions() ([]interface{}, error) {
 		var sources []interface{}
 		var violations []error
 		for _, u := range cli.Source {
-			sourceURL := model.SourceURL(u)
+			sourceURL := event.SourceURL(u)
 			src, err := manager.GetSource(cli.Since, sourceURL)
 			if len(err) > 0 {
 				violations = append(violations, err...)

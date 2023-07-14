@@ -1,14 +1,14 @@
 package column
 
 import (
-	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/schema"
 	"github.com/gagglepanda/couture/sink/layout"
 )
 
 type (
 	column interface {
-		render(event model.SinkEvent) string
+		render(event event.SinkEvent) string
 		name() schema.Column
 		layout() layout.ColumnLayout
 	}

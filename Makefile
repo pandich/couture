@@ -8,76 +8,68 @@ GOHOSTARCH		?= $(shell go env GOHOSTARCH)
 .PHONY: all
 all: clean build
 
-#
+
 # External Commands
-
-.PHONY: golangci-lint goreleaser gocmt scc gocomplete
+.PHONY: golangci-lint goreleaser gocmt scc gocomplete d2 asciinema asciicast2gif
 staticcheck:
-	@command -v $@ > /dev/null || go install honnef.co/go/tools/cmd/staticcheck@latest
+	command -v $@ > /dev/null || go install honnef.co/go/tools/cmd/staticcheck@latest
 goreleaser:
-	@command -v $@ > /dev/null || go install github.com/goreleaser/goreleaser
+	command -v $@ > /dev/null || go install github.com/goreleaser/goreleaser
 gocmt:
-	@command -v $@ > /dev/null || go install github.com/cuonglm/gocmt
+	command -v $@ > /dev/null || go install github.com/cuonglm/gocmt
 scc:
-	@command -v $@ > /dev/null || go install github.com/boyter/scc
+	command -v $@ > /dev/null || go install github.com/boyter/scc
 gocomplete:
-	@command -v $@ > /dev/null || go install github.com/posener/complete/v2/gocomplete
+	command -v $@ > /dev/null || go install github.com/posener/complete/v2/gocomplete
+d2:
+	command -v $@ > /dev/null || go install oss.terrastruct.com/d2@latest
+asciinema:
+	command -v $@ > /dev/null || pipx install asciinema
+asciicast2gif:
+	command -v $@ > /dev/null || npm install --global asciicast2gif
 
-#
-# Targets
 
 # Build
-.PHONY: clean build pre-build
-build: pre-build
-	@go build -o build/$(APPLICATION) .
+.PHONY: clean build release
 clean:
-	@rm -rf dist/
-pre-build: neat
+	rm -rf dist/ build/
+build: neat
+	go build -o build/$(APPLICATION) .
+release: goreleaser neat
+	goreleaser build --snapshot --rm-dist
+
 
 # Release
-.PHONY: install uninstall release
-install:
-	@go install .
+.PHONY: install uninstall
+install: build
+	go install .
+	echo y | COMP_UNINSTALL=1 go run . > /dev/null || true
+	echo y | COMP_INSTALL=1 go run . > /dev/null
 uninstall:
-	@go clean -i .
-release: goreleaser pre-build
-	@goreleaser build --snapshot --rm-dist
+	echo y | COMP_UNINSTALL=1 go run . > /dev/null || true
+	go clean -i .
+
 
 # Code Quality
-.PHONY: neat lint metrics
+.PHONY: neat lint
 neat:
-	@echo tidying
-	@go mod tidy
-	@echo formatting
-	@gofmt -l -s -w .
+	go mod tidy
+	gofmt -l -s -w .
 lint: staticcheck neat
-	@echo vetting
-	@go vet
-	@echo linting
-	@staticcheck ./...
-metrics: scc
-	@scc --wide --by-file --sort code --include-ext go
+	staticcheck ./...
 
-# Utility
-.PHONY: setup-env install-shell-completions
-setup-env: staticcheck goreleaser scc gocmt gocomplete
-	@git config --local core.hooksPath .githooks
-install-shell-completions: gocomplete
-	@echo installing completions
-	@echo y | COMP_UNINSTALL=1 $(APPLICATION) > /dev/null
-	@echo y | COMP_INSTALL=1 $(APPLICATION) > /dev/null
 
 # Documentation
-.PHONY: record-examples
-record-examples: example-fake-multi-line example-fake-single-line
-.PHONY: example-fake-multi-line
-example-fake-multi-line:
-	@asciinema rec --overwrite --command="$(GO_MODULE) --rate-limit=5 --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa --expand --multiline @@fake" docs/$@.cast
-	@make docs/$@.gif
-.PHONY: example-fake-single-line
-example-fake-single-line:
-	@asciinema rec --overwrite --command="$(GO_MODULE) --rate-limit=5 --highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa @@fake" docs/$@.cast
-	@make docs/$@.gif
-.PHONY: %.gif
-%.gif:
-	@asciicast2gif -t monokai $*.cast $@
+.PHONY: docs diagrams casts
+docs: diagrams casts
+casts: docs/casts/*.cast.sh
+diagrams: docs/diagrams/*.d2
+
+%.cast.sh: asciinema asciicast2gif
+	@echo casting $@
+	@timeout --foreground 5s asciinema rec --overwrite --command="sh $@" $*.cast || true
+	@asciicast2gif -t monokai $*.cast $*.cast.gif
+
+%.d2: d2
+	@echo $@ '->' $*.png
+	@d2 --theme=200 --font-regular=docs/resources/SimplyMono-Bold.ttf --font-bold=docs/resources/SimplyMono-Bold.ttf --layout=elk $@ $*.png

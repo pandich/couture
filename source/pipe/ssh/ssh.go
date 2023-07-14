@@ -1,7 +1,7 @@
 package ssh
 
 import (
-	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/source"
 	"github.com/gagglepanda/couture/source/pipe"
 	"github.com/melbahja/goph"
@@ -15,7 +15,7 @@ func Metadata() source.Metadata {
 	return source.Metadata{
 		Name:        "SSH",
 		Type:        reflect.TypeOf(sshSource{}),
-		CanHandle:   func(url model.SourceURL) bool { return url.Scheme == "ssh" },
+		CanHandle:   func(url event.SourceURL) bool { return url.Scheme == "ssh" },
 		Creator:     newSource,
 		ExampleURLs: []string{"ssh://user:passphrase@host:port/<path>"},
 	}
@@ -27,7 +27,7 @@ type sshSource struct {
 	filename string
 }
 
-func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(_ *time.Time, sourceURL event.SourceURL) (*source.Source, error) {
 	client, err := sshURL(sourceURL).getClient()
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (src sshSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
-	snkChan chan model.SinkEvent,
+	snkChan chan event.SinkEvent,
 	errChan chan source.Error,
 ) error {
 	// create the command

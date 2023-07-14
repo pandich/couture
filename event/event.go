@@ -1,8 +1,9 @@
-package model
+package event
 
 import (
 	"fmt"
-	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/event/level"
+	"github.com/gagglepanda/couture/model"
 	"github.com/gagglepanda/couture/schema"
 	"github.com/rcrowley/go-metrics"
 	"math"
@@ -34,7 +35,7 @@ type Event struct {
 type SinkEvent struct {
 	Event
 	SourceURL SourceURL
-	Filters   filters
+	Filters   model.Filters
 	Schema    *schema.Schema
 }
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/sink"
 	"github.com/gagglepanda/couture/source"
 	"github.com/gagglepanda/couture/source/aws"
@@ -22,7 +22,7 @@ func Metadata() source.Metadata {
 	return source.Metadata{
 		Name: "AWS S3",
 		Type: reflect.TypeOf(s3Source{}),
-		CanHandle: func(url model.SourceURL) bool {
+		CanHandle: func(url event.SourceURL) bool {
 			_, ok := map[string]bool{scheme: true}[url.Scheme]
 			return ok
 		},
@@ -40,7 +40,7 @@ type s3Source struct {
 }
 
 // newSource S3 source.
-func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(_ *time.Time, sourceURL event.SourceURL) (*source.Source, error) {
 	awsSource, err := aws.New('☂', &sourceURL)
 	if err != nil {
 		return nil, errors2.Wrapf(err, "bad S3 URL: %+v\n", sourceURL)
@@ -60,7 +60,7 @@ func (src *s3Source) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
-	_ chan model.SinkEvent,
+	_ chan event.SinkEvent,
 	_ chan source.Error,
 ) error {
 	const partSize = 16 * 1024

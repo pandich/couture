@@ -1,8 +1,8 @@
 package column
 
 import (
-	"github.com/gagglepanda/couture/model"
-	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/event"
+	"github.com/gagglepanda/couture/event/level"
 	"github.com/gagglepanda/couture/schema"
 	"github.com/gagglepanda/couture/sink/color"
 	"github.com/gagglepanda/couture/sink/layout"
@@ -38,14 +38,14 @@ type (
 )
 
 var levelMeterSigils = map[uint8]string{
-	model.Bucket1: " ",
-	model.Bucket2: "▏",
-	model.Bucket3: "▎",
-	model.Bucket4: "▍",
-	model.Bucket5: "▌",
-	model.Bucket6: "▋",
-	model.Bucket7: "▊",
-	model.Bucket8: "▉",
+	event.Bucket1: " ",
+	event.Bucket2: "▏",
+	event.Bucket3: "▎",
+	event.Bucket4: "▍",
+	event.Bucket5: "▌",
+	event.Bucket6: "▋",
+	event.Bucket7: "▊",
+	event.Bucket8: "▉",
 }
 
 func newMessageColumn(
@@ -93,7 +93,7 @@ func newMessageColumn(
 	return col
 }
 
-func (col messageColumn) render(event model.SinkEvent) string {
+func (col messageColumn) render(event event.SinkEvent) string {
 	var message, expanded = col.renderMessage(event)
 	if errorMessage := col.renderErrorMessage(event); errorMessage != "" {
 		if message != "" {
@@ -123,15 +123,15 @@ func (col messageColumn) render(event model.SinkEvent) string {
 	return cfmt.Sprint(message)
 }
 
-func (col messageColumn) renderLevelMeter(event model.SinkEvent) string {
-	var bucketSigil, ok = levelMeterSigils[event.LevelMeterBucket()]
+func (col messageColumn) renderLevelMeter(evt event.SinkEvent) string {
+	var bucketSigil, ok = levelMeterSigils[evt.LevelMeterBucket()]
 	if !ok {
-		bucketSigil = levelMeterSigils[model.BucketMax]
+		bucketSigil = levelMeterSigils[event.BucketMax]
 	}
-	return col.levelSprintf("", event.Level, bucketSigil) + " "
+	return col.levelSprintf("", evt.Level, bucketSigil) + " "
 }
 
-func (col messageColumn) renderMessage(event model.SinkEvent) (string, bool) {
+func (col messageColumn) renderMessage(event event.SinkEvent) (string, bool) {
 	var expanded = false
 	var message = string(event.Message)
 	if col.expand {
@@ -144,17 +144,17 @@ func (col messageColumn) renderMessage(event model.SinkEvent) (string, bool) {
 	return message, expanded
 }
 
-func (col messageColumn) renderErrorMessage(event model.SinkEvent) string {
-	if event.Error == "" {
+func (col messageColumn) renderErrorMessage(evt event.SinkEvent) string {
+	if evt.Error == "" {
 		return ""
 	}
-	var errString = string(event.Error)
+	var errString = string(evt.Error)
 	if col.expand {
-		if s, ok := col.expandMessage(model.Message(event.Error)); ok {
+		if s, ok := col.expandMessage(event.Message(evt.Error)); ok {
 			errString = s
 		}
 	}
-	errString = col.levelSprintf(errorSuffix, event.Level, errString)
+	errString = col.levelSprintf(errorSuffix, evt.Level, errString)
 	errString = indent.String(errString, 4)
 	return errString
 }
@@ -168,7 +168,7 @@ func (col messageColumn) levelStyleName(suffix string, lvl level.Level) string {
 }
 
 // expandMessage ...
-func (col messageColumn) expandMessage(msg model.Message) (string, bool) {
+func (col messageColumn) expandMessage(msg event.Message) (string, bool) {
 	var in = string(msg)
 	if in == "" {
 		return in, false

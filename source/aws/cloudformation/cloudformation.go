@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
-	"github.com/gagglepanda/couture/model"
-	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/event"
+	"github.com/gagglepanda/couture/event/level"
 	"github.com/gagglepanda/couture/source"
 	"github.com/gagglepanda/couture/source/aws"
 	"github.com/gagglepanda/couture/source/aws/cloudwatch"
@@ -29,7 +29,7 @@ func Metadata() source.Metadata {
 	return source.Metadata{
 		Name: "AWS CloudFormation",
 		Type: reflect.TypeOf(cloudFormationSource{}),
-		CanHandle: func(url model.SourceURL) bool {
+		CanHandle: func(url event.SourceURL) bool {
 			_, ok := map[string]bool{
 				scheme:              true,
 				schemeAliasShort:    true,
@@ -103,7 +103,7 @@ type (
 )
 
 // newSource CloudFormation source.
-func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(since *time.Time, sourceURL event.SourceURL) (*source.Source, error) {
 	const maxRequestsPerMinute = 20
 
 	normalizeURL(&sourceURL)
@@ -145,7 +145,7 @@ func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, err
 }
 
 // normalizeURL take the sourceURL and expands any syntactic sugar.
-func normalizeURL(sourceURL *model.SourceURL) {
+func normalizeURL(sourceURL *event.SourceURL) {
 	sourceURL.Normalize()
 	switch {
 	case sourceURL.Scheme == schemeAliasShort:
@@ -159,7 +159,7 @@ func (src *cloudFormationSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
-	snkChan chan model.SinkEvent,
+	snkChan chan event.SinkEvent,
 	errChan chan source.Error,
 ) error {
 	for _, child := range src.children {
@@ -185,7 +185,7 @@ func (src *cloudFormationSource) Start(
 }
 
 // getChildEvents retrieves CloudFormation events for this stack.
-func (src *cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
+func (src *cloudFormationSource) getStackEvents() ([]event.SinkEvent, error) {
 	src.stackEventRateLimiter.Take()
 	stackEvents, err := src.cf.DescribeStackEvents(context.TODO(), &cloudformation.DescribeStackEventsInput{
 		NextToken: src.stackEventsNextToken,
@@ -208,41 +208,41 @@ func (src *cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
 
 func (src *cloudFormationSource) stackEventsToModelEvents(
 	stackEvents *cloudformation.DescribeStackEventsOutput,
-) ([]model.SinkEvent, error) {
-	var events []model.SinkEvent
+) ([]event.SinkEvent, error) {
+	var events []event.SinkEvent
 	for _, stackEvent := range stackEvents.StackEvents {
-		event := src.stackEventToModelEvent(stackEvent)
-		events = append(events, model.SinkEvent{Event: event, SourceURL: src.URL()})
+		evt := src.stackEventToModelEvent(stackEvent)
+		events = append(events, event.SinkEvent{Event: evt, SourceURL: src.URL()})
 	}
 	return events, nil
 }
 
-func (src *cloudFormationSource) stackEventToModelEvent(stackEvent types.StackEvent) model.Event {
-	var message model.Message
-	var evtError model.Error
+func (src *cloudFormationSource) stackEventToModelEvent(stackEvent types.StackEvent) event.Event {
+	var message event.Message
+	var evtError event.Error
 
 	lvl := logLevelByResourceStatus[stackEvent.ResourceStatus]
 	if lvl == level.Error {
-		evtError = model.Error(stackEvent.ResourceStatus)
+		evtError = event.Error(stackEvent.ResourceStatus)
 	} else {
-		message = model.Message(stackEvent.ResourceStatus)
+		message = event.Message(stackEvent.ResourceStatus)
 	}
-	var entity = model.Entity(*stackEvent.StackName)
+	var entity = event.Entity(*stackEvent.StackName)
 	if s := stackEvent.PhysicalResourceId; s != nil && *s != "" {
-		entity = model.Entity(*s)
+		entity = event.Entity(*s)
 	}
-	event := model.Event{
-		Timestamp:   model.Timestamp(*stackEvent.Timestamp),
-		Application: model.Application(*stackEvent.ResourceType),
-		Context:     model.Context(*stackEvent.EventId),
+	evt := event.Event{
+		Timestamp:   event.Timestamp(*stackEvent.Timestamp),
+		Application: event.Application(*stackEvent.ResourceType),
+		Context:     event.Context(*stackEvent.EventId),
 		Entity:      entity,
-		Action:      model.Action(""),
-		Line:        model.NoLineNumber,
+		Action:      event.Action(""),
+		Line:        event.NoLineNumber,
 		Level:       lvl,
 		Message:     message,
 		Error:       evtError,
 	}
-	return event
+	return evt
 }
 
 // discoverLambdaResources discovers all lambdas under the stack or its child stacks.

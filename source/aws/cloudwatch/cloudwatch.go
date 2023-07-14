@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
-	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/source"
 	"github.com/gagglepanda/couture/source/aws"
 	errors2 "github.com/pkg/errors"
@@ -28,7 +28,7 @@ func Metadata() source.Metadata {
 	return source.Metadata{
 		Name: "AWS CloudWatch",
 		Type: reflect.TypeOf(cloudwatchSource{}),
-		CanHandle: func(url model.SourceURL) bool {
+		CanHandle: func(url event.SourceURL) bool {
 			_, ok := map[string]bool{
 				scheme:              true,
 				schemeAliasShort:    true,
@@ -64,7 +64,7 @@ type cloudwatchSource struct {
 }
 
 // newFromURL Cloudwatch source.
-func newFromURL(since *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+func newFromURL(since *time.Time, sourceURL event.SourceURL) (*source.Source, error) {
 	normalizeURL(&sourceURL)
 	awsSource, err := aws.New('☂', &sourceURL)
 	if err != nil {
@@ -96,7 +96,7 @@ func New(
 }
 
 // normalizeURL take the sourceURL and expands any syntactic sugar.
-func normalizeURL(sourceURL *model.SourceURL) {
+func normalizeURL(sourceURL *event.SourceURL) {
 	sourceURL.Normalize()
 	switch {
 	case sourceURL.Scheme == schemeAliasLambda:
@@ -113,7 +113,7 @@ func (src *cloudwatchSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
-	_ chan model.SinkEvent,
+	_ chan event.SinkEvent,
 	errChan chan source.Error,
 ) error {
 	var startTime *int64

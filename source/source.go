@@ -3,7 +3,7 @@ package source
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/event"
 	"net/url"
 	"reflect"
 	"strings"
@@ -18,16 +18,16 @@ type (
 		// Sigil represents the type of source in a single character.
 		Sigil() rune
 		// URL is the URL from which the events come.
-		URL() model.SourceURL
+		URL() event.SourceURL
 		// Start collecting events.
-		Start(wg *sync.WaitGroup, running func() bool, srcChan chan Event, snkChan chan model.SinkEvent, errChan chan Error) error
+		Start(wg *sync.WaitGroup, running func() bool, srcChan chan Event, snkChan chan event.SinkEvent, errChan chan Error) error
 	}
 
 	// BaseSource ...
 	BaseSource struct {
 		id        string
 		sigil     rune
-		sourceURL model.SourceURL
+		sourceURL event.SourceURL
 	}
 
 	// Event ...
@@ -38,7 +38,7 @@ type (
 
 	// Error ...
 	Error struct {
-		SourceURL model.SourceURL
+		SourceURL event.SourceURL
 		Error     error
 	}
 
@@ -46,14 +46,14 @@ type (
 	Metadata struct {
 		Name        string
 		Type        reflect.Type
-		CanHandle   func(url model.SourceURL) bool
-		Creator     func(since *time.Time, sourceURL model.SourceURL) (*Source, error)
+		CanHandle   func(url event.SourceURL) bool
+		Creator     func(since *time.Time, sourceURL event.SourceURL) (*Source, error)
 		ExampleURLs []string
 	}
 )
 
 // New base Source.
-func New(sigil rune, sourceURL model.SourceURL) BaseSource {
+func New(sigil rune, sourceURL event.SourceURL) BaseSource {
 	u := url.URL(sourceURL)
 	s := u.String()
 	hasher := sha256.New()
@@ -71,11 +71,11 @@ func (b BaseSource) Sigil() rune {
 }
 
 // URL ...
-func (b BaseSource) URL() model.SourceURL {
+func (b BaseSource) URL() event.SourceURL {
 	return b.sourceURL
 }
 
 // Start ...
-func (b BaseSource) Start(_ *sync.WaitGroup, _ func() bool, _ chan Event, _ chan model.SinkEvent, _ chan Error) error {
+func (b BaseSource) Start(_ *sync.WaitGroup, _ func() bool, _ chan Event, _ chan event.SinkEvent, _ chan Error) error {
 	panic("implement me")
 }

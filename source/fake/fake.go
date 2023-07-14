@@ -3,8 +3,8 @@ package fake
 import (
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/gagglepanda/couture/model"
-	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/event"
+	"github.com/gagglepanda/couture/event/level"
 	"github.com/gagglepanda/couture/source"
 	"math/rand"
 	"reflect"
@@ -25,7 +25,7 @@ func Metadata() source.Metadata {
 	return source.Metadata{
 		Name:        "Fake",
 		Type:        reflect.TypeOf(fakeSource{}),
-		CanHandle:   func(url model.SourceURL) bool { return url.Scheme == "fake" },
+		CanHandle:   func(url event.SourceURL) bool { return url.Scheme == "fake" },
 		Creator:     newSource,
 		ExampleURLs: []string{},
 	}
@@ -34,23 +34,23 @@ func Metadata() source.Metadata {
 // fakeSource provides fake test data.
 type fakeSource struct {
 	source.BaseSource
-	applicationName model.Application
+	applicationName event.Application
 	style           string
 	faker           *gofakeit.Faker
 }
 
-func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(_ *time.Time, sourceURL event.SourceURL) (*source.Source, error) {
 	faker := getFakerArg(sourceURL)
 	var src source.Source = fakeSource{
 		BaseSource:      source.New('🃟', sourceURL),
-		applicationName: model.Application(faker.AppName()),
+		applicationName: event.Application(faker.AppName()),
 		style:           getStyleArg(sourceURL),
 		faker:           faker,
 	}
 	return &src, nil
 }
 
-func getStyleArg(sourceURL model.SourceURL) string {
+func getStyleArg(sourceURL event.SourceURL) string {
 	var style, ok = sourceURL.QueryKey("style")
 	if !ok {
 		style = defaultStyle
@@ -63,7 +63,7 @@ func (src fakeSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
-	_ chan model.SinkEvent,
+	_ chan event.SinkEvent,
 	_ chan source.Error,
 ) error {
 	const maxPercent = 100
@@ -210,7 +210,7 @@ func (src fakeSource) textGenerators() (func() string, func() string) {
 	return messageGenerator, errorGenerator
 }
 
-func getFakerArg(sourceURL model.SourceURL) *gofakeit.Faker {
+func getFakerArg(sourceURL event.SourceURL) *gofakeit.Faker {
 	var seed, _ = sourceURL.QueryInt64("seed")
 	if seed == nil {
 		epoch := time.Now().Unix()

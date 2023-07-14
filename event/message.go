@@ -1,4 +1,6 @@
-package model
+package event
+
+import "github.com/gagglepanda/couture/model"
 
 // Message ...
 type (
@@ -10,33 +12,33 @@ type (
 )
 
 // Matches determines if an event Matches the filters criteria.
-func (msg Message) Matches(filters *[]Filter) FilterKind {
+func (msg Message) Matches(filters *[]model.Filter) model.FilterKind {
 	var hasIncludes = false
 	for i := range *filters {
 		filter := (*filters)[i]
 		switch filter.Kind {
-		case none:
-			return Include
-		case Exclude:
+		case model.None:
+			return model.Include
+		case model.Exclude:
 			if filter.Pattern.MatchString(string(msg)) {
-				return Exclude
+				return model.Exclude
 			}
-		case Include:
+		case model.Include:
 			hasIncludes = true
 			if filter.Pattern.MatchString(string(msg)) {
-				return Include
+				return model.Include
 			}
-		case AlertOnce:
+		case model.AlertOnce:
 			if filter.Pattern.MatchString(string(msg)) {
-				(*filters)[i].Kind = none
-				return AlertOnce
+				(*filters)[i].Kind = model.None
+				return model.AlertOnce
 			}
 		}
 	}
 	if hasIncludes {
-		return Exclude
+		return model.Exclude
 	}
-	return Include
+	return model.Include
 }
 
 // String ...

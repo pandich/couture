@@ -1,8 +1,8 @@
 package manager
 
 import (
+	"github.com/gagglepanda/couture/event/level"
 	"github.com/gagglepanda/couture/model"
-	"github.com/gagglepanda/couture/model/level"
 	"github.com/gagglepanda/couture/schema"
 	"github.com/gagglepanda/couture/sink"
 	"github.com/gagglepanda/couture/source"

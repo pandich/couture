@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/model"
 	"github.com/gagglepanda/couture/source"
 	"github.com/gagglepanda/couture/source/aws/cloudformation"
@@ -26,7 +27,7 @@ var AvailableSources = []source.Metadata{
 }
 
 // GetSource gets a source, if possible, for the specified sourceURL.
-func GetSource(since *time.Time, sourceURL model.SourceURL) ([]source.Source, []error) {
+func GetSource(since *time.Time, sourceURL event.SourceURL) ([]source.Source, []error) {
 	if sourceURL.Scheme == "complete" {
 		return nil, nil
 	}
@@ -46,7 +47,7 @@ func GetSource(since *time.Time, sourceURL model.SourceURL) ([]source.Source, []
 	return sources, violations
 }
 
-func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
+func getSourceMetadata(sourceURL event.SourceURL) *source.Metadata {
 	for _, metadata := range AvailableSources {
 		if metadata.CanHandle(sourceURL) {
 			return &metadata
@@ -55,7 +56,7 @@ func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
 	return nil
 }
 
-func (mgr *busManager) filter(evt *model.Event) model.FilterKind {
+func (mgr *busManager) filter(evt *event.Event) model.FilterKind {
 	if !evt.Level.IsAtLeast(mgr.config.Level) {
 		return model.Exclude
 	}

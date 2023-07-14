@@ -3,7 +3,7 @@ package column
 import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/sink/color"
 	"github.com/gagglepanda/couture/sink/layout"
 	"github.com/i582/cfmt/cmd/cfmt"
@@ -48,15 +48,15 @@ func newCallerColumn(
 	return col
 }
 
-func (col callerColumn) render(event model.SinkEvent) string {
-	entityName, actionName, lineNumber := col.callerParts(event)
+func (col callerColumn) render(evt event.SinkEvent) string {
+	entityName, actionName, lineNumber := col.callerParts(evt)
 
 	var format = "{{%s}}::" + entityStyleName
-	if event.Action != "" {
+	if evt.Action != "" {
 		format += "{{∕}}::" + actionDelimiterStyleName
 	}
 	format += "{{%s}}::" + actionStyleName
-	if event.Line != model.NoLineNumber {
+	if evt.Line != event.NoLineNumber {
 		format += "{{#}}::" + lineDelimiterStyleName
 	}
 	format += "{{%s}}::" + lineStyleName
@@ -69,7 +69,7 @@ func (col callerColumn) render(event model.SinkEvent) string {
 	)
 }
 
-func (col callerColumn) callerParts(event model.SinkEvent) (string, string, string) {
+func (col callerColumn) callerParts(event event.SinkEvent) (string, string, string) {
 	var entityName = string(event.Entity.Abbreviate(int(col.colLayout.Width)))
 	var actionName = string(event.Action)
 	var lineNumber = ""

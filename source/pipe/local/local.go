@@ -1,7 +1,7 @@
 package local
 
 import (
-	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/source"
 	"github.com/gagglepanda/couture/source/pipe"
 	"os/exec"
@@ -16,7 +16,7 @@ func Metadata() source.Metadata {
 	return source.Metadata{
 		Name:        "Local File",
 		Type:        reflect.TypeOf(fileSource{}),
-		CanHandle:   func(url model.SourceURL) bool { return url.Scheme == "file" },
+		CanHandle:   func(url event.SourceURL) bool { return url.Scheme == "file" },
 		Creator:     newSource,
 		ExampleURLs: []string{"file://<path>"},
 	}
@@ -27,7 +27,7 @@ type fileSource struct {
 	filename string
 }
 
-func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(_ *time.Time, sourceURL event.SourceURL) (*source.Source, error) {
 	sourceURL.Normalize()
 	var src source.Source = fileSource{
 		BaseSource: source.New('⫽', sourceURL),
@@ -41,7 +41,7 @@ func (src fileSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
-	snkChan chan model.SinkEvent,
+	snkChan chan event.SinkEvent,
 	errChan chan source.Error,
 ) error {
 	// get the safe path to the file

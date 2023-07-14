@@ -1,7 +1,7 @@
 package sink
 
 import (
-	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/source"
 )
 
@@ -10,5 +10,5 @@ type Sink interface {
 	// Init called prior to the beginning of logging.
 	Init(sources []*source.Source)
 	// Accept consumes an event, typically for display.
-	Accept(event model.SinkEvent) error
+	Accept(event event.SinkEvent) error
 }

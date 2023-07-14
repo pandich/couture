@@ -3,6 +3,7 @@ package manager
 import (
 	"fmt"
 	"github.com/gagglepanda/couture/couture"
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/model"
 	"github.com/gagglepanda/couture/schema"
 	"github.com/gagglepanda/couture/source"
@@ -30,7 +31,7 @@ func init() {
 	metrics.GetOrRegister(srcChanMeterName, srcChanMeter)
 }
 
-func (mgr *busManager) createChannels() (chan source.Event, chan model.SinkEvent, chan source.Error) {
+func (mgr *busManager) createChannels() (chan source.Event, chan event.SinkEvent, chan source.Error) {
 	errChan := mgr.makeErrChan()
 	alertChan := mgr.makeAlertChan(errChan)
 	unknownChan := mgr.makeUnknownChan()
@@ -55,8 +56,8 @@ func (mgr *busManager) makeUnknownChan() chan string {
 	return unknownChan
 }
 
-func (mgr *busManager) makeAlertChan(errChan chan source.Error) chan model.SinkEvent {
-	alertChan := make(chan model.SinkEvent)
+func (mgr *busManager) makeAlertChan(errChan chan source.Error) chan event.SinkEvent {
+	alertChan := make(chan event.SinkEvent)
 	go func() {
 		for {
 			alert := <-alertChan
@@ -99,8 +100,8 @@ func (mgr *busManager) makeErrChan() chan source.Error {
 }
 
 func (mgr *busManager) makeSrcChan(
-	snkChan chan model.SinkEvent,
-	alertChan chan model.SinkEvent,
+	snkChan chan event.SinkEvent,
+	alertChan chan event.SinkEvent,
 	unknownChan chan string,
 ) chan source.Event {
 	srcChan := make(chan source.Event)
@@ -122,7 +123,7 @@ func (mgr *busManager) makeSrcChan(
 			modelEvent := unmarshallEvent(sch, sourceEvent.Event)
 			filterKind := mgr.filter(modelEvent)
 			modelEvent.AsCodeLocation().Mark(string(modelEvent.Level))
-			evt := model.SinkEvent{
+			evt := event.SinkEvent{
 				SourceURL: sourceURL,
 				Event:     *modelEvent,
 				Filters:   mgr.config.Filters,
@@ -142,8 +143,8 @@ func (mgr *busManager) makeSrcChan(
 	return srcChan
 }
 
-func (mgr *busManager) makeSnkChan(errChan chan source.Error) chan model.SinkEvent {
-	snkChan := make(chan model.SinkEvent)
+func (mgr *busManager) makeSnkChan(errChan chan source.Error) chan event.SinkEvent {
+	snkChan := make(chan event.SinkEvent)
 	var limiter ratelimit.Limiter
 	if mgr.config.RateLimit == 0 {
 		limiter = ratelimit.NewUnlimited()

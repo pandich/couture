@@ -1,0 +1,14 @@
+direction: right
+
+external.Shape: cloud
+source.Shape: queue
+model.Shape: parallelogram
+display.Shape: document
+sink.Shape: queue
+
+external -> source: push
+source -> mapping: submit
+mapping -> model: transform
+model -> sink: submit
+sink -> manager: receive
+manager -> display: render

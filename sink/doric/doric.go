@@ -1,7 +1,7 @@
 package doric
 
 import (
-	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/sink"
 	"github.com/gagglepanda/couture/sink/doric/column"
 	"github.com/gagglepanda/couture/source"
@@ -38,7 +38,7 @@ func (snk doricSink) Init(sources []*source.Source) {
 	default:
 		cfmt.DisableColors()
 	}
-	var sourceColors = map[model.SourceURL]string{}
+	var sourceColors = map[event.SourceURL]string{}
 	for _, src := range sources {
 		consistentColors := *snk.config.ConsistentColors
 		style := snk.config.Theme.AsHexPair(consistentColors, *src)
@@ -48,7 +48,7 @@ func (snk doricSink) Init(sources []*source.Source) {
 }
 
 // Accept ...
-func (snk doricSink) Accept(event model.SinkEvent) error {
+func (snk doricSink) Accept(event event.SinkEvent) error {
 	snk.out <- snk.table.Render(event)
 	return nil
 }

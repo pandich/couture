@@ -24,7 +24,7 @@ type Manager interface {
 type FilterKind int
 
 const (
-	none FilterKind = iota
+	None FilterKind = iota
 	// Exclude ...
 	Exclude
 	// AlertOnce ...
@@ -39,7 +39,7 @@ type Filter struct {
 	Kind    FilterKind
 }
 
-type filters []Filter
+type Filters []Filter
 
 func (f FilterKind) isHighlighted() bool {
 	return f == Include
@@ -53,7 +53,7 @@ func (f Filter) replaceAllStringFunc(s string, replacer func(string) string) str
 }
 
 // ReplaceAllStringFunc ...
-func (fs filters) ReplaceAllStringFunc(s string, replacer func(string) string) string {
+func (fs Filters) ReplaceAllStringFunc(s string, replacer func(string) string) string {
 	for _, filter := range fs {
 		s = filter.replaceAllStringFunc(s, replacer)
 	}

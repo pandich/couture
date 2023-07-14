@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/bnkamalesh/errors"
-	"github.com/gagglepanda/couture/model"
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/source"
 	"go.uber.org/ratelimit"
 	"gopkg.in/olivere/elastic.v3"
@@ -20,7 +20,7 @@ func Metadata() source.Metadata {
 	return source.Metadata{
 		Name: "ElasticSearch",
 		Type: reflect.TypeOf(elasticSearch{}),
-		CanHandle: func(url model.SourceURL) bool {
+		CanHandle: func(url event.SourceURL) bool {
 			_, ok := map[string]bool{
 				scheme + "+http":            true,
 				schemeAliasShort + "+http":  true,
@@ -50,7 +50,7 @@ type elasticSearch struct {
 	searchRateLimiter ratelimit.Limiter
 }
 
-func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(since *time.Time, sourceURL event.SourceURL) (*source.Source, error) {
 	const maxRequestsPerMinute = 60
 	const eventsPerFetch = 100
 	const keepAliveOneMinute = "1m"
@@ -101,7 +101,7 @@ func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, err
 	return &src, nil
 }
 
-func newElasticsearchClient(sourceURL model.SourceURL) (*elastic.Client, error) {
+func newElasticsearchClient(sourceURL event.SourceURL) (*elastic.Client, error) {
 	esClient, err := elastic.NewClient(elastic.SetURL(sourceURL.Scheme + "://" + sourceURL.Host))
 	if err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func newElasticsearchClient(sourceURL model.SourceURL) (*elastic.Client, error) 
 	return esClient, nil
 }
 
-func normalizeURL(sourceURL *model.SourceURL) {
+func normalizeURL(sourceURL *event.SourceURL) {
 	sourceURL.Scheme = strings.Replace(sourceURL.Scheme, scheme+"+", "", 1)
 	sourceURL.Scheme = strings.Replace(sourceURL.Scheme, schemeAliasShort+"+", "", 1)
 }
@@ -119,7 +119,7 @@ func (src *elasticSearch) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
-	_ chan model.SinkEvent,
+	_ chan event.SinkEvent,
 	errChan chan source.Error,
 ) error {
 	go func() {

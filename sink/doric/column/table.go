@@ -1,8 +1,8 @@
 package column
 
 import (
-	"github.com/gagglepanda/couture/model"
-	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/event"
+	"github.com/gagglepanda/couture/event/level"
 	"github.com/gagglepanda/couture/schema"
 	"github.com/gagglepanda/couture/sink"
 	"github.com/muesli/reflow/wordwrap"
@@ -35,7 +35,7 @@ func NewTable(config sink.Config) *Table {
 }
 
 // Render ...
-func (table *Table) Render(event model.SinkEvent) string {
+func (table *Table) Render(event event.SinkEvent) string {
 	const resetSequence = termenv.CSI + termenv.ResetSeq + "m"
 	if event.Level == "" {
 		event.Level = level.Default

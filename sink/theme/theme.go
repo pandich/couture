@@ -1,7 +1,7 @@
 package theme
 
 import (
-	"github.com/gagglepanda/couture/model/level"
+	"github.com/gagglepanda/couture/event/level"
 	"github.com/gagglepanda/couture/sink/color"
 	"github.com/gagglepanda/couture/source"
 	"github.com/tidwall/pretty"
