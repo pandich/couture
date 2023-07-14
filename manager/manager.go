@@ -44,7 +44,7 @@ type (
 		DumpUnknown bool
 		Level       level.Level
 		Filters     []model.Filter
-		Schemas     []mapping.Schema
+		Mappings    []mapping.Mapping
 		RateLimit   uint
 	}
 )

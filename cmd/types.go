@@ -66,7 +66,7 @@ type (
 	wrap             bool
 	dumpMetrics      bool
 	dumpUnknown      bool
-	showSchema       bool
+	showMapping      bool
 	rateLimit        uint
 	filterLike       []string
 	colorMode        string
@@ -193,40 +193,40 @@ func (v *wrap) AfterApply() error {
 // AfterApply ...
 //
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v dumpMetrics) AfterApply() error { managerConfig.DumpMetrics = bool(v); return nil }
+func (v dumpMetrics) AfterApply() error { mgrCfg.DumpMetrics = bool(v); return nil }
 
 // AfterApply ...
 //
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v dumpUnknown) AfterApply() error { managerConfig.DumpUnknown = bool(v); return nil }
+func (v dumpUnknown) AfterApply() error { mgrCfg.DumpUnknown = bool(v); return nil }
 
 // AfterApply ...
 //
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v *showSchema) AfterApply() error {
+func (v *showMapping) AfterApply() error {
 	if v == nil {
 		return nil
 	}
 	b := bool(*v)
-	sinkConfig.ShowSchema = &b
+	sinkConfig.ShowMapping = &b
 	return nil
 }
 
 // AfterApply ...
 //
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v rateLimit) AfterApply() error { managerConfig.RateLimit = uint(v); return nil }
+func (v rateLimit) AfterApply() error { mgrCfg.RateLimit = uint(v); return nil }
 
 // AfterApply ...
 //
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v levelLike) AfterApply() error { managerConfig.Level = level.Level(v); return nil }
+func (v levelLike) AfterApply() error { mgrCfg.Level = level.Level(v); return nil }
 
 // AfterApply ...
 //
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
 func (f filterLike) AfterApply() (err error) {
-	managerConfig.Filters, err = f.asFilters()
+	mgrCfg.Filters, err = f.asFilters()
 	return
 }
 

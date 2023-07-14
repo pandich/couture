@@ -28,7 +28,7 @@ func DefaultConfig() Config {
 		Expand:           &Disabled,
 		Highlight:        &Disabled,
 		MultiLine:        &Disabled,
-		ShowSchema:       &Disabled,
+		ShowMapping:      &Disabled,
 		Wrap:             &Disabled,
 		Layout:           &layout.Default,
 		Out:              os.Stdout,
@@ -40,7 +40,7 @@ func DefaultConfig() Config {
 // Config ...
 type Config struct {
 	AutoResize       *bool          `yaml:"auto_resize,omitempty"`
-	ShowSchema       *bool          `yaml:"show_schema,omitempty"`
+	ShowMapping      *bool          `yaml:"show_mapping,omitempty"`
 	Color            *bool          `yaml:"color,omitempty"`
 	Columns          []string       `yaml:"columns,omitempty"`
 	ConsistentColors *bool          `yaml:"consistent_colors,omitempty"`
@@ -86,8 +86,8 @@ func (config *Config) PopulateMissing(other Config) *Config {
 	if config.AutoResize == nil {
 		config.AutoResize = other.AutoResize
 	}
-	if config.ShowSchema == nil {
-		config.ShowSchema = other.ShowSchema
+	if config.ShowMapping == nil {
+		config.ShowMapping = other.ShowMapping
 	}
 	if config.Color == nil {
 		config.Color = other.Color
@@ -113,8 +113,8 @@ func (config *Config) PopulateMissing(other Config) *Config {
 	if config.MultiLine == nil {
 		config.MultiLine = other.MultiLine
 	}
-	if config.ShowSchema == nil {
-		config.ShowSchema = other.ShowSchema
+	if config.ShowMapping == nil {
+		config.ShowMapping = other.ShowMapping
 	}
 	if config.Theme == nil {
 		config.Theme = other.Theme

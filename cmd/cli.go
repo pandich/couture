@@ -10,7 +10,7 @@ var cli struct {
 	DumpMetrics dumpMetrics `hidden:"true" group:"diagnostic"`
 	DumpUnknown dumpUnknown `hidden:"true" group:"diagnostic"`
 	RateLimit   rateLimit   `hidden:"true" group:"diagnostic" env:"COUTURE_RATE_LIMIT" default:"0"`
-	ShowSchema  showSchema  `hidden:"true" group:"diagnostic" env:"COUTURE_SHOW_SCHEMA"`
+	ShowMapping showMapping `hidden:"true" group:"diagnostic" env:"COUTURE_SHOW_MAPPING"`
 
 	AutoResize autoResize `group:"terminal" help:"Auto-resize columns when the terminal resizes." negatable:"true" env:"COUTURE_AUTO_RESIZE"`
 	NoColor    noColor    `group:"terminal" help:"Force no color mode." short:"C"`

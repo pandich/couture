@@ -7,22 +7,22 @@ import (
 
 const textRootField = "_"
 
-// GuessSchema ..
-func GuessSchema(s string, schemasToCheck ...Schema) *Schema {
-	for _, schema := range schemasToCheck {
-		if schema.canHandle(s) {
-			return &schema
+// GuessMapping ..
+func GuessMapping(s string, mappingsToCheck ...Mapping) *Mapping {
+	for _, mapping := range mappingsToCheck {
+		if mapping.canHandle(s) {
+			return &mapping
 		}
 	}
 	return nil
 }
 
-func (schema *Schema) canHandleJSON(s string) bool {
-	values := gjson.GetMany(s, schema.predicateFields...)
-	for i := range schema.predicateFields {
-		field := schema.predicateFields[i]
+func (mapping *Mapping) canHandleJSON(s string) bool {
+	values := gjson.GetMany(s, mapping.predicateFields...)
+	for i := range mapping.predicateFields {
+		field := mapping.predicateFields[i]
 
-		pattern := schema.predicatePatternsByField[field]
+		pattern := mapping.predicatePatternsByField[field]
 		if pattern == nil {
 			return false
 		}
@@ -39,6 +39,6 @@ func (schema *Schema) canHandleJSON(s string) bool {
 	return true
 }
 
-func (schema *Schema) canHandleText(s string) bool {
-	return schema.predicatePatternsByField[textRootField].MatchString(strings.TrimRight(s, "\n"))
+func (mapping *Mapping) canHandleText(s string) bool {
+	return mapping.predicatePatternsByField[textRootField].MatchString(strings.TrimRight(s, "\n"))
 }

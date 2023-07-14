@@ -1,3 +1,5 @@
+// Package cmd is the entry point for the application.
+// It is responsible for parsing command line arguments and launching the application.
 package cmd
 
 import (
@@ -23,15 +25,15 @@ import (
 )
 
 var (
-	managerConfig     = manager.Config{}
-	defaultSinkConfig = sink.Config{
+	mgrCfg  = manager.Config{}
+	sinkCfg = sink.Config{
 		AutoResize:       &sink.Enabled,
 		Color:            &sink.Enabled,
 		ConsistentColors: &sink.Enabled,
 		Expand:           &sink.Disabled,
 		Highlight:        &sink.Disabled,
 		MultiLine:        &sink.Disabled,
-		ShowSchema:       &sink.Disabled,
+		ShowMapping:      &sink.Disabled,
 		Wrap:             &sink.Disabled,
 		Layout:           &layout.Default,
 		Out:              os.Stdout,
@@ -61,15 +63,15 @@ func Run() {
 
 	sinkConfig.
 		PopulateMissing(loadDoricConfigFile()).
-		PopulateMissing(defaultSinkConfig)
+		PopulateMissing(sinkCfg)
 
 	options, err := parseOptions()
 	parser.FatalIfErrorf(err)
 
-	managerConfig.Schemas, err = mapping.LoadSchemas()
+	mgrCfg.Mappings, err = mapping.LoadMappings()
 	parser.FatalIfErrorf(err)
 
-	mgr, err := manager.New(managerConfig, options...)
+	mgr, err := manager.New(mgrCfg, options...)
 	parser.FatalIfErrorf(err)
 
 	err = (*mgr).Run()

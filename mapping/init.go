@@ -6,31 +6,31 @@ import (
 	"regexp"
 )
 
-func (schema *Schema) init(name string) {
-	schema.Name = name
-	schema.initPredicatePatterns()
-	schema.initCanHandle()
-	schema.initFields()
+func (mapping *Mapping) init(name string) {
+	mapping.Name = name
+	mapping.initPredicatePatterns()
+	mapping.initCanHandle()
+	mapping.initFields()
 }
 
-func (schema *Schema) initPredicatePatterns() {
-	schema.predicatePatternsByField = map[string]*regexp.Regexp{}
-	for field, pattern := range schema.PredicatesByField {
-		schema.predicateFields = append(schema.predicateFields, field)
+func (mapping *Mapping) initPredicatePatterns() {
+	mapping.predicatePatternsByField = map[string]*regexp.Regexp{}
+	for field, pattern := range mapping.PredicatesByField {
+		mapping.predicateFields = append(mapping.predicateFields, field)
 		if pattern != "" {
-			schema.predicatePatternsByField[field] = regexp.MustCompile(pattern)
+			mapping.predicatePatternsByField[field] = regexp.MustCompile(pattern)
 		} else {
-			schema.predicatePatternsByField[field] = nil
+			mapping.predicatePatternsByField[field] = nil
 		}
 	}
 }
 
-func (schema *Schema) initCanHandle() {
-	switch schema.Format {
+func (mapping *Mapping) initCanHandle() {
+	switch mapping.Format {
 	case JSON:
-		schema.canHandle = schema.canHandleJSON
+		mapping.canHandle = mapping.canHandleJSON
 	case Text:
-		var pattern = schema.predicatePatternsByField[textRootField].String()
+		var pattern = mapping.predicatePatternsByField[textRootField].String()
 		re := regexp.MustCompile(pattern)
 		names := map[Column]bool{
 			Timestamp:   false,
@@ -52,13 +52,13 @@ func (schema *Schema) initCanHandle() {
 				pattern += fmt.Sprintf("(?P<%s>)", name)
 			}
 		}
-		schema.TextPattern = regroup.MustCompile(pattern)
-		schema.canHandle = schema.canHandleText
+		mapping.TextPattern = regroup.MustCompile(pattern)
+		mapping.canHandle = mapping.canHandleText
 	}
 }
 
-func (schema *Schema) initFields() {
-	for _, field := range schema.FieldByColumn {
-		schema.Fields = append(schema.Fields, field)
+func (mapping *Mapping) initFields() {
+	for _, field := range mapping.FieldByColumn {
+		mapping.Fields = append(mapping.Fields, field)
 	}
 }

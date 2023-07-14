@@ -36,7 +36,7 @@ type SinkEvent struct {
 	Event
 	SourceURL SourceURL
 	Filters   model.Filters
-	Schema    *mapping.Schema
+	Mapping   *mapping.Mapping
 }
 
 // CodeLocation ...

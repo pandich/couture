@@ -55,8 +55,8 @@ const (
 	Text = "text"
 )
 
-// Schema ...
-type Schema struct {
+// Mapping ...
+type Mapping struct {
 	Name                     string            `yaml:"-"`
 	Format                   string            `yaml:"format,omitempty"`
 	Priority                 uint8             `yaml:"priority,omitempty"`

@@ -116,7 +116,7 @@ func (mgr *busManager) makeSrcChan(
 				metrics.NewMeter(),
 			).(metrics.Meter)
 			srcChanSrcMeter.Mark(1)
-			sch := mapping.GuessSchema(sourceEvent.Event, mgr.config.Schemas...)
+			sch := mapping.GuessMapping(sourceEvent.Event, mgr.config.Mappings...)
 			if sch == nil {
 				unknownChan <- sourceEvent.Event
 			}
@@ -127,7 +127,7 @@ func (mgr *busManager) makeSrcChan(
 				SourceURL: sourceURL,
 				Event:     *modelEvent,
 				Filters:   mgr.config.Filters,
-				Schema:    sch,
+				Mapping:   sch,
 			}
 			switch filterKind {
 			case model.Exclude:

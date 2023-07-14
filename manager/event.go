@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func unmarshallEvent(sch *mapping.Schema, s string) *event.Event {
+func unmarshallEvent(sch *mapping.Mapping, s string) *event.Event {
 	var evt *event.Event
 	if sch != nil {
 		switch sch.Format {
@@ -30,7 +30,7 @@ func unmarshallEvent(sch *mapping.Schema, s string) *event.Event {
 	return evt
 }
 
-func unmarshallJSONEvent(sch *mapping.Schema, s string) *event.Event {
+func unmarshallJSONEvent(sch *mapping.Mapping, s string) *event.Event {
 	values := map[string]gjson.Result{}
 	for i, value := range gjson.GetMany(s, sch.Fields...) {
 		field := sch.Fields[i]
@@ -50,7 +50,7 @@ func unmarshallJSONEvent(sch *mapping.Schema, s string) *event.Event {
 	return &evt
 }
 
-func unmarshallTextEvent(sch *mapping.Schema, s string) *event.Event {
+func unmarshallTextEvent(sch *mapping.Mapping, s string) *event.Event {
 	if sch.TextPattern == nil {
 		return nil
 	}
