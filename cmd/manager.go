@@ -6,12 +6,12 @@ import (
 	"github.com/gagglepanda/couture/couture"
 	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/manager"
-	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/mapping"
 	"github.com/gagglepanda/couture/sink"
 	"github.com/gagglepanda/couture/sink/color"
-	"github.com/gagglepanda/couture/sink/doric"
-	"github.com/gagglepanda/couture/sink/doric/column"
 	"github.com/gagglepanda/couture/sink/layout"
+	"github.com/gagglepanda/couture/sink/layout/doric"
+	"github.com/gagglepanda/couture/sink/layout/doric/column"
 	theme2 "github.com/gagglepanda/couture/sink/theme"
 	"github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
@@ -66,7 +66,7 @@ func Run() {
 	options, err := parseOptions()
 	parser.FatalIfErrorf(err)
 
-	managerConfig.Schemas, err = schema.LoadSchemas()
+	managerConfig.Schemas, err = mapping.LoadSchemas()
 	parser.FatalIfErrorf(err)
 
 	mgr, err := manager.New(managerConfig, options...)

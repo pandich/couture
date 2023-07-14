@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/gagglepanda/couture/couture"
 	"github.com/gagglepanda/couture/event"
+	"github.com/gagglepanda/couture/mapping"
 	"github.com/gagglepanda/couture/model"
-	"github.com/gagglepanda/couture/schema"
 	"github.com/gagglepanda/couture/source"
 	"github.com/joomcode/errorx"
 	"github.com/rcrowley/go-metrics"
@@ -116,7 +116,7 @@ func (mgr *busManager) makeSrcChan(
 				metrics.NewMeter(),
 			).(metrics.Meter)
 			srcChanSrcMeter.Mark(1)
-			sch := schema.GuessSchema(sourceEvent.Event, mgr.config.Schemas...)
+			sch := mapping.GuessSchema(sourceEvent.Event, mgr.config.Schemas...)
 			if sch == nil {
 				unknownChan <- sourceEvent.Event
 			}

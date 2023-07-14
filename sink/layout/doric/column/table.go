@@ -3,7 +3,7 @@ package column
 import (
 	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/event/level"
-	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/mapping"
 	"github.com/gagglepanda/couture/sink"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/termenv"
@@ -43,7 +43,7 @@ func (table *Table) Render(event event.SinkEvent) string {
 	// get format string and arguments
 	var line string
 	for _, name := range table.config.Columns {
-		col := table.registry[schema.Column(name)]
+		col := table.registry[mapping.Column(name)]
 		line += col.render(event) + resetSequence
 	}
 	if table.config.Wrap != nil && *table.config.Wrap {
@@ -59,7 +59,7 @@ func (table *Table) updateColumnWidths() {
 	var remainingWidth = table.config.EffectiveTerminalWidth()
 	var totalWeight uint
 	for _, name := range table.config.Columns {
-		col := table.registry[schema.Column(name)]
+		col := table.registry[mapping.Column(name)]
 		totalWeight += col.layout().Width
 	}
 
@@ -67,7 +67,7 @@ func (table *Table) updateColumnWidths() {
 	remainingWidth = uint(float64(remainingWidth) * nonMessageAreaWidthPercent)
 
 	for _, name := range table.config.Columns {
-		col := table.registry[schema.Column(name)]
+		col := table.registry[mapping.Column(name)]
 		weigth := col.layout().Width
 		weighting := float64(weigth) / float64(totalWeight)
 		var width = uint(weighting * float64(remainingWidth))

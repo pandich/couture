@@ -4,7 +4,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/gagglepanda/couture/couture"
 	"github.com/gagglepanda/couture/manager"
-	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/mapping"
 	theme2 "github.com/gagglepanda/couture/sink/theme"
 	"reflect"
 	"strings"
@@ -33,7 +33,7 @@ var parser = kong.Must(&cli,
 
 var parserVars = kong.Vars{
 	"timeFormatNames": strings.Join(timeFormatNames, ","),
-	"columnNames":     strings.Join(schema.Names(), ","),
+	"columnNames":     strings.Join(mapping.Names(), ","),
 	"specialThemes":   strings.Join(theme2.Names(), ","),
 }
 

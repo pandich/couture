@@ -3,7 +3,7 @@ package doric
 import (
 	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/sink"
-	"github.com/gagglepanda/couture/sink/doric/column"
+	column2 "github.com/gagglepanda/couture/sink/layout/doric/column"
 	"github.com/gagglepanda/couture/source"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
@@ -13,7 +13,7 @@ const sinkName = "doric"
 // doricSink provides render output.
 type doricSink struct {
 	terminalWidth uint
-	table         *column.Table
+	table         *column2.Table
 	config        sink.Config
 	out           chan string
 }
@@ -22,7 +22,7 @@ type doricSink struct {
 func New(config sink.Config) sink.Sink {
 	return &doricSink{
 		terminalWidth: config.EffectiveTerminalWidth(),
-		table:         column.NewTable(config),
+		table:         column2.NewTable(config),
 		config:        config,
 		out:           sink.NewOut(sinkName, config.Out),
 	}
@@ -43,7 +43,7 @@ func (snk doricSink) Init(sources []*source.Source) {
 		consistentColors := *snk.config.ConsistentColors
 		style := snk.config.Theme.AsHexPair(consistentColors, *src)
 		sourceColors[(*src).URL()] = style.Bg
-		column.RegisterSourceStyle(style, snk.config.Layout.Source, *src)
+		column2.RegisterSourceStyle(style, snk.config.Layout.Source, *src)
 	}
 }
 

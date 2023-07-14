@@ -2,7 +2,7 @@ package column
 
 import (
 	"fmt"
-	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/mapping"
 	"github.com/gagglepanda/couture/sink"
 	"github.com/gagglepanda/couture/sink/color"
 	"github.com/gagglepanda/couture/sink/layout"
@@ -10,33 +10,33 @@ import (
 )
 
 // DefaultColumns ...
-var DefaultColumns = []schema.Column{
+var DefaultColumns = []mapping.Column{
 	sourcePseudoColumn,
-	schema.Timestamp,
-	schema.Application,
-	schema.Context,
+	mapping.Timestamp,
+	mapping.Application,
+	mapping.Context,
 	callerPsuedoColumn,
-	schema.Level,
-	schema.Message,
+	mapping.Level,
+	mapping.Message,
 }
 
-type registry map[schema.Column]column
+type registry map[mapping.Column]column
 
 func newRegistry(config sink.Config) registry {
 	return registry{
 		sourcePseudoColumn: newSourceColumn(
 			config.Layout.Source,
 		),
-		schema.Timestamp: newTimestampColumn(
+		mapping.Timestamp: newTimestampColumn(
 			config.TimeFormat,
 			config.Theme.Timestamp,
 			config.Layout.Timestamp,
 		),
-		schema.Application: newApplicationColumn(
+		mapping.Application: newApplicationColumn(
 			config.Theme.Application,
 			config.Layout.Application,
 		),
-		schema.Context: newContextColumn(
+		mapping.Context: newContextColumn(
 			config.Theme.Context,
 			config.Layout.Context,
 		),
@@ -48,11 +48,11 @@ func newRegistry(config sink.Config) registry {
 			config.Theme.Line,
 			config.Layout.Caller,
 		),
-		schema.Level: newLevelColumn(
+		mapping.Level: newLevelColumn(
 			config.Theme.Level,
 			config.Layout.Level,
 		),
-		schema.Message: newMessageColumn(
+		mapping.Message: newMessageColumn(
 			highlight(config.Highlight != nil && *config.Highlight),
 			expand(config.Expand != nil && *config.Expand),
 			multiLine(config.MultiLine != nil && *config.MultiLine),

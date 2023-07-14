@@ -3,7 +3,7 @@ package column
 import (
 	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/event/level"
-	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/mapping"
 	"github.com/gagglepanda/couture/sink/color"
 	"github.com/gagglepanda/couture/sink/layout"
 	"github.com/i582/cfmt/cmd/cfmt"
@@ -15,12 +15,12 @@ type levelColumn struct {
 
 func newLevelColumn(styles map[level.Level]color.FgBgTuple, layout layout.ColumnLayout) column {
 	for _, lvl := range level.Levels {
-		formatLevel := string(schema.Level) + string(lvl)
+		formatLevel := string(mapping.Level) + string(lvl)
 		cfmt.RegisterStyle(formatLevel, styles[lvl].Format())
 	}
 	return levelColumn{
 		extractorColumn: extractorColumn{
-			baseColumn: baseColumn{columnName: schema.Level, colLayout: layout},
+			baseColumn: baseColumn{columnName: mapping.Level, colLayout: layout},
 			extractor: func(event event.SinkEvent) []interface{} {
 				return []interface{}{string(event.Level)}
 			},

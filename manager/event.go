@@ -5,20 +5,20 @@ import (
 	"github.com/araddon/dateparse"
 	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/event/level"
-	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/mapping"
 	"github.com/tidwall/gjson"
 	"html/template"
 	"strings"
 	"time"
 )
 
-func unmarshallEvent(sch *schema.Schema, s string) *event.Event {
+func unmarshallEvent(sch *mapping.Schema, s string) *event.Event {
 	var evt *event.Event
 	if sch != nil {
 		switch sch.Format {
-		case schema.JSON:
+		case mapping.JSON:
 			evt = unmarshallJSONEvent(sch, s)
-		case schema.Text:
+		case mapping.Text:
 			fallthrough
 		default:
 			evt = unmarshallTextEvent(sch, s)
@@ -30,7 +30,7 @@ func unmarshallEvent(sch *schema.Schema, s string) *event.Event {
 	return evt
 }
 
-func unmarshallJSONEvent(sch *schema.Schema, s string) *event.Event {
+func unmarshallJSONEvent(sch *mapping.Schema, s string) *event.Event {
 	values := map[string]gjson.Result{}
 	for i, value := range gjson.GetMany(s, sch.Fields...) {
 		field := sch.Fields[i]
@@ -50,7 +50,7 @@ func unmarshallJSONEvent(sch *schema.Schema, s string) *event.Event {
 	return &evt
 }
 
-func unmarshallTextEvent(sch *schema.Schema, s string) *event.Event {
+func unmarshallTextEvent(sch *mapping.Schema, s string) *event.Event {
 	if sch.TextPattern == nil {
 		return nil
 	}
@@ -74,26 +74,26 @@ func unmarshallUnknown(msg string) *event.Event {
 func updateEvent(evt *event.Event, col string, field string, values map[string]gjson.Result, tmpl string) {
 	rawValue := values[field]
 	value := getValue(tmpl, values, rawValue)
-	switch schema.Column(col) {
-	case schema.Timestamp:
+	switch mapping.Column(col) {
+	case mapping.Timestamp:
 		s := value
 		if s != "" {
 			t, _ := dateparse.ParseAny(s)
 			evt.Timestamp = event.Timestamp(t)
 		}
-	case schema.Application:
+	case mapping.Application:
 		evt.Application = event.Application(value)
-	case schema.Context:
+	case mapping.Context:
 		evt.Context = event.Context(value)
-	case schema.Entity:
+	case mapping.Entity:
 		evt.Entity = event.Entity(value)
-	case schema.Action:
+	case mapping.Action:
 		evt.Action = event.Action(value)
-	case schema.Line:
+	case mapping.Line:
 		if rawValue.Exists() {
 			evt.Line = event.Line(rawValue.Int())
 		}
-	case schema.Level:
+	case mapping.Level:
 		s := value
 		const defaultLevel = level.Info
 		if s != "" {
@@ -101,9 +101,9 @@ func updateEvent(evt *event.Event, col string, field string, values map[string]g
 		} else {
 			evt.Level = defaultLevel
 		}
-	case schema.Message:
+	case mapping.Message:
 		evt.Message = event.Message(value)
-	case schema.Error:
+	case mapping.Error:
 		evt.Error = event.Error(value)
 	}
 }

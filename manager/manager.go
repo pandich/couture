@@ -2,8 +2,8 @@ package manager
 
 import (
 	"github.com/gagglepanda/couture/event/level"
+	"github.com/gagglepanda/couture/mapping"
 	"github.com/gagglepanda/couture/model"
-	"github.com/gagglepanda/couture/schema"
 	"github.com/gagglepanda/couture/sink"
 	"github.com/gagglepanda/couture/source"
 	errors2 "github.com/pkg/errors"
@@ -44,7 +44,7 @@ type (
 		DumpUnknown bool
 		Level       level.Level
 		Filters     []model.Filter
-		Schemas     []schema.Schema
+		Schemas     []mapping.Schema
 		RateLimit   uint
 	}
 )

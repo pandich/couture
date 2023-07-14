@@ -2,7 +2,7 @@ package column
 
 import (
 	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/mapping"
 	"github.com/gagglepanda/couture/sink/color"
 	"github.com/gagglepanda/couture/sink/layout"
 	"github.com/i582/cfmt/cmd/cfmt"
@@ -16,7 +16,7 @@ type extractorColumn struct {
 }
 
 func newWeightedColumn(
-	columnName schema.Column,
+	columnName mapping.Column,
 	layout layout.ColumnLayout,
 	style color.FgBgTuple,
 	value func(event event.SinkEvent) []interface{},

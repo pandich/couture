@@ -3,7 +3,7 @@ package column
 import (
 	"github.com/dustin/go-humanize"
 	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/mapping"
 	"github.com/gagglepanda/couture/sink/color"
 	"github.com/gagglepanda/couture/sink/layout"
 	"time"
@@ -11,7 +11,7 @@ import (
 
 func newTimestampColumn(timeFormat *string, style color.FgBgTuple, layout layout.ColumnLayout) column {
 	return newWeightedColumn(
-		schema.Timestamp,
+		mapping.Timestamp,
 		layout,
 		style,
 		func(evt event.SinkEvent) []interface{} {

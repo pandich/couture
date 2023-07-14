@@ -2,24 +2,24 @@ package column
 
 import (
 	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/mapping"
 	"github.com/gagglepanda/couture/sink/layout"
 )
 
 type (
 	column interface {
 		render(event event.SinkEvent) string
-		name() schema.Column
+		name() mapping.Column
 		layout() layout.ColumnLayout
 	}
 	baseColumn struct {
-		columnName schema.Column
+		columnName mapping.Column
 		colLayout  layout.ColumnLayout
 	}
 )
 
 // GetName ...
-func (col baseColumn) name() schema.Column {
+func (col baseColumn) name() mapping.Column {
 	return col.columnName
 }
 

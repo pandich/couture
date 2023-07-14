@@ -3,7 +3,7 @@ package column
 import (
 	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/event/level"
-	"github.com/gagglepanda/couture/schema"
+	"github.com/gagglepanda/couture/mapping"
 	"github.com/gagglepanda/couture/sink/color"
 	"github.com/gagglepanda/couture/sink/layout"
 	theme2 "github.com/gagglepanda/couture/sink/theme"
@@ -58,7 +58,7 @@ func newMessageColumn(
 	layout layout.ColumnLayout,
 ) column {
 	col := messageColumn{
-		baseColumn:      baseColumn{columnName: schema.Message, colLayout: layout},
+		baseColumn:      baseColumn{columnName: mapping.Message, colLayout: layout},
 		highlight:       highlight,
 		levelMeter:      levelMeter,
 		multiLine:       multiLine,

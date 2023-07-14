@@ -1,4 +1,4 @@
-package schema
+package mapping
 
 import (
 	"github.com/tidwall/gjson"
