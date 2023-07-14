@@ -100,7 +100,8 @@ func expandAliasURL(config aliasConfig, aliasURL *url.URL) (string, error) {
 		return "", errors2.Errorf("unknown alias: %s", aliasURL.Host)
 	}
 	// expand simple value placeholders
-	alias = simpleArgs.ReplaceAllString(alias,
+	alias = simpleArgs.ReplaceAllString(
+		alias,
 		"{{#if ${name}}}"+
 			"${name}={{${name}.[0]}}"+
 			"{{/if}}",

@@ -11,14 +11,17 @@ import (
 	"time"
 )
 
-var parser = kong.Must(&cli,
+var parser = kong.Must(
+	&cli,
 	kong.Name(couture.Name),
 	kong.Description(helpDescription()),
 	kong.UsageOnError(),
-	kong.ConfigureHelp(kong.HelpOptions{
-		Summary:   true,
-		FlagsLast: true,
-	}),
+	kong.ConfigureHelp(
+		kong.HelpOptions{
+			Summary:   true,
+			FlagsLast: true,
+		},
+	),
 	kong.TypeMapper(reflect.TypeOf(&time.Time{}), timeLikeDecoder()),
 	kong.Groups{
 		"diagnostic": "Diagnostic Options",

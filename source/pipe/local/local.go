@@ -1,3 +1,5 @@
+// Package local provides a source that tails a local file.
+// TODO replace with github.com/nxadm/tail
 package local
 
 import (

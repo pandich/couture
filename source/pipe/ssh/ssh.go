@@ -1,3 +1,5 @@
+// Package ssh provides a source for reading from a remote file over SSH.
+// TODO replace with https://pkg.go.dev/golang.org/x/crypto/ssh
 package ssh
 
 import (
