@@ -46,7 +46,10 @@ var (
 func Run() {
 	var err error
 
-	args, err := expandAliases(os.Args[1:])
+	aliasCfg, err := loadAliasConfig()
+	parser.FatalIfErrorf(err)
+
+	args, err := aliasCfg.expandAliases(os.Args[1:])
 	parser.FatalIfErrorf(err)
 
 	_, err = parser.Parse(args)

@@ -65,7 +65,7 @@ docs: diagrams casts
 casts: docs/casts/*.cast.sh
 diagrams: docs/diagrams/*.d2
 
-%.cast.sh: asciinema asciicast2gif
+%.cast.sh: build asciinema asciicast2gif
 	@echo casting $@
 	@timeout --foreground 5s asciinema rec --overwrite --command="sh $@" $*.cast || true
 	@asciicast2gif -t monokai $*.cast $*.cast.gif

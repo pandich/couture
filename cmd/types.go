@@ -295,6 +295,7 @@ func (t *timeFormat) AfterApply() error {
 }
 
 func timeLikeDecoder() kong.MapperFunc {
+	now := time.Now()
 	return func(ctx *kong.DecodeContext, target reflect.Value) error {
 		var value string
 		if err := ctx.Scan.PopValueInto("(time|duration)", &value); err != nil {

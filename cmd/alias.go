@@ -5,8 +5,8 @@ import (
 	"github.com/aymerick/raymond"
 	"github.com/coreos/etcd/pkg/fileutil"
 	"github.com/gagglepanda/couture/couture"
+	"github.com/hashicorp/go-multierror"
 	errors2 "github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
 	"io"
 	"net/url"
 	"os"
@@ -15,85 +15,140 @@ import (
 	"time"
 )
 
-// TODO test alias behavior
+// The alias mechaism allows for full command-line arguments to this application to be represented by a short
+// alias name. Additionally, groups of aliases can be defined and expanded into their individual aliases.
+// The user's configuration file (see Config) defines the aliases and groups. See expandAliases to see how
+// the confgutation is loaded from the user's home.
+import (
+	"gopkg.in/yaml.v2"
+)
 
-var now = time.Now()
+const (
+	// aliasScheme is the URI scheme for aliases.
+	aliasScheme = "alias"
 
-const aliasScheme = "alias"
+	// aliasNamePrefix allows a short-form alias to be specified. (e.g, @foo instead of alias://foo). The @ is
+	// a pnemonic for "alias".
+	aliasNamePrefix = "@"
 
+	// groupNamePrefix allows for all configured groups (see Config.Groups) to be expanded into their individual
+	// aliases. (e.g., @@foo expands to alias://bar and alias://baz give a config with a key 'foo' with entries
+	// 'bar' and 'baz'). The '@@ pneumatic for more than one alias.
+	groupNamePrefix = aliasNamePrefix + aliasNamePrefix
+
+	// aliasURIPrefix is canonical the prefix for all alias URIs.
+	aliasURIPrefix = aliasScheme + "://"
+)
+
+// aliasConfig is the structure of the YAML file that defines aliases.
 type aliasConfig struct {
-	Groups  map[string][]string `yaml:"groups,omitempty"`
-	Aliases map[string]string   `yaml:"aliases,omitempty"`
+	// Groups is a map of group names to a list of aliases (see Aliases below).
+	// The group name is used as the alias name.
+	Groups map[string][]string `yaml:"groups,omitempty"`
+	// Aliases is a
+	Aliases map[string]string `yaml:"aliases,omitempty"`
 }
 
-func expandAliases(args []string) ([]string, error) {
+func (config *aliasConfig) expandAliases(args []string) ([]string, error) {
+	var (
+		err      error
+		expanded []string
+		aliasURI *url.URL
+		value    string
+	)
+
+	for i := range args {
+		expanded = append(expanded, config.expandArgument(args[i])...)
+	}
+
+	errs := &multierror.Error{}
+
+	for i := range expanded {
+		aliasURI, err = url.Parse(expanded[i])
+		if err == nil && aliasScheme == aliasURI.Scheme {
+			value, err = expandAliasURL(config, aliasURI)
+
+			switch {
+			case err != nil:
+				errs = multierror.Append(errs, err)
+
+			case value != "":
+				expanded[i] = value
+			}
+		}
+	}
+
+	return expanded, errs.ErrorOrNil()
+}
+
+func loadAliasConfig() (*aliasConfig, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
 	}
+
 	aliasFilename := path.Join(home, ".config", couture.Name, "aliases.yaml")
 	if !fileutil.Exist(aliasFilename) {
-		return args, nil
+		return &aliasConfig{}, nil
 	}
+
 	aliasFile, err := os.Open(aliasFilename)
 	if err != nil {
 		return nil, err
 	}
+
 	defer aliasFile.Close()
 	s, err := io.ReadAll(aliasFile)
 	if err != nil {
 		return nil, err
 	}
 
-	var config aliasConfig
-	err = yaml.Unmarshal(s, &config)
+	config := &aliasConfig{}
+	err = yaml.Unmarshal(s, config)
 	if err != nil {
 		return nil, err
 	}
 
-	var expandedArgs []string
-	for i := range args {
-		expandedArgs = append(expandedArgs, expandAliasString(config, args[i])...)
-	}
-	for i := range expandedArgs {
-		if u, err := url.Parse(expandedArgs[i]); err == nil && u.Scheme == "alias" {
-			value, err := expandAliasURL(config, u)
-			if err != nil {
-				return nil, err
-			}
-			if value != "" {
-				expandedArgs[i] = value
-			}
-		}
-	}
-	return expandedArgs, nil
+	return config, err
 }
 
-func expandAliasString(config aliasConfig, arg string) []string {
-	const aliasNamePrefix = "@"
-	const groupNamePrefix = aliasNamePrefix + aliasNamePrefix
-	const aliasURLPrefix = aliasScheme + "://"
-
+// expandArgument expands an alias string into its component parts,
+// replace group, and alias short form with full URL forms.
+func (config *aliasConfig) expandArgument(arg string) []string {
 	var args []string
+
+	// perform alias expansion on the arguments.
 	switch {
+
+	// is this a group reference?
 	case len(arg) > len(groupNamePrefix) && arg[:len(groupNamePrefix)] == groupNamePrefix:
+		// then expand the group into its aliases
+
 		groupName := arg[len(groupNamePrefix):]
 		group, ok := config.Groups[groupName]
 		if !ok {
 			return nil
 		}
+
 		for _, alias := range group {
-			args = append(args, aliasURLPrefix+alias)
+			args = append(args, aliasURIPrefix+alias)
 		}
+
+	// is this an alias reference?
 	case len(arg) > len(aliasNamePrefix) && arg[:len(aliasNamePrefix)] == aliasNamePrefix:
-		args = append(args, aliasURLPrefix+arg[len(aliasNamePrefix):])
+		// then replace its short prefix with the URL prefix.
+		args = append(args, aliasURIPrefix+arg[len(aliasNamePrefix):])
+
+	// otherwise add the argument as-is.
 	default:
 		args = append(args, arg)
+
 	}
+
 	return args
 }
 
-func expandAliasURL(config aliasConfig, aliasURL *url.URL) (string, error) {
+func expandAliasURL(config *aliasConfig, aliasURL *url.URL) (string, error) {
 	simpleArgs := regexp.MustCompile(`@(?P<name>\w+)`)
 	alias, ok := config.Aliases[aliasURL.Host]
 	if !ok {
@@ -111,6 +166,9 @@ func expandAliasURL(config aliasConfig, aliasURL *url.URL) (string, error) {
 
 func aliasContext(aliasURL *url.URL) map[string][]string {
 	const century = 100
+
+	now := time.Now()
+
 	context := map[string][]string{
 		"epoch": {fmt.Sprintf("%d", now.Unix())},
 		"yyyy":  {fmt.Sprintf("%04d", now.Year())},
@@ -128,14 +186,17 @@ func aliasContext(aliasURL *url.URL) map[string][]string {
 		"_name": {aliasURL.Host},
 		"_path": {aliasURL.Path},
 	}
+
 	if aliasURL.User != nil {
 		context["_user"] = []string{aliasURL.User.Username()}
 		if password, ok := aliasURL.User.Password(); ok {
 			context["_password"] = []string{password}
 		}
 	}
+
 	for k, v := range aliasURL.Query() {
 		context[k] = v
 	}
+
 	return context
 }
