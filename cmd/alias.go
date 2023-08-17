@@ -10,7 +10,6 @@ import (
 	"io"
 	"net/url"
 	"os"
-	"path"
 	"regexp"
 	"time"
 )
@@ -19,6 +18,11 @@ import (
 // alias name. Additionally, groups of aliases can be defined and expanded into their individual aliases.
 // The user's configuration file (see Config) defines the aliases and groups. See expandAliases to see how
 // the confgutation is loaded from the user's home.
+// This is useful for shortening long URIs and for defining groups of common command arguments.
+import (
+	"path"
+)
+
 import (
 	"gopkg.in/yaml.v2"
 )
@@ -49,6 +53,8 @@ type aliasConfig struct {
 	Aliases map[string]string `yaml:"aliases,omitempty"`
 }
 
+// expandAliases evaluates each argument and expands any aliases or groups.
+// Errors are returned if expanded arguments result in malformed URIs.
 func (config *aliasConfig) expandAliases(args []string) ([]string, error) {
 	var (
 		err      error
@@ -81,6 +87,8 @@ func (config *aliasConfig) expandAliases(args []string) ([]string, error) {
 	return expanded, errs.ErrorOrNil()
 }
 
+// loadAliasConfig loads the user's alias configuration file. Errors are returned if the file cannot be read or
+// is malforemd.
 func loadAliasConfig() (*aliasConfig, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {

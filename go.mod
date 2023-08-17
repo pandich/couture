@@ -34,6 +34,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/posener/complete/v2 v2.0.1-alpha.13
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
+	github.com/stretchr/testify v1.8.4
 	github.com/tidwall/gjson v1.14.4
 	github.com/tidwall/pretty v1.2.1
 	go.uber.org/ratelimit v0.3.0
@@ -63,6 +64,7 @@ require (
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/coreos/pkg v0.0.0-20230601102743-20bbbf26f4d8 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
@@ -76,10 +78,10 @@ require (
 	github.com/muesli/kmeans v0.3.1 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/pkg/sftp v1.13.5 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/posener/script v1.1.5 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
-	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
