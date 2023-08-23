@@ -1,5 +1,7 @@
 package cmd
 
+// The alias mechanism provides short URIs which expand into command-line arguments/
+
 import (
 	"fmt"
 	"github.com/aymerick/raymond"
@@ -28,7 +30,7 @@ import (
 )
 
 const (
-	// aliasScheme is the URI scheme for aliases.
+	// aliasScheme is the URI scheme for aliases. Aliases look like: alias://...
 	aliasScheme = "alias"
 
 	// aliasNamePrefix allows a short-form alias to be specified. (e.g, @foo instead of alias://foo). The @ is
@@ -63,24 +65,37 @@ func (config *aliasConfig) expandAliases(args []string) ([]string, error) {
 		value    string
 	)
 
+	// expand all the arguments
 	for i := range args {
 		expanded = append(expanded, config.expandArgument(args[i])...)
 	}
 
 	errs := &multierror.Error{}
 
+	// final all arguments within the expanded list which are alias URIs
 	for i := range expanded {
-		aliasURI, err = url.Parse(expanded[i])
-		if err == nil && aliasScheme == aliasURI.Scheme {
-			value, err = expandAliasURL(config, aliasURI)
+		// if the current arg doesn't parse as a URI, it is a literal: no action needed.
+		if aliasURI, err = url.Parse(expanded[i]); err != nil {
+			continue
+		}
 
-			switch {
-			case err != nil:
-				errs = multierror.Append(errs, err)
+		// if the current arg is a URL but not an alias: no action needed.
+		if aliasScheme != aliasURI.Scheme {
+			continue
+		}
 
-			case value != "":
-				expanded[i] = value
-			}
+		value, err = expandAliasURL(config, aliasURI)
+
+		switch {
+		// if the alias URI could not be examded, add the failure to the list of
+		// expansion errors.
+		case err != nil:
+			errs = multierror.Append(errs, err)
+
+			// If the alias was found, replace the expanded argument with
+			// the alias lookup.
+		case value != "":
+			expanded[i] = value
 		}
 	}
 
@@ -88,16 +103,22 @@ func (config *aliasConfig) expandAliases(args []string) ([]string, error) {
 }
 
 // loadAliasConfig loads the user's alias configuration file. Errors are returned if the file cannot be read or
-// is malforemd.
+// is malforemd. Config file is located in $HOME/.config/counture/aliases.yaml
 func loadAliasConfig() (*aliasConfig, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
 	}
 
+	// if we can't find the aliase file under either yaml extensions
+	// return without error.
 	aliasFilename := path.Join(home, ".config", couture.Name, "aliases.yaml")
 	if !fileutil.Exist(aliasFilename) {
-		return &aliasConfig{}, nil
+
+		aliasFilename = path.Join(home, ".config", couture.Name, "aliases.yml")
+		if !fileutil.Exist(aliasFilename) {
+			return &aliasConfig{}, nil
+		}
 	}
 
 	aliasFile, err := os.Open(aliasFilename)
@@ -158,11 +179,13 @@ func (config *aliasConfig) expandArgument(arg string) []string {
 
 func expandAliasURL(config *aliasConfig, aliasURL *url.URL) (string, error) {
 	simpleArgs := regexp.MustCompile(`@(?P<name>\w+)`)
+
 	alias, ok := config.Aliases[aliasURL.Host]
 	if !ok {
 		return "", errors2.Errorf("unknown alias: %s", aliasURL.Host)
 	}
 	// expand simple value placeholders
+
 	alias = simpleArgs.ReplaceAllString(
 		alias,
 		"{{#if ${name}}}"+
@@ -172,6 +195,7 @@ func expandAliasURL(config *aliasConfig, aliasURL *url.URL) (string, error) {
 	return raymond.Render(alias, aliasContext(aliasURL))
 }
 
+// aliasContext sets up the global properties usable in an alias template.
 func aliasContext(aliasURL *url.URL) map[string][]string {
 	const century = 100
 

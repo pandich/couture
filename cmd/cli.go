@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// cli contains all allowed arguments.
 // nolint: lll
 var cli struct {
 	DumpMetrics dumpMetrics `hidden:"true" group:"diagnostic"`
