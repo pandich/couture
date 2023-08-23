@@ -11,18 +11,25 @@ import (
 	"time"
 )
 
+// parser for loading the cli struct.
 var parser = kong.Must(
 	&cli,
+
 	kong.Name(couture.Name),
 	kong.Description(helpDescription()),
+
 	kong.UsageOnError(),
+
 	kong.ConfigureHelp(
 		kong.HelpOptions{
 			Summary:   true,
 			FlagsLast: true,
 		},
 	),
+
+	// more advanced time decoding than kong has built-in
 	kong.TypeMapper(reflect.TypeOf(&time.Time{}), timeLikeDecoder()),
+
 	kong.Groups{
 		"diagnostic": "Diagnostic Options",
 		"terminal":   "Terminal Options",
@@ -30,21 +37,24 @@ var parser = kong.Must(
 		"content":    "Content Options",
 		"filter":     "Filter Options",
 	},
+
+	// here, if we are actually in completions mode (see completions.go)
+	// we want to let kong generate the completions and exit on its own
 	kong.PostBuild(completionsHook),
-	parserVars,
+
+	// additional values available to kong at parse-time
+	kong.Vars{
+		"timeFormatNames": strings.Join(timeFormatNames, ","),
+		"columnNames":     strings.Join(mapping.Names(), ","),
+		"specialThemes":   strings.Join(theme2.Names(), ","),
+	},
 )
 
-var parserVars = kong.Vars{
-	"timeFormatNames": strings.Join(timeFormatNames, ","),
-	"columnNames":     strings.Join(mapping.Names(), ","),
-	"specialThemes":   strings.Join(theme2.Names(), ","),
-}
-
-const helpSummary = "Tails one or more event sources."
-
+// helpDescription generates the description value for the help.
 func helpDescription() string {
+	// TODO flesh out the command's help description
 	var lines = []string{
-		helpSummary,
+		"Tails one or more event sources.",
 		"",
 		"Example Sources:",
 		"",

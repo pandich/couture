@@ -122,7 +122,7 @@ func (mgr *busManager) makeSrcChan(
 			}
 			modelEvent := unmarshallEvent(sch, sourceEvent.Event)
 			filterKind := mgr.filter(modelEvent)
-			modelEvent.AsCodeLocation().Mark(string(modelEvent.Level))
+			modelEvent.CodeLocation().Mark(string(modelEvent.Level))
 			evt := event.SinkEvent{
 				SourceURL: sourceURL,
 				Event:     *modelEvent,
@@ -154,12 +154,12 @@ func (mgr *busManager) makeSnkChan(errChan chan source.Error) chan event.SinkEve
 	go func() {
 		defer close(snkChan)
 		for {
-			event := <-snkChan
+			evt := <-snkChan
 			limiter.Take()
 			snkChanMeter.Mark(1)
 			for _, snk := range mgr.sinks {
-				if err := (*snk).Accept(event); err != nil {
-					errChan <- source.Error{SourceURL: event.SourceURL, Error: err}
+				if err := (*snk).Accept(evt); err != nil {
+					errChan <- source.Error{SourceURL: evt.SourceURL, Error: err}
 				}
 			}
 		}

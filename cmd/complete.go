@@ -3,6 +3,8 @@ package cmd
 import (
 	"github.com/alecthomas/kong"
 	"github.com/gagglepanda/couture/couture"
+	"github.com/gagglepanda/couture/mapping"
+	"github.com/gagglepanda/couture/sink/theme"
 	"github.com/iancoleman/strcase"
 	"github.com/pkg/errors"
 	"github.com/posener/complete/v2"
@@ -58,8 +60,12 @@ func completionsHook(_ *kong.Kong) error {
 
 				// lookup the value
 				ok := false
-				if enum, ok = parserVars[varName]; !ok {
-					return errors.Errorf("could not parse alias: %s", varName)
+				if enum, ok = (kong.Vars{
+					"timeFormatNames": strings.Join(timeFormatNames, ","),
+					"columnNames":     strings.Join(mapping.Names(), ","),
+					"specialThemes":   strings.Join(theme.Names(), ","),
+				})[varName]; !ok {
+					return errors.Errorf("could not find enum expansion for name %s", varName)
 				}
 			}
 

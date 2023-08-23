@@ -1,5 +1,7 @@
 // Package cmd is the entry point for the application.
 // It is responsible for parsing command line arguments and launching the application.
+// Before reading this module's code, familiarize yourself somewhat with Kong.
+// https://github.com/alecthomas/kong
 package cmd
 
 import (
@@ -24,8 +26,10 @@ import (
 	"time"
 )
 
+// default config values
 var (
-	mgrCfg  = manager.Config{}
+	mgrCfg = manager.Config{}
+
 	sinkCfg = sink.Config{
 		AutoResize:       &sink.Enabled,
 		Color:            &sink.Enabled,
@@ -41,52 +45,6 @@ var (
 		TimeFormat:       &sink.DefaultTimeFormat,
 	}
 )
-
-// Run runs the manager using the CLI arguments.
-func Run() {
-	var err error
-
-	// expand any arguments into a new list of arguments
-	aliasCfg, err := loadAliasConfig()
-	parser.FatalIfErrorf(err)
-	args, err := aliasCfg.expandAliases(os.Args[1:])
-	parser.FatalIfErrorf(err)
-
-	// parse
-	_, err = parser.Parse(args)
-	parser.FatalIfErrorf(err)
-
-	// light/dark mode
-	switch cli.ColorMode {
-	case colorModeDark:
-		color.Mode = color.DarkMode
-	case colorModeLight:
-		color.Mode = color.LightMode
-	case colorModeAuto:
-		// leave unchanged
-	}
-
-	// layer any user sink configuration over the defaults
-	sinkConfig.
-		PopulateMissing(loadSinkConfigFile()).
-		PopulateMissing(sinkCfg)
-
-	// parse the arguments
-	options, err := parseOptions()
-	parser.FatalIfErrorf(err)
-
-	// load the (optional) mappings from the user's config file
-	mgrCfg.Mappings, err = mapping.LoadMappings()
-	parser.FatalIfErrorf(err)
-
-	// instantiate the app
-	mgr, err := manager.New(mgrCfg, options...)
-	parser.FatalIfErrorf(err)
-
-	// start
-	err = (*mgr).Run()
-	parser.FatalIfErrorf(err)
-}
 
 // parseOptions
 func parseOptions() ([]interface{}, error) {
@@ -189,4 +147,51 @@ func loadSinkConfigFile() sink.Config {
 
 	// successfully loaded an existing config
 	return *cfg
+}
+
+// Run runs the manager using the CLI arguments.
+// This is the entrypoint.
+func Run() {
+	var err error
+
+	// expand any arguments into a new list of arguments
+	aliasCfg, err := loadAliasConfig()
+	parser.FatalIfErrorf(err)
+	args, err := aliasCfg.expandAliases(os.Args[1:])
+	parser.FatalIfErrorf(err)
+
+	// parse
+	_, err = parser.Parse(args)
+	parser.FatalIfErrorf(err)
+
+	// light/dark mode
+	switch cli.ColorMode {
+	case colorModeDark:
+		color.Mode = color.DarkMode
+	case colorModeLight:
+		color.Mode = color.LightMode
+	case colorModeAuto:
+		// leave unchanged
+	}
+
+	// layer any user sink configuration over the defaults
+	sinkConfig.
+		PopulateMissing(loadSinkConfigFile()).
+		PopulateMissing(sinkCfg)
+
+	// parse the arguments
+	options, err := parseOptions()
+	parser.FatalIfErrorf(err)
+
+	// load the (optional) mappings from the user's config file
+	mgrCfg.Mappings, err = mapping.LoadMappings()
+	parser.FatalIfErrorf(err)
+
+	// instantiate the app
+	mgr, err := manager.New(mgrCfg, options...)
+	parser.FatalIfErrorf(err)
+
+	// start
+	err = (*mgr).Run()
+	parser.FatalIfErrorf(err)
 }

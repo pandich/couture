@@ -17,6 +17,8 @@ import (
 	"github.com/gagglepanda/couture/sink"
 )
 
+// custom type declarations to add functionakity to kong.
+
 const (
 	colorModeAuto  colorMode = "auto"
 	colorModeDark  colorMode = "dark"
@@ -71,6 +73,8 @@ type (
 	filterLike       []string
 	colorMode        string
 )
+
+// sink configuration:
 
 // AfterApply ...
 //
@@ -191,46 +195,6 @@ func (v *wrap) AfterApply() error {
 }
 
 // AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v dumpMetrics) AfterApply() error { mgrCfg.DumpMetrics = bool(v); return nil }
-
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v dumpUnknown) AfterApply() error { mgrCfg.DumpUnknown = bool(v); return nil }
-
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v *showMapping) AfterApply() error {
-	if v == nil {
-		return nil
-	}
-	b := bool(*v)
-	sinkConfig.ShowMapping = &b
-	return nil
-}
-
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v rateLimit) AfterApply() error { mgrCfg.RateLimit = uint(v); return nil }
-
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v levelLike) AfterApply() error { mgrCfg.Level = level.Level(v); return nil }
-
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (f filterLike) AfterApply() (err error) {
-	mgrCfg.Filters, err = f.asFilters()
-	return
-}
-
-// AfterApply ...
 // nolint: funlen
 //
 //goland:noinspection GoUnnecessarilyExportedIdentifiers
@@ -294,35 +258,100 @@ func (t *timeFormat) AfterApply() error {
 	return nil
 }
 
+// logging manager configuration:
+
+// AfterApply ...
+//
+// AfterApply ...
+//
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (v *showMapping) AfterApply() error {
+	if v == nil {
+		return nil
+	}
+	b := bool(*v)
+	sinkConfig.ShowMapping = &b
+	return nil
+}
+
+func (v dumpMetrics) AfterApply() error { mgrCfg.DumpMetrics = bool(v); return nil }
+
+// AfterApply ...
+//
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (v dumpUnknown) AfterApply() error { mgrCfg.DumpUnknown = bool(v); return nil }
+
+// AfterApply ...
+//
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (v rateLimit) AfterApply() error { mgrCfg.RateLimit = uint(v); return nil }
+
+// AfterApply ...
+//
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (v levelLike) AfterApply() error { mgrCfg.Level = level.Level(v); return nil }
+
+// AfterApply ...
+//
+//goland:noinspection GoUnnecessarilyExportedIdentifiers
+func (f filterLike) AfterApply() (err error) {
+	mgrCfg.Filters, err = f.asFilters()
+	return
+}
+
+// helpers
+
+// timeLikeDecoder create a kong function to provide flexible time/duration parsing.
 func timeLikeDecoder() kong.MapperFunc {
-	now := time.Now()
+	startupTime := time.Now()
+
 	return func(ctx *kong.DecodeContext, target reflect.Value) error {
+		var t time.Time
+
 		var value string
+
+		// get the value
 		if err := ctx.Scan.PopValueInto("(time|duration)", &value); err != nil {
 			return err
 		}
-		var t time.Time
+
+		// if this is a valid duration
 		d, err := time.ParseDuration(value)
 		if err == nil {
-			t = now.Add(-d)
+			// subtract it from startup time
+			t = startupTime.Add(-d)
 		} else {
+			// otherwise try to parse it as a datetime
 			t, err = dateparse.ParseAny(value)
 			if err != nil {
-				return errors2.Errorf("expected duration but got %q: %s", value, err)
+				return errors2.Errorf("expected time or duration but got %q: %s", value, err)
 			}
 		}
-		v := reflect.ValueOf(&t)
-		target.Set(v)
+
+		// set the value
+		target.Set(reflect.ValueOf(&t))
+
+		// success
 		return nil
 	}
 }
 
+// asFilters converts filterLike values into model.Filter values. filters allow
+// inclusion/exclusion of lines, as well a fire-once alert feature.
 func (f filterLike) asFilters() ([]model.Filter, error) {
-	const alert = '@'
-	const include = '+'
-	const exclude = '-'
+	const (
+		// alert indicates that the source definition should stop after the first event received.
+		alert = '@'
+		// include the events matching this filter
+		include = '+'
+		// exclude the events matching this filter
+		exclude = '-'
+	)
 
 	var filters []model.Filter
+
+	// convert a string pattern into a regex filter and add it to the list of filters
 	addPattern := func(pattern string, kind model.FilterKind) error {
 		re, err := regexp.Compile(pattern)
 		if err != nil {
@@ -332,22 +361,28 @@ func (f filterLike) asFilters() ([]model.Filter, error) {
 		return nil
 	}
 
-	for _, value := range f {
+	var value string
+	for i := range f {
+		value = f[i]
 		flag := value[0]
+
 		switch flag {
 		case alert:
 			if err := addPattern(value[1:], model.AlertOnce); err != nil {
 				return nil, err
 			}
+
 		case include:
 			if err := addPattern(value[1:], model.Include); err != nil {
 				return nil, err
 			}
+
 		case exclude:
 			if err := addPattern(value[1:], model.Exclude); err != nil {
 				return nil, err
 			}
-		default:
+
+		default: //  implicit include
 			if err := addPattern(value, model.Include); err != nil {
 				return nil, err
 			}

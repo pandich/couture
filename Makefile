@@ -1,17 +1,24 @@
-APPLICATION 	= $(shell go list -m | sed 's/^.*\///')
-
+# go setup
 GO_MODULE 		= $(shell go list -m)
 GOPATH			?= $(shell go env GOPATH)
 GOHOSTOS		?= $(shell go env GOHOSTOS)
 GOHOSTARCH		?= $(shell go env GOHOSTARCH)
+APPLICATION 	= $(notdir $(GO_MODULE))
 
+# how long asciicinema recordings should last
+CAST_DURATION   ?= 5s
+
+# TODO add a help target which shows all available targets
+
+#
+# Default
 .PHONY: all
 all: clean build
 
-
+#
 # External Commands
 .PHONY: golangci-lint goreleaser gocmt scc gocomplete d2 asciinema asciicast2gif
-staticcheck:
+staticcheck: #
 	command -v $@ > /dev/null || go install honnef.co/go/tools/cmd/staticcheck@latest
 goreleaser:
 	command -v $@ > /dev/null || go install github.com/goreleaser/goreleaser
@@ -29,6 +36,7 @@ asciicast2gif:
 	command -v $@ > /dev/null || npm install --global asciicast2gif
 
 
+#
 # Build
 .PHONY: clean build release
 clean:
@@ -39,6 +47,7 @@ release: goreleaser neat
 	goreleaser build --snapshot --rm-dist
 
 
+#
 # Release
 .PHONY: install uninstall
 install: build
@@ -50,7 +59,9 @@ uninstall:
 	go clean -i .
 
 
-# Code Quality
+#
+# Quality
+# TODO modernize the code analysis
 .PHONY: neat lint
 neat:
 	go mod tidy
@@ -59,6 +70,7 @@ lint: staticcheck neat
 	staticcheck ./...
 
 
+#
 # Documentation
 .PHONY: docs diagrams casts
 docs: diagrams casts
@@ -67,7 +79,7 @@ diagrams: docs/diagrams/*.d2
 
 %.cast.sh: build asciinema asciicast2gif
 	@echo casting $@
-	@timeout --foreground 5s asciinema rec --overwrite --command="sh $@" $*.cast || true
+	@timeout --foreground $(CAST_DURATION) asciinema rec --overwrite --command="sh $@" $*.cast || true
 	@asciicast2gif -t monokai $*.cast $*.cast.gif
 
 %.d2: d2

@@ -37,7 +37,7 @@ type (
 	}
 )
 
-var levelMeterSigils = map[uint8]string{
+var levelMeterSigils = map[event.Bucket]string{
 	event.Bucket1: " ",
 	event.Bucket2: "▏",
 	event.Bucket3: "▎",
@@ -103,9 +103,11 @@ func (col messageColumn) render(event event.SinkEvent) string {
 	}
 
 	if col.highlight {
-		message = event.Filters.ReplaceAllStringFunc(message, func(s string) string {
-			return col.levelSprintf(highlightSuffix, event.Level, s)
-		})
+		message = event.Filters.ReplaceAllStringFunc(
+			message, func(s string) string {
+				return col.levelSprintf(highlightSuffix, event.Level, s)
+			},
+		)
 	}
 
 	if col.levelMeter {
@@ -126,7 +128,7 @@ func (col messageColumn) render(event event.SinkEvent) string {
 func (col messageColumn) renderLevelMeter(evt event.SinkEvent) string {
 	var bucketSigil, ok = levelMeterSigils[evt.LevelMeterBucket()]
 	if !ok {
-		bucketSigil = levelMeterSigils[event.BucketMax]
+		bucketSigil = levelMeterSigils[event.BucketUpperBound]
 	}
 	return col.levelSprintf("", evt.Level, bucketSigil) + " "
 }

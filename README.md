@@ -37,3 +37,5 @@ SSH logging depends on passwordless login. See [ssh-copy-id](https://www.ssh.com
 how to easily do so.
 
 ### Custom Formats
+
+[//]: # (TODO readme: custom formats)
