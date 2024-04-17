@@ -1,16 +1,20 @@
+// Package level provides an event-source agnostic log level system. Each source.Source is required to map its
+// implementation-specific levels into a Level.
 package level
 
 const (
-	// Trace log level for tracing
+	// Trace log level.
 	Trace Level = "TRACE"
-	// Debug log level for debugging
+	// Debug log level.
 	Debug Level = "DEBUG"
-	// Info log level for information
+	// Info log level.
 	Info Level = "INFO"
-	// Warn log level for warnings
+	// Warn log level.
 	Warn Level = "WARN"
-	// Error log level for errors
+	// Error log level.
 	Error Level = "ERROR"
+	// Default log level.
+	Default = Info
 )
 
 const (
@@ -21,7 +25,7 @@ const (
 	errorPriority
 )
 
-// Levels ...
+// Levels in order of increasing significance.
 var Levels = []Level{
 	Trace,
 	Debug,
@@ -38,9 +42,6 @@ var priorities = map[Level]int{
 	Error: errorPriority,
 }
 
-// Default ...
-var Default = Info
-
 // Level a log level.
 type Level string
 
@@ -54,8 +55,8 @@ func (level Level) priority() int {
 	return priorities[level]
 }
 
-// ByName ...
-func ByName(s string, defaultLevel Level) Level {
+// ByName looks up the log level.
+func ByName(s string) Level {
 	switch Level(s) {
 	case Trace:
 		return Trace
@@ -68,6 +69,6 @@ func ByName(s string, defaultLevel Level) Level {
 	case Error:
 		return Error
 	default:
-		return defaultLevel
+		return Default
 	}
 }

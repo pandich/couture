@@ -24,6 +24,7 @@ type Manager interface {
 type FilterKind int
 
 const (
+	// None ...
 	None FilterKind = iota
 	// Exclude ...
 	Exclude
@@ -39,6 +40,11 @@ type Filter struct {
 	Kind    FilterKind
 }
 
+// Filters provides a mechansim to filter events in one of the following ways:
+//   - None: Do not filter the event.
+//   - Exclude: Filter the event by excluding it.
+//   - AlertOnce: Filter the event by alerting it once and only once.
+//   - Include: Filter the event by including it.
 type Filters []Filter
 
 func (f FilterKind) isHighlighted() bool {

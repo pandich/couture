@@ -11,7 +11,6 @@ import (
 	imgcolor "image/color"
 )
 
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
 var (
 	// White ...
 	White = ByHex("#ffffff")
@@ -19,7 +18,6 @@ var (
 	Black = ByHex("#000000")
 )
 
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
 type (
 	// Distance ...
 	Distance struct{ R, G, B float64 }

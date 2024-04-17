@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// HumanTimeFormat ...
+// HumanTimeFormat procides human-friendly times via humanize.Time.
 const HumanTimeFormat = "human"
 
 // Timestamp When the even occurred.

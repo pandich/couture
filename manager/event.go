@@ -73,36 +73,41 @@ func unmarshallUnknown(msg string) *event.Event {
 
 func updateEvent(evt *event.Event, col string, field string, values map[string]gjson.Result, tmpl string) {
 	rawValue := values[field]
+
 	value := getValue(tmpl, values, rawValue)
+
 	switch mapping.Column(col) {
+
 	case mapping.Timestamp:
 		s := value
 		if s != "" {
 			t, _ := dateparse.ParseAny(s)
 			evt.Timestamp = event.Timestamp(t)
 		}
+
 	case mapping.Application:
 		evt.Application = event.Application(value)
+
 	case mapping.Context:
 		evt.Context = event.Context(value)
+
 	case mapping.Entity:
 		evt.Entity = event.Entity(value)
+
 	case mapping.Action:
 		evt.Action = event.Action(value)
+
 	case mapping.Line:
 		if rawValue.Exists() {
 			evt.Line = event.Line(rawValue.Int())
 		}
+
 	case mapping.Level:
-		s := value
-		const defaultLevel = level.Info
-		if s != "" {
-			evt.Level = level.ByName(s, defaultLevel)
-		} else {
-			evt.Level = defaultLevel
-		}
+		evt.Level = level.ByName(value)
+
 	case mapping.Message:
 		evt.Message = event.Message(value)
+
 	case mapping.Error:
 		evt.Error = event.Error(value)
 	}
@@ -122,6 +127,7 @@ func getValue(tmpl string, data interface{}, defaultValue gjson.Result) string {
 	}
 
 	var txt bytes.Buffer
+
 	err = t.Execute(&txt, data)
 	if err != nil {
 		return "%%error:execute%%"

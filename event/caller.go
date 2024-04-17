@@ -35,7 +35,10 @@ func (l *Line) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-// Abbreviate ...
+// Abbreviate shortens the name of an entity by trimming characters from the least-significant parts of the caller
+// forward. A string is shortened until it meets the maxWidth, or no further abbreviation can be made.
+// Example: 'com.example.of.couture.SomeClass' would be 'c.e.o.couture.SomeClass' with a value of 23.
+// Any value between 0 and 18 would generate: 'c.e.o.c.SomeClass'.
 func (c Entity) Abbreviate(maxWidth int) Entity {
 	var s = string(c)
 	var pieces = strings.Split(s, ".")

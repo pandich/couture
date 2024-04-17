@@ -11,8 +11,6 @@ var NoPadding = newPadding(0, 0)
 var NoPaddingLayout = ColumnLayout{Padding: NoPadding}
 
 // Padding ,,,
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
 type Padding struct {
 	Left  *uint `yaml:"left,omitempty"`
 	Right *uint `yaml:"right,omitempty"`

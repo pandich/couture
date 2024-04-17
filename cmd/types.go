@@ -76,9 +76,7 @@ type (
 
 // sink configuration:
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *autoResize) AfterApply() error {
 	if v == nil {
 		return nil
@@ -88,9 +86,7 @@ func (v *autoResize) AfterApply() error {
 	return nil
 }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *noColor) AfterApply() error {
 	if v == nil {
 		return nil
@@ -100,14 +96,10 @@ func (v *noColor) AfterApply() error {
 	return nil
 }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v columns) AfterApply() error { sinkConfig.Columns = v; return nil }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *consistentColors) AfterApply() error {
 	if v == nil {
 		return nil
@@ -117,9 +109,7 @@ func (v *consistentColors) AfterApply() error {
 	return nil
 }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *expand) AfterApply() error {
 	if v == nil {
 		return nil
@@ -129,9 +119,7 @@ func (v *expand) AfterApply() error {
 	return nil
 }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *highlight) AfterApply() error {
 	if v == nil {
 		return nil
@@ -141,9 +129,7 @@ func (v *highlight) AfterApply() error {
 	return nil
 }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *multiLine) AfterApply() error {
 	if v == nil {
 		return nil
@@ -153,9 +139,7 @@ func (v *multiLine) AfterApply() error {
 	return nil
 }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *levelMeter) AfterApply() error {
 	if v == nil {
 		return nil
@@ -165,14 +149,10 @@ func (v *levelMeter) AfterApply() error {
 	return nil
 }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v tty) AfterApply() error { sinkConfig.TTY = bool(v); return nil }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *width) AfterApply() error {
 	if v == nil {
 		return nil
@@ -182,9 +162,7 @@ func (v *width) AfterApply() error {
 	return nil
 }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *wrap) AfterApply() error {
 	if v == nil {
 		return nil
@@ -194,10 +172,7 @@ func (v *wrap) AfterApply() error {
 	return nil
 }
 
-// AfterApply ...
-// nolint: funlen
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (t *timeFormat) AfterApply() error {
 	if t == nil {
 		return nil
@@ -260,12 +235,7 @@ func (t *timeFormat) AfterApply() error {
 
 // logging manager configuration:
 
-// AfterApply ...
-//
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *showMapping) AfterApply() error {
 	if v == nil {
 		return nil
@@ -275,26 +245,19 @@ func (v *showMapping) AfterApply() error {
 	return nil
 }
 
+// AfterApply provides additional functionality to CLI processor.
 func (v dumpMetrics) AfterApply() error { mgrCfg.DumpMetrics = bool(v); return nil }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v dumpUnknown) AfterApply() error { mgrCfg.DumpUnknown = bool(v); return nil }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v rateLimit) AfterApply() error { mgrCfg.RateLimit = uint(v); return nil }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v levelLike) AfterApply() error { mgrCfg.Level = level.Level(v); return nil }
 
-// AfterApply ...
-//
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (f filterLike) AfterApply() (err error) {
 	mgrCfg.Filters, err = f.asFilters()
 	return

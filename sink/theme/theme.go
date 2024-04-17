@@ -6,7 +6,10 @@ import (
 	"github.com/gagglepanda/couture/source"
 	"github.com/tidwall/pretty"
 	"math/rand"
+	"time"
 )
+
+var random = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // Theme ...
 type Theme struct {
@@ -26,11 +29,10 @@ type Theme struct {
 // AsHexPair returns a color for a source. When consistentColors is true, sources will get the same
 // color across invocations of the application. Otherwise, the color selection randomized for each run.
 func (theme Theme) AsHexPair(consistentColors bool, src source.Source) color.FgBgTuple {
-	//nolint: gosec
-	var index = rand.Intn(len(theme.Source))
+	var index = random.Intn(len(theme.Source))
 	if consistentColors {
 		url := src.URL()
-		index = url.Hash() % len(theme.Source)
+		index = url.HashInt() % len(theme.Source)
 	}
 	return theme.Source[index]
 }

@@ -63,6 +63,8 @@ func (mgr *busManager) makeAlertChan(errChan chan source.Error) chan event.SinkE
 			alert := <-alertChan
 			title := fmt.Sprintf("%s: %s (%s)", couture.Name, alert.Application, alert.SourceURL.ShortForm())
 			message := fmt.Sprintf("[%s] %s", alert.Level, alert.Message)
+
+			// this will block when a rate-limit is exceeded -- not sure this is ideal
 			if err := notifyOS(title, message); err != nil {
 				errChan <- source.Error{SourceURL: alert.SourceURL, Error: err}
 			}
@@ -71,6 +73,7 @@ func (mgr *busManager) makeAlertChan(errChan chan source.Error) chan event.SinkE
 	return alertChan
 }
 
+// makeErrChan for all errors occurring
 func (mgr *busManager) makeErrChan() chan source.Error {
 	errChan := make(chan source.Error)
 
@@ -137,19 +140,25 @@ func (mgr *busManager) makeSrcChan(
 			case model.AlertOnce:
 				snkChan <- evt
 				alertChan <- evt
+			case model.None:
+				// do nothing
 			}
 		}
 	}()
 	return srcChan
 }
 
+// makeSnkChan creates the sink channel. The errChan is used to report out-of-band errors, and not error-level log
+// messages.
 func (mgr *busManager) makeSnkChan(errChan chan source.Error) chan event.SinkEvent {
 	snkChan := make(chan event.SinkEvent)
+
 	var limiter ratelimit.Limiter
 	if mgr.config.RateLimit == 0 {
 		limiter = ratelimit.NewUnlimited()
 	} else {
 		limiter = ratelimit.New(int(mgr.config.RateLimit))
+
 	}
 	go func() {
 		defer close(snkChan)

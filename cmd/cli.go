@@ -6,7 +6,6 @@ import (
 )
 
 // cli contains all allowed arguments.
-// nolint: lll
 var cli struct {
 	DumpMetrics dumpMetrics `hidden:"true" group:"diagnostic"`
 	DumpUnknown dumpUnknown `hidden:"true" group:"diagnostic"`

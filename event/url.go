@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// SourceURL ...
+// SourceURL represents a source-spcific URL to events.
 type SourceURL url.URL
 
 // String ...
@@ -74,7 +74,7 @@ func (u *SourceURL) Normalize() {
 	}
 }
 
-// ShortForm ...
+// ShortForm returns a
 func (u *SourceURL) ShortForm() string {
 	const tldComponentCount = 2
 	var host = u.Host
@@ -95,18 +95,23 @@ func (u *SourceURL) ShortForm() string {
 	return fmt.Sprintf("%s[%s/%s]", u.Scheme, host, path)
 }
 
-// Hash ...
-func (u *SourceURL) Hash() int {
+func (u *SourceURL) hashBytes() []byte {
+	hasher := sha256.New()
+	hasher.Write([]byte(u.String()))
+	return hasher.Sum(nil)
+}
+
+// HashInt of the string version of this URL. The hash is used to provide consistent behavior
+// for a URL across invocations (e.g., the color of the messages).
+func (u *SourceURL) HashInt() int {
 	var sum int
-	for _, v := range sha256.Sum256([]byte(u.String())) {
+	for _, v := range u.hashBytes() {
 		sum += int(v)
 	}
 	return sum
 }
 
-// HashString ...
+// HashString is a hex version of the HashInt.
 func (u *SourceURL) HashString() string {
-	hasher := sha256.New()
-	hasher.Write([]byte(u.String()))
-	return strings.ReplaceAll(hex.EncodeToString(hasher.Sum(nil)), "-", "")
+	return strings.ReplaceAll(hex.EncodeToString(u.hashBytes()), "-", "")
 }

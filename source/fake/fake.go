@@ -95,7 +95,7 @@ func (src fakeSource) Start(
 				message = messageGenerator()
 			}
 			hasError := errString != ""
-			event := source.Event{
+			evt := source.Event{
 				Source: src,
 				Event: fmt.Sprintf(
 					src.getFormat(hasError),
@@ -110,7 +110,7 @@ func (src fakeSource) Start(
 					errString,
 				),
 			}
-			srcChan <- event
+			srcChan <- evt
 		}
 	}()
 	return nil
@@ -135,15 +135,17 @@ func (src fakeSource) getSentenceGenerator() func(int) string {
 
 func (src fakeSource) jsonGenerators() (func() string, func() string) {
 	messageGenerator := func() string {
-		ba, err := src.faker.JSON(&gofakeit.JSONOptions{
-			Type:     "object",
-			RowCount: 10,
-			Fields: []gofakeit.Field{
-				{Name: "first_name", Function: "firstname"},
-				{Name: "last_name", Function: "lastname"},
-				{Name: "email", Function: "email"},
+		ba, err := src.faker.JSON(
+			&gofakeit.JSONOptions{
+				Type:     "object",
+				RowCount: 10,
+				Fields: []gofakeit.Field{
+					{Name: "first_name", Function: "firstname"},
+					{Name: "last_name", Function: "lastname"},
+					{Name: "email", Function: "email"},
+				},
 			},
-		})
+		)
 		if err != nil {
 			panic(err)
 		}
@@ -151,15 +153,17 @@ func (src fakeSource) jsonGenerators() (func() string, func() string) {
 		return strings.ReplaceAll(string(ba), `"`, `\"`)
 	}
 	errorGenerator := func() string {
-		ba, err := src.faker.JSON(&gofakeit.JSONOptions{
-			Type:     "object",
-			RowCount: 10,
-			Fields: []gofakeit.Field{
-				{Name: "first_name", Function: "firstname"},
-				{Name: "last_name", Function: "lastname"},
-				{Name: "email", Function: "email"},
+		ba, err := src.faker.JSON(
+			&gofakeit.JSONOptions{
+				Type:     "object",
+				RowCount: 10,
+				Fields: []gofakeit.Field{
+					{Name: "first_name", Function: "firstname"},
+					{Name: "last_name", Function: "lastname"},
+					{Name: "email", Function: "email"},
+				},
 			},
-		})
+		)
 		if err != nil {
 			panic(err)
 		}

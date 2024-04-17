@@ -54,7 +54,7 @@ func (table *Table) Render(event event.SinkEvent) string {
 
 func (table *Table) updateColumnWidths() {
 	const maxGrowthWidthPercent = 5.0 / 4.0
-	const nonMessageAreaWidthPercent = 1.0 / 3.0
+	const nonMessageAreaWidthPercent = 1 / 3
 
 	var remainingWidth = table.config.EffectiveTerminalWidth()
 	var totalWeight uint
@@ -71,9 +71,9 @@ func (table *Table) updateColumnWidths() {
 		weigth := col.layout().Width
 		weighting := float64(weigth) / float64(totalWeight)
 		var width = uint(weighting * float64(remainingWidth))
-		max := uint(float64(weigth) * maxGrowthWidthPercent)
-		if width > max {
-			width = max
+		maxWidth := uint(float64(weigth) * maxGrowthWidthPercent)
+		if width > maxWidth {
+			width = maxWidth
 		}
 		table.widths[name] = width
 	}
