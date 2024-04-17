@@ -7,23 +7,12 @@ AWS_REGION		?= us-west-2
 GOPRIVATE		= github.com/gaggle-net/*
 VERSION			= $(shell cat VERSION)
 
-.PHONY: check
+.PHONY: check build
 check: cls clean tidy test
 
 rebuild: clean build
-
-build: cls build_darwin # build_linux
-build_darwin: $(APP_BASE_NAME)_darwin_amd64 $(APP_BASE_NAME)_darwin_arm64
-build_linux:  $(APP_BASE_NAME)_linux_amd64
-$(APP_BASE_NAME)_darwin_amd64:
-	CGO_ENABLED=1 GOOS=darwin  GOARCH=amd64 go build $(BUILD_ARGS) -o $@
-	@chmod u+x $@
-$(APP_BASE_NAME)_darwin_arm64:
-	CGO_ENABLED=1 GOOS=darwin  GOARCH=arm64 go build $(BUILD_ARGS) -o $@
-	@chmod u+x $@
-$(APP_BASE_NAME)_linux_amd64:
-	CGO_ENABLED=1 GOOS=linux   GOARCH=amd64 go build $(BUILD_ARGS) -o $@
-	@chmod u+x $@
+build:
+	@goreleaser build --clean
 
 .PHONY: cls
 cls:
