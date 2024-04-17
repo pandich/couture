@@ -7,12 +7,17 @@ AWS_REGION		?= us-west-2
 GOPRIVATE		= github.com/gaggle-net/*
 VERSION			= $(shell cat VERSION)
 
-.PHONY: check build
-check: cls clean tidy test
+.PHONY: release
+release:
+	@git commit --all --allow-empty -m "Release $(VERSION)"
+	@git tag $(VERSION)
+	@git push origin $(VERSION)
+	@goreleaser build --clean
 
 rebuild: clean build
 build:
-	@goreleaser build --clean
+	@mkdir -p $(BUILD_DIR)/
+	@go build -o $(APP_BASE_NAME)
 
 .PHONY: cls
 cls:
@@ -41,8 +46,3 @@ test:
 tidy:
 	@go mod tidy
 	@go fix ./...
-
-.PHONY: release
-release: build
-	git tag $(VERSION)
-	git push origin $(VERSION)

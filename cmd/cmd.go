@@ -37,7 +37,6 @@ var (
 		Expand:           &sink.Disabled,
 		Highlight:        &sink.Disabled,
 		MultiLine:        &sink.Disabled,
-		ShowMapping:      &sink.Disabled,
 		Wrap:             &sink.Disabled,
 		Layout:           &layout.Default,
 		Out:              os.Stdout,

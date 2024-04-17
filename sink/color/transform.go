@@ -80,10 +80,12 @@ func (rgb rgbAdaptorColor) AdjustConstrast(polarity contrastPolarity, percent pe
 			base = White
 		}
 	}
-	return ByHex(rgb.
-		AsColorfulColor().
-		BlendHsv(base.AsColorfulColor(), percent.asFloat64()).
-		Hex())
+	return ByHex(
+		rgb.
+			AsColorfulColor().
+			BlendHsv(base.AsColorfulColor(), percent.asFloat64()).
+			Hex(),
+	)
 }
 
 // Blend ...

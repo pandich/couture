@@ -67,7 +67,9 @@ func newRegistry(config sink.Config) registry {
 func registerStyle(styleName string, style color.FgBgTuple, layout layout.ColumnLayout) {
 	rawFormat := "{{%s%%s%s}}::" + style.Fg + "|bg" + style.Bg
 	format := fmt.Sprintf(rawFormat, layout.Prefix(), layout.Suffix())
-	cfmt.RegisterStyle(styleName, func(s string) string {
-		return cfmt.Sprintf(format, s)
-	})
+	cfmt.RegisterStyle(
+		styleName, func(s string) string {
+			return cfmt.Sprintf(format, s)
+		},
+	)
 }

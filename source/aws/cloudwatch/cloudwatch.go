@@ -11,6 +11,7 @@ import (
 	"go.uber.org/ratelimit"
 	"path"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 )
@@ -21,19 +22,31 @@ func Metadata() source.Metadata {
 	for _, scheme := range []string{scheme, schemeAliasShort, schemeAliasFriendly} {
 		exampleURLs = append(
 			exampleURLs,
-			fmt.Sprintf("%s://<cloudwatch-log-path>?profile=<profile>&region=<region>&lookbackTime=<interval|date>", scheme),
+			fmt.Sprintf(
+				"%s://<cloudwatch-log-path>?profile=<profile>&region=<region>&lookbackTime=<interval|date>",
+				scheme,
+			),
 		)
 	}
-	exampleURLs = append(exampleURLs, "lambda://<lambda-name>?profile=<profile>&region=<region>&lookbackTime=<interval|date>")
+	exampleURLs = append(
+		exampleURLs,
+		"cloudwatch-lambda://<lambda-name>?profile=<profile>&region=<region>&lookbackTime=<interval|date>",
+		"logs-appsync://<api-id>?profile=<profile>&region=<region>&lookbackTime=<interval|date>",
+		"cw-rdsc://<cluster-name>?profile=<profile>&region=<region>&lookbackTime=<interval|date>",
+		"cw-rdsi://<instance-name>?profile=<profile>&region=<region>&lookbackTime=<interval|date>",
+	)
 	return source.Metadata{
 		Name: "AWS CloudWatch",
 		Type: reflect.TypeOf(cloudwatchSource{}),
 		CanHandle: func(url event.SourceURL) bool {
 			_, ok := map[string]bool{
-				scheme:              true,
-				schemeAliasShort:    true,
-				schemeAliasFriendly: true,
-				schemeAliasLambda:   true,
+				scheme:               true,
+				schemeAliasShort:     true,
+				schemeAliasFriendly:  true,
+				schemeAliasAppSync:   true,
+				schemeAliasCodeBuild: true,
+				schemeAliasLambda:    true,
+				schemeAliasRDS:       true,
 			}[url.Scheme]
 			return ok
 		},
@@ -43,10 +56,13 @@ func Metadata() source.Metadata {
 }
 
 const (
-	scheme              = "cloudwatch"
-	schemeAliasLambda   = "lambda"
-	schemeAliasShort    = "cw"
-	schemeAliasFriendly = "logs"
+	scheme               = "cloudwatch"
+	schemeAliasLambda    = "lambda"
+	schemeAliasAppSync   = "appsync"
+	schemeAliasCodeBuild = "codebuild"
+	schemeAliasRDS       = "rds"
+	schemeAliasShort     = "cw"
+	schemeAliasFriendly  = "logs"
 )
 
 // cloudwatchSource a Cloudwatch log poller.
@@ -97,14 +113,34 @@ func New(
 
 // normalizeURL take the sourceURL and expands any syntactic sugar.
 func normalizeURL(sourceURL *event.SourceURL) {
-	sourceURL.Normalize()
-	switch {
-	case sourceURL.Scheme == schemeAliasLambda:
+	uriScheme := sourceURL.Scheme
+	subSystem := ""
+	if strings.Contains(uriScheme, "-") {
+		parts := strings.SplitN(uriScheme, "-", 2)
+		uriScheme, subSystem = parts[0], parts[1]
+	}
+
+	switch uriScheme {
+	case scheme, schemeAliasShort, schemeAliasFriendly:
 		sourceURL.Scheme = scheme
-		sourceURL.Path = path.Join(aws.LambdaLogGroupPrefix, sourceURL.Path)
-	case sourceURL.Scheme == schemeAliasShort:
-	case sourceURL.Scheme == schemeAliasFriendly:
-		sourceURL.Scheme = scheme
+	default:
+		// do nothing
+		return
+	}
+
+	switch subSystem {
+	case "rdsc":
+		subSystem = "rds"
+		sourceURL.Path = path.Join("/cluster", sourceURL.Path)
+	case "rdsi":
+		subSystem = "rds"
+		sourceURL.Path = path.Join("/instance", sourceURL.Path)
+	case "appsync":
+		sourceURL.Path = path.Join("/apis", sourceURL.Path)
+	}
+
+	if subSystem != "" {
+		sourceURL.Path = path.Clean(path.Join("/aws", subSystem, sourceURL.Path))
 	}
 }
 
@@ -121,7 +157,10 @@ func (src *cloudwatchSource) Start(
 		i := src.lookbackTime.Unix()
 		startTime = &i
 	}
-	_, err := src.logs.GetLogGroupFields(context.TODO(), &cloudwatchlogs.GetLogGroupFieldsInput{LogGroupName: &src.logGroupName})
+	_, err := src.logs.GetLogGroupFields(
+		context.TODO(),
+		&cloudwatchlogs.GetLogGroupFieldsInput{LogGroupName: &src.logGroupName},
+	)
 	if err != nil {
 		return err
 	}
@@ -130,11 +169,13 @@ func (src *cloudwatchSource) Start(
 		defer wg.Done()
 		for running() {
 			src.cloudWatchRateLimiter.Take()
-			logEvents, err := src.logs.FilterLogEvents(context.TODO(), &cloudwatchlogs.FilterLogEventsInput{
-				LogGroupName: &src.logGroupName,
-				NextToken:    src.nextToken,
-				StartTime:    startTime,
-			})
+			logEvents, err := src.logs.FilterLogEvents(
+				context.TODO(), &cloudwatchlogs.FilterLogEventsInput{
+					LogGroupName: &src.logGroupName,
+					NextToken:    src.nextToken,
+					StartTime:    startTime,
+				},
+			)
 			if err != nil {
 				errChan <- source.Error{SourceURL: src.URL(), Error: err}
 				continue

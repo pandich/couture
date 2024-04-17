@@ -69,12 +69,14 @@ func loadMappingFile(mappingsFile io.ReadCloser) ([]Mapping, error) {
 		mapping.init(name)
 		mappings = append(mappings, mapping)
 	}
-	sort.Slice(mappings, func(i, j int) bool {
-		a, b := mappings[i], mappings[j]
-		if a.Priority == b.Priority {
-			return i < j
-		}
-		return a.Priority > b.Priority
-	})
+	sort.Slice(
+		mappings, func(i, j int) bool {
+			a, b := mappings[i], mappings[j]
+			if a.Priority == b.Priority {
+				return i < j
+			}
+			return a.Priority > b.Priority
+		},
+	)
 	return mappings, nil
 }

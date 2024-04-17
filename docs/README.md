@@ -6,7 +6,7 @@ Documentation and scripts to generate documentation.
 
 Run target `docs` in the project root [Makefile](../Makefile).
 
-    make docs
+make docs
 
 ### Stucture
 

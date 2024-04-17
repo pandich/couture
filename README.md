@@ -11,17 +11,17 @@ Couture combines multiple log streams from disparate sources into human-friendly
 
 ## Installation
 
-	go install github.com/pandich/couture@latest
+go install github.com/pandich/couture@latest
 
 or
 
-	go get -u github.com/pandich/couture@latest	
+go get -u github.com/pandich/couture@latest
 
 ---
 
 ## Usage:
 
-	couture --help
+couture --help
 
 ### Examples
 

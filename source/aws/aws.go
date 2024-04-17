@@ -8,9 +8,6 @@ import (
 	"github.com/gagglepanda/couture/source"
 )
 
-// LambdaLogGroupPrefix ...
-const LambdaLogGroupPrefix = "/aws/lambda"
-
 const (
 	// regionQueryFlag is the url.URL query parameter used to indicate the AWS region.
 	regionQueryFlag = "region"

@@ -236,16 +236,6 @@ func (t *timeFormat) AfterApply() error {
 // logging manager configuration:
 
 // AfterApply provides additional functionality to CLI processor.
-func (v *showMapping) AfterApply() error {
-	if v == nil {
-		return nil
-	}
-	b := bool(*v)
-	sinkConfig.ShowMapping = &b
-	return nil
-}
-
-// AfterApply provides additional functionality to CLI processor.
 func (v dumpMetrics) AfterApply() error { mgrCfg.DumpMetrics = bool(v); return nil }
 
 // AfterApply provides additional functionality to CLI processor.

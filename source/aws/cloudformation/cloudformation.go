@@ -22,8 +22,12 @@ import (
 func Metadata() source.Metadata {
 	var exampleURLs []string
 	for _, scheme := range []string{scheme, schemeAliasShort, schemeAliasFriendly} {
-		exampleURLs = append(exampleURLs,
-			fmt.Sprintf("%s://<stack-name>?profile=<profile>&region=<region>&lookbackTime=<interval|date>&events(=<true|false>)", scheme),
+		exampleURLs = append(
+			exampleURLs,
+			fmt.Sprintf(
+				"%s://<stack-name>?profile=<profile>&region=<region>&lookbackTime=<interval|date>&events(=<true|false>)",
+				scheme,
+			),
 		)
 	}
 	return source.Metadata{
@@ -122,7 +126,7 @@ func newSource(since *time.Time, sourceURL event.SourceURL) (*source.Source, err
 		return nil, err
 	}
 	for _, lambdaResource := range lambdaResources {
-		logGroupName := path.Join(aws.LambdaLogGroupPrefix, *lambdaResource.PhysicalResourceId)
+		logGroupName := path.Join("/aws/lambda", *lambdaResource.PhysicalResourceId)
 		children = append(children, cloudwatch.New(awsSource, since, logGroupName))
 	}
 
@@ -187,10 +191,12 @@ func (src *cloudFormationSource) Start(
 // getChildEvents retrieves CloudFormation events for this stack.
 func (src *cloudFormationSource) getStackEvents() ([]event.SinkEvent, error) {
 	src.stackEventRateLimiter.Take()
-	stackEvents, err := src.cf.DescribeStackEvents(context.TODO(), &cloudformation.DescribeStackEventsInput{
-		NextToken: src.stackEventsNextToken,
-		StackName: &src.stackName,
-	})
+	stackEvents, err := src.cf.DescribeStackEvents(
+		context.TODO(), &cloudformation.DescribeStackEventsInput{
+			NextToken: src.stackEventsNextToken,
+			StackName: &src.stackName,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -68,10 +68,12 @@ func (src *s3Source) Start(
 	request := &s3.GetObjectInput{Bucket: &src.bucket, Key: &src.key}
 
 	writer := sink.NewChanWriterAt(src, srcChan)
-	downloader := manager.NewDownloader(src.s3, func(d *manager.Downloader) {
-		d.PartSize = partSize
-		d.Concurrency = 1
-	})
+	downloader := manager.NewDownloader(
+		src.s3, func(d *manager.Downloader) {
+			d.PartSize = partSize
+			d.Concurrency = 1
+		},
+	)
 	ctx := context.Background()
 	if _, err := downloader.Download(ctx, writer, request); err != nil {
 		return err
