@@ -4,6 +4,7 @@ GOPATH			?= $(shell go env GOPATH)
 GOHOSTOS		?= $(shell go env GOHOSTOS)
 GOHOSTARCH		?= $(shell go env GOHOSTARCH)
 APPLICATION 	= $(notdir $(GO_MODULE))
+VERSION			= $(shell cat VERSION)
 
 # how long asciicinema recordings should last
 CAST_DURATION   ?= 5s
@@ -49,7 +50,10 @@ release: goreleaser neat
 
 #
 # Release
-.PHONY: install uninstall
+.PHONY: tag install uninstall
+tag:
+	git tag $(VERSION)
+	git push origin $(VERSION)
 install: build
 	go install .
 	echo y | COMP_UNINSTALL=1 go run . > /dev/null || true
