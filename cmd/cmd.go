@@ -19,7 +19,7 @@ import (
 	theme2 "github.com/gagglepanda/couture/sink/theme"
 	"github.com/pkg/errors"
 	"gopkg.in/multierror.v1"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	"io"
 	"os"
 	"path"

@@ -1,4 +1,3 @@
-APP_BASE_NAME	= $(BUILD_DIR)/couture
 BUILD_DIR 		= build
 COVERAGE_OUT	= $(BUILD_DIR)/coverage.out
 TEST_OUT		= $(BUILD_DIR)/test_results.xml
@@ -7,32 +6,19 @@ AWS_REGION		?= us-west-2
 GOPRIVATE		= github.com/gaggle-net/*
 VERSION			= $(shell cat VERSION)
 
-.PHONY: release
-release:
-	@git commit --all --allow-empty -m "Release $(VERSION)"
-	@git tag $(VERSION)
-	@git push origin $(VERSION)
-	@goreleaser build --clean
-
-rebuild: clean build
-build:
-	@mkdir -p $(BUILD_DIR)/
-	@go build -o $(APP_BASE_NAME)
-
-.PHONY: cls
-cls:
-	@clear
+.PHONY: build
+build: clean tidy test
 
 .PHONY: clean
 clean:
-	@rm -rf $(BUILD_DIR)/
+	rm -rf $(BUILD_DIR)/
 
 .PHONY: test
 test:
 	@mkdir -p $(BUILD_DIR)/
 	go mod verify
 
-	@command -v golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.43.0
+	@command -v golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	golangci-lint run ./... | tee $(BUILD_DIR)/lint_results.xml
 	@echo
 
@@ -44,5 +30,21 @@ test:
 
 .PHONY: tidy
 tidy:
-	@go mod tidy
-	@go fix ./...
+tidy:
+	go mod tidy
+	go fix ./...
+	go fmt ./...
+
+
+.PHONY: release
+release: build
+	git tag $(VERSION)
+	git push origin $(VERSION)
+
+.PHONY: docs
+docs:
+	@echo http://127.0.0.1:20080/pkg/github.com/gagglepanda/couture/
+	@godoc -index -play -http 127.0.0.1:20080
+
+cloc:
+	@cloc --not-match-f='_test.go$$' --not-match-d='^examples$$' --include-lang=Go .
