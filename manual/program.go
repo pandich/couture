@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/olekukonko/ts"
 	"slices"
 	"strings"
 	"sync"
@@ -15,16 +16,11 @@ import (
 const (
 	modeList mode = iota
 	modePage
-)
-
-const (
-	manualHeight = 37
-	manualWidth  = 72 - 1*2
-	headerHeight = 1
+	manualWidth = 72 - 1*2
 )
 
 var (
-	listStyle            = lipgloss.NewStyle().Height(manualHeight + headerHeight).Width(manualWidth)
+	listStyle            = lipgloss.NewStyle().Width(manualWidth)
 	pageNotSelectedStyle = lipgloss.NewStyle().Copy().Foreground(lipgloss.Color("#854e0b"))
 	pageSelectedStyle    = lipgloss.NewStyle().Copy().Foreground(lipgloss.Color("#FFD230"))
 	titleStyle           = lipgloss.NewStyle().
@@ -61,16 +57,26 @@ func NewProgram() tea.Model {
 			fmt.Sprintf("%4d lines", lineCount),
 		)
 	}
+
+	w, h := terminalWidth()
+	if w > 72 {
+		w = 72
+	}
+	listView := viewport.New(w, h)
+	pageView := viewport.New(w, h)
+	hlp := help.New()
+	hlp.ShowAll = true
 	return &viewer{
 		manual: man,
 		titles: titles,
 
-		listView:  viewport.New(manualWidth, manualHeight+4),
+		listView:  listView,
 		listKeys:  listKeys,
 		listLines: lines,
 
-		pageView: viewport.New(manualWidth, manualHeight+1),
+		pageView: pageView,
 		pageKeys: pageKeys,
+		help:     hlp,
 	}
 }
 
@@ -98,9 +104,9 @@ type (
 		initOnce           sync.Once
 	}
 
-	modeManualKeyMap struct {
+	modePageKeys struct {
 		Help     key.Binding
-		Quit     key.Binding
+		Close    key.Binding
 		Home     key.Binding
 		End      key.Binding
 		Up       key.Binding
@@ -109,7 +115,7 @@ type (
 		PageDown key.Binding
 	}
 
-	modeManualManagerKeyMap struct {
+	modeListKeys struct {
 		Help         key.Binding
 		Quit         key.Binding
 		Up           key.Binding
@@ -119,7 +125,6 @@ type (
 		PageUp       key.Binding
 		PageDown     key.Binding
 		OpenSelected key.Binding
-		Cancel       key.Binding
 	}
 )
 
@@ -140,17 +145,11 @@ func (p *viewer) View() string {
 	view := ""
 	switch p.mode {
 	case modePage:
-		if p.help.ShowAll {
-			view = strings.Repeat("\n", manualHeight+2)
-		} else {
-			view = p.viewPage()
-		}
+		view = p.viewPage()
 	case modeList:
-		if p.help.ShowAll {
-			view = strings.Repeat("\n", manualHeight)
-		} else {
-			view = p.viewList()
-		}
+		view = p.viewList()
+	default:
+		view = ""
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Center, p.help.View(p.keys()), view)
@@ -162,39 +161,39 @@ func (p *viewer) keys() help.KeyMap {
 		return p.pageKeys
 	case modeList:
 		return p.listKeys
-	}
-	return nil
-}
-
-func (k modeManualKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{
-		k.Quit, k.Help,
+	default:
+		return nil
 	}
 }
 
-func (k modeManualKeyMap) FullHelp() [][]key.Binding {
+func (k modePageKeys) ShortHelp() []key.Binding {
+	return []key.Binding{}
+}
+
+func (k modePageKeys) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down}, {k.Home, k.End}, {k.PageUp, k.PageDown},
 	}
 }
 
-func (k modeManualManagerKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Quit, k.Help, k.Cancel, k.OpenSelected}
+func (k modeListKeys) ShortHelp() []key.Binding {
+	return []key.Binding{}
 }
 
-func (k modeManualManagerKeyMap) FullHelp() [][]key.Binding {
+func (k modeListKeys) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Quit, k.Help, k.OpenSelected, k.Cancel},
+		{k.Quit, k.OpenSelected},
 		{k.Up, k.Down},
-		{k.Home, k.End, k.PageUp, k.PageDown},
+		{k.Home, k.End},
+		{k.PageUp, k.PageDown},
 	}
 }
 
 var (
 	Help     = newK("ctrl+k", "^k", "help")
-	Quit     = newK("ctrl+b", "^b", "background")
+	Quit     = newK("ctrl+b", "esc", "quit")
 	Open     = newK("enter", "⏎", "open")
-	Cancel   = newK("esc", "esc", "cancel")
+	Close    = newK("esc", "esc", "list")
 	Up       = newK("up", "↑", "up")
 	Down     = newK("down", "↓", "down")
 	PageUp   = newK("pgup", "⇞", "pgup")
@@ -202,8 +201,8 @@ var (
 	Home     = newK("home", "⇱", "home")
 	End      = newK("end", "⇲", "end")
 
-	pageKeys = modeManualKeyMap{
-		Quit:     Quit,
+	pageKeys = modePageKeys{
+		Close:    Close,
 		Home:     Home,
 		End:      End,
 		Up:       Up,
@@ -213,7 +212,7 @@ var (
 		Help:     Help,
 	}
 
-	listKeys = modeManualManagerKeyMap{
+	listKeys = modeListKeys{
 		Quit:         Quit,
 		Help:         Help,
 		Up:           Up,
@@ -222,7 +221,6 @@ var (
 		End:          End,
 		PageUp:       PageUp,
 		PageDown:     PageDown,
-		Cancel:       Cancel,
 		OpenSelected: Open,
 	}
 )
@@ -231,35 +229,25 @@ func (p *viewer) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch m := msg.(type) {
 	case manualPageMsg:
 		p.pageIndex = slices.Index(p.titles, string(m.page))
-		content, err := p.manual.Page(m.page)
+		cnt, err := p.manual.Page(m.page)
 		if err != nil {
 			p.pageView.SetContent(err.Error())
 			return p, nil
 		}
 		p.mode = modePage
-		p.pageView.SetContent(content)
+		p.pageView.SetContent(cnt)
 		p.pageView.GotoTop()
 		return p, nil
-	case tea.KeyMsg:
-		switch m.String() {
-		case "esc":
-			if p.help.ShowAll {
-				p.help.ShowAll = false
-				return p, nil
-			}
-		case "ctrl+k":
-			p.help.ShowAll = !p.help.ShowAll
-			return p, nil
-		}
 	}
 	switch p.mode {
 	case modePage:
 		return p, p.updatePage(msg)
 	case modeList:
 		return p, p.updateList(msg)
+	default:
+		return p, nil
 	}
 
-	return p, nil
 }
 
 func (p *viewer) updatePage(msg tea.Msg) tea.Cmd {
@@ -352,4 +340,13 @@ func (p *viewer) Background() bool { return false }
 
 func newK(k, name, description string) key.Binding {
 	return key.NewBinding(key.WithKeys(k), key.WithHelp(name, description))
+}
+func terminalWidth() (int, int) {
+	var tw = 0
+	var th = 0
+	if size, err := ts.GetSize(); err == nil {
+		tw = size.Col()
+		th = size.Row()
+	}
+	return tw, th
 }
