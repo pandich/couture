@@ -7,9 +7,6 @@ import (
 	"github.com/gagglepanda/couture/sink"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/termenv"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 // Table ...
@@ -77,16 +74,4 @@ func (table *Table) updateColumnWidths() {
 		}
 		table.widths[name] = width
 	}
-}
-
-func (table *Table) autoUpdateColumnWidths() {
-	resize := make(chan os.Signal, 1)
-	signal.Notify(resize, os.Interrupt, syscall.SIGWINCH)
-	go func() {
-		defer close(resize)
-		for {
-			<-resize
-			table.updateColumnWidths()
-		}
-	}()
 }
