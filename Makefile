@@ -52,6 +52,7 @@ release: goreleaser neat
 # Release
 .PHONY: tag install uninstall
 tag:
+	git commit -am "tagging $(VERSION)"
 	git tag $(VERSION)
 	git push origin $(VERSION)
 install: build
