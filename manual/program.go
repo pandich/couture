@@ -285,6 +285,12 @@ func (p *viewer) updatePage(msg tea.Msg) tea.Cmd {
 
 func (p *viewer) updateList(msg tea.Msg) tea.Cmd {
 	switch t := msg.(type) {
+	case tea.MouseEvent:
+		if t.Button == tea.MouseButtonLeft &&
+			t.Action == tea.MouseActionRelease &&
+			!t.Alt && !t.Ctrl && !t.Shift {
+			return manualPageCmd(p.manual.Pages()[p.pageIndex])
+		}
 	case tea.KeyMsg:
 		switch t.String() {
 		case "up":
@@ -304,8 +310,7 @@ func (p *viewer) updateList(msg tea.Msg) tea.Cmd {
 			p.pageIndex = len(p.manual.Pages()) - 1
 			return nil
 		case "enter":
-			pg := p.manual.Pages()[p.pageIndex]
-			return manualPageCmd(pg)
+			return manualPageCmd(p.manual.Pages()[p.pageIndex])
 		case "esc":
 			return tea.Quit
 		}

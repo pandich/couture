@@ -17,6 +17,7 @@ func main() {
 			tea.WithAltScreen(),
 			tea.WithANSICompressor(),
 			tea.WithMouseAllMotion(),
+			tea.WithMouseCellMotion(),
 		)
 		_, err := program.Run()
 		if err != nil {
