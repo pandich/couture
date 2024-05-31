@@ -3,10 +3,12 @@
 package local
 
 import (
+	"bufio"
 	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/source"
 	"github.com/gagglepanda/couture/source/pipe"
-	"os/exec"
+	"io"
+	"os"
 	"path/filepath"
 	"reflect"
 	"sync"
@@ -52,18 +54,92 @@ func (src fileSource) Start(
 		return err
 	}
 
-	// create the command
-	tail := exec.Command("tail", "-F", path)
+	out := make(chan string)
+	pr, pw := io.Pipe()
 
-	// capture its output
-	in, err := tail.StdoutPipe()
-	if err != nil {
-		return err
-	}
+	go func() {
+		defer pw.Close()
+		writer := bufio.NewWriter(pw)
+		for line := range out {
+			_, err := writer.WriteString(line)
+			if err != nil {
+				errChan <- source.Error{Error: err}
+			} else {
+				writer.Flush()
+			}
+		}
+	}()
 
-	// and start it
-	if err = tail.Start(); err != nil {
-		return err
-	}
+	go func() {
+		var err error
+		if src.filename == "/-" {
+			err = tailStdin(out)
+		} else {
+			err = tailFile(path, out)
+		}
+		if err != nil {
+			errChan <- source.Error{Error: err}
+			close(out)
+		}
+	}()
+
+	in := bufio.NewReader(pr)
 	return pipe.Start(wg, running, src, srcChan, snkChan, errChan, func() {}, in)
+}
+
+func tailStdin(out chan<- string) error {
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		line, err := reader.ReadString('\n')
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		out <- line
+	}
+	close(out)
+	return nil
+}
+
+func tailFile(filePath string, out chan<- string) error {
+	for {
+		file, err := os.Open(filePath)
+		if err != nil {
+			return err
+		}
+
+		// TODO lookback
+		_, err = file.Seek(0, io.SeekEnd)
+		if err != nil {
+			return err
+		}
+
+		reader := bufio.NewReader(file)
+
+		for {
+			var line string
+			line, err = reader.ReadString('\n')
+			if err == nil {
+				out <- line
+				continue
+			}
+
+			if err != io.EOF {
+				return err
+			}
+
+			if _, statErr := os.Stat(filePath); os.IsNotExist(statErr) {
+				file.Close()
+				break
+			}
+
+			// wait for the file to be written to
+			time.Sleep(100 * time.Millisecond)
+		}
+
+		// wait for the file to exist
+		time.Sleep(100 * time.Millisecond)
+	}
 }

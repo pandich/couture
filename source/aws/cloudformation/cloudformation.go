@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/event/level"
+	"github.com/gagglepanda/couture/global"
 	"github.com/gagglepanda/couture/source"
 	"github.com/gagglepanda/couture/source/aws"
 	"github.com/gagglepanda/couture/source/aws/cloudwatch"
@@ -264,12 +265,24 @@ func discoverLambdaResources(cf *cloudformation.Client, stackName string) ([]typ
 	for _, resource := range resources.StackResources {
 		switch *resource.ResourceType {
 		case "AWS::Lambda::Function":
+			global.DiscoveryBus <- global.Resource{
+				Kind: "aws::lambda::function",
+				Name: *resource.PhysicalResourceId,
+			}
 			lambdaFunctions = append(lambdaFunctions, resource)
 		case "AWS::CloudFormation::Stack":
 			subResources, err := discoverLambdaResources(cf, *resource.LogicalResourceId)
 			if err != nil {
 				return nil, err
 			}
+
+			for _, subResource := range subResources {
+				global.DiscoveryBus <- global.Resource{
+					Kind: "aws::cloudformation=>aws::lambda::function",
+					Name: *subResource.PhysicalResourceId,
+				}
+			}
+
 			lambdaFunctions = append(lambdaFunctions, subResources...)
 		}
 	}
