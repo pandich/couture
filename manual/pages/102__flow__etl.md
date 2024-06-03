@@ -1,8 +1,6 @@
-FLOW
-====
+# FLOW
 
-§ EVENT IDENTIFICATION AND MAPPING
------------------------------------
+## § EVENT IDENTIFICATION AND MAPPING
 
 Events are identified by the comparing the first event in the stream
 to a series of predicates mapped to log formats. The first predicate
@@ -33,7 +31,6 @@ logstash:
     message: message
     error: exception.stacktrace
 ```
-
 
 #### Semi-Structured?
 
@@ -66,34 +63,35 @@ aws-billing-end:
 If no mapper recognizes the event, it is considered unstructured and sent to the
 unknown event-type channel. This channel can be dumped to `stderr` by using the
 undocumented `--dump-unknown` command.
+
 ### Filtering
 
-* [ ] Filter: --filter="XXX"
-	* [ ] Positive
-	* [ ] Negative
-	* [ ] Trigger
-* [ ] Highlight: --highlight="XXX"
-	* [ ] Enabled
-	* [ ] Disabled
-	* [ ] Includes
-	* [ ] $COUTURE_HIGHLIGHT
-* [ ] Log Level
-	* [ ] Gaggle standard files
-	* [ ] AWS common files
-	* [ ] Files with no levels
-	* [ ] $COUTURE_LEVEL
-* [ ] Since: --since="XXX"
-	* [ ] Time
-	* [ ] Duration
-	* [ ] Human
-	* [ ] Sources without time filtering
-* [ ] `~/.user/config/couture/mappings.yaml`
-	* [ ] Name
-	* [ ] Format
-	* [ ] Priority
-	* [ ] PredicatesByField
-	* [ ] FieldByColumn
-	* [ ] TemplateByColumn
-	* [ ] Fields
-	* [ ] TextPattern
-	* [ ] One script per format identification type 
+- [ ] Filter: --filter="XXX"
+  - [ ] Positive
+  - [ ] Negative
+  - [ ] Trigger
+- [ ] Highlight: --highlight="XXX"
+  - [ ] Enabled
+  - [ ] Disabled
+  - [ ] Includes
+  - [ ] $COUTURE_HIGHLIGHT
+- [ ] Log Level
+  - [ ] Gaggle standard files
+  - [ ] AWS common files
+  - [ ] Files with no levels
+  - [ ] $COUTURE_LEVEL
+- [ ] Since: --since="XXX"
+  - [ ] Time
+  - [ ] Duration
+  - [ ] Human
+  - [ ] Sources without time filtering
+- [ ] `~/.user/config/couture/mappings.yaml`
+  - [ ] Name
+  - [ ] Format
+  - [ ] Priority
+  - [ ] PredicatesByField
+  - [ ] FieldByColumn
+  - [ ] TemplateByColumn
+  - [ ] Fields
+  - [ ] TextPattern
+  - [ ] One script per format identification type

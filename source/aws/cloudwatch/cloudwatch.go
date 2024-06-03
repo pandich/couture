@@ -40,13 +40,15 @@ func Metadata() source.Metadata {
 		Type: reflect.TypeOf(cloudwatchSource{}),
 		CanHandle: func(url event.SourceURL) bool {
 			_, ok := map[string]bool{
-				scheme:               true,
-				schemeAliasShort:     true,
-				schemeAliasFriendly:  true,
-				schemeAliasAppSync:   true,
-				schemeAliasCodeBuild: true,
-				schemeAliasLambda:    true,
-				schemeAliasRDS:       true,
+				scheme:                 true,
+				schemeAliasShort:       true,
+				schemeAliasFriendly:    true,
+				schemeAliasAppSync:     true,
+				schemeAliasCodeBuild:   true,
+				schemeAliasLambda:      true,
+				schemeAliasRDS:         true,
+				schemeAliasRDSCluster:  true,
+				schemeAliasRDSInstance: true,
 			}[url.Scheme]
 			return ok
 		},
@@ -56,13 +58,15 @@ func Metadata() source.Metadata {
 }
 
 const (
-	scheme               = "cloudwatch"
-	schemeAliasLambda    = "lambda"
-	schemeAliasAppSync   = "appsync"
-	schemeAliasCodeBuild = "codebuild"
-	schemeAliasRDS       = "rds"
-	schemeAliasShort     = "cw"
-	schemeAliasFriendly  = "logs"
+	scheme                 = "cloudwatch"
+	schemeAliasLambda      = "lambda"
+	schemeAliasAppSync     = "appsync"
+	schemeAliasCodeBuild   = "codebuild"
+	schemeAliasRDS         = "rds"
+	schemeAliasRDSInstance = "rdsi"
+	schemeAliasRDSCluster  = "rdsc"
+	schemeAliasShort       = "cw"
+	schemeAliasFriendly    = "logs"
 )
 
 // cloudwatchSource a Cloudwatch log poller.
@@ -113,34 +117,31 @@ func New(
 
 // normalizeURL take the sourceURL and expands any syntactic sugar.
 func normalizeURL(sourceURL *event.SourceURL) {
-	uriScheme := sourceURL.Scheme
-	subSystem := ""
-	if strings.Contains(uriScheme, "-") {
-		parts := strings.SplitN(uriScheme, "-", 2)
-		uriScheme, subSystem = parts[0], parts[1]
+	if sourceURL.Path == "" && sourceURL.Host != "" {
+		sourceURL.Path = sourceURL.Host
+		sourceURL.Host = ""
 	}
-
-	switch uriScheme {
+	switch sourceURL.Scheme {
 	case scheme, schemeAliasShort, schemeAliasFriendly:
 		sourceURL.Scheme = scheme
-	default:
-		// do nothing
-		return
-	}
-
-	switch subSystem {
-	case "rdsc":
-		subSystem = "rds"
-		sourceURL.Path = path.Join("/cluster", sourceURL.Path)
-	case "rdsi":
-		subSystem = "rds"
-		sourceURL.Path = path.Join("/instance", sourceURL.Path)
-	case "appsync":
-		sourceURL.Path = path.Join("/apis", sourceURL.Path)
-	}
-
-	if subSystem != "" {
-		sourceURL.Path = path.Clean(path.Join("/aws", subSystem, sourceURL.Path))
+	case schemeAliasLambda:
+		sourceURL.Scheme = scheme
+		sourceURL.Path = path.Join("/aws/lambda", sourceURL.Path)
+	case schemeAliasAppSync:
+		sourceURL.Scheme = scheme
+		sourceURL.Path = path.Join("/aws/appsync/apis", sourceURL.Path)
+	case schemeAliasCodeBuild:
+		sourceURL.Scheme = scheme
+		sourceURL.Path = path.Join("/aws/codebuild/projects", sourceURL.Path)
+	case schemeAliasRDS:
+		sourceURL.Scheme = scheme
+		sourceURL.Path = path.Join("/aws/rds", sourceURL.Path)
+	case schemeAliasRDSCluster:
+		sourceURL.Scheme = scheme
+		sourceURL.Path = path.Join("/aws/rds/cluster", sourceURL.Path)
+	case schemeAliasRDSInstance:
+		sourceURL.Scheme = scheme
+		sourceURL.Path = path.Join("/aws/rds/instance", sourceURL.Path)
 	}
 }
 
@@ -177,7 +178,11 @@ func (src *cloudwatchSource) Start(
 				},
 			)
 			if err != nil {
-				errChan <- source.Error{SourceURL: src.URL(), Error: err}
+				if strings.Contains(err.Error(), "ResourceNotFoundException") {
+					errChan <- source.Error{SourceURL: src.URL(), Error: fmt.Errorf("log group not found: %s", src.logGroupName)}
+				} else {
+					errChan <- source.Error{SourceURL: src.URL(), Error: err}
+				}
 				continue
 			}
 			src.nextToken = logEvents.NextToken

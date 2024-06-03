@@ -1,5 +1,4 @@
-COUTURE: OVERVIEW
-=================
+# COUTURE: OVERVIEW
 
 Modern software architectures mean logs exist in many places and modalities.
 This makes it difficult to aggregate and analyze logs in a single place.
@@ -7,9 +6,7 @@ The slow cognitive toll of context switching between different log sources
 can be a significant productivity drain. It is also far harder to correlate
 events across different log sources.
 
-
-ARCHITECTURE
-------------
+## ARCHITECTURE
 
 ```mermaid
 flowchart TB
@@ -31,8 +28,7 @@ more outputs.
 
 See § [Flow](./100__flow.md) for more information.
 
-KNOWN LIMITATIONS
------------------
+## KNOWN LIMITATIONS
 
 #### Non-POSIX Systems
 
@@ -41,14 +37,13 @@ SIGWINCH, which is not supported on systems such as Windows. This means
 dynamic column resizing is not supported. The workaround is to pre-size the
 window.
 
-__See:__ _signal(3)_
+**See:** _signal(3)_
 
 The build flags `windows` and `!windows` are used to exclude the `SIGWINCH`
 on Windows systems. The file `table_windows.go` current contains an empty
 method. The is there [SIGWINCH Equivalent on Windows](https://stackoverflow.com/a/10857339/2154219)
 StackOverflow post is a starting point to implementing the Windows feature.
 
-SUPPORT
---------
+## SUPPORT
 
 Contact the author at <panda@gaggle.net>.

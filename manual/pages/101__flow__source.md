@@ -1,8 +1,6 @@
-FLOW
-====
+# FLOW
 
-§ SOURCE
---------
+## § SOURCE
 
 A source is an abstraction of a pull or push-drive event system.
 Its only requirement is to emit textual events of a consistent
@@ -50,24 +48,22 @@ S3 files are read from `s3://` URIs.
 
 #### CloudWatch
 
-CloudWatch logs are read from `cloudwatch://` URIs.
-
-Note:
+CloudWatch logs are read from `cloudwatch://`, `logs://` and `cw://` URIs, with additional
+short forms for common AWS services:
 
 | Short Form              | Expansion                             | Example                     |
 |-------------------------|---------------------------------------|-----------------------------|
-| `<aws service name>://` | `cloudwatch://aws/<aws_service_name>` | `lambda://my-env/my-lambda` |
 | `rdsc://`               | `cloudwatch://aws/rds/cluster`        | `rdsc://my-cluster`         |
 | `rdsi://`               | `cloudwatch://aws/rds/instance`       | `rdsi://my-instance`        |
 | `api://`                | `cloudwatch://aws/appsync/apis`       | `api://bookstore`           |
-
 
 #### CloudFormation
 
 CloudFormation resources are scanned. Any resource capable of producing a CloudWatch log is
 added to a multi-tail group. Additionally, CloudFormatione events (e.g., `CREATE_COMPLETE`)
 are emitted.
-* [ ] `~/.user/config/couture/aliases.yaml`
-	* [ ] Simple Alias
-	* [ ] Alias to a group of sources
-	* [ ] Expansion of children
+
+- [ ] `~/.user/config/couture/aliases.yaml`
+	- [ ] Simple Alias
+	- [ ] Alias to a group of sources
+	- [ ] Expansion of children
