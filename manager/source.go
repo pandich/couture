@@ -26,8 +26,8 @@ var AvailableSources = []source.Metadata{
 	ssh.Metadata(),
 }
 
-// GetSource gets a source, if possible, for the specified sourceURL.
-func GetSource(since *time.Time, sourceURL event.SourceURL) ([]source.Source, []error) {
+// GetSources gets a source, if possible, for the specified sourceURL.
+func GetSources(since *time.Time, sourceURL event.SourceURL) ([]source.Source, []error) {
 	if sourceURL.Scheme == "complete" {
 		return nil, nil
 	}
@@ -35,11 +35,11 @@ func GetSource(since *time.Time, sourceURL event.SourceURL) ([]source.Source, []
 	var violations []error
 	metadata := getSourceMetadata(sourceURL)
 	if metadata != nil {
-		configuredSource, err := metadata.Creator(since, sourceURL)
+		configuredSources, err := metadata.Creator(since, sourceURL)
 		if err != nil {
 			violations = append(violations, err)
 		} else {
-			sources = append(sources, *configuredSource)
+			sources = append(sources, configuredSources...)
 		}
 	} else {
 		violations = append(violations, errors2.Errorf("invalid source URL: %+v\n", sourceURL))

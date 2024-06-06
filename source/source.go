@@ -11,6 +11,16 @@ import (
 	"time"
 ) // Source ...
 
+func Single(f func(since *time.Time, sourceURL event.SourceURL) (*Source, error)) Creator {
+	return func(since *time.Time, sourceURL event.SourceURL) ([]Source, error) {
+		src, err := f(since, sourceURL)
+		if err != nil {
+			return nil, err
+		}
+		return []Source{*src}, nil
+	}
+}
+
 // Source ...
 type (
 	// Source of events. Responsible for ingest and conversion to the standard format.
@@ -42,12 +52,14 @@ type (
 		Error     error
 	}
 
+	Creator func(since *time.Time, sourceURL event.SourceURL) ([]Source, error)
+
 	// Metadata ...
 	Metadata struct {
 		Name        string
 		Type        reflect.Type
 		CanHandle   func(url event.SourceURL) bool
-		Creator     func(since *time.Time, sourceURL event.SourceURL) (*Source, error)
+		Creator     Creator
 		ExampleURLs []string
 	}
 )

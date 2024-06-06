@@ -26,7 +26,7 @@ func Metadata() source.Metadata {
 		Name:        "Fake",
 		Type:        reflect.TypeOf(fakeSource{}),
 		CanHandle:   func(url event.SourceURL) bool { return url.Scheme == "fake" },
-		Creator:     newSource,
+		Creator:     source.Single(newSource),
 		ExampleURLs: []string{},
 	}
 }

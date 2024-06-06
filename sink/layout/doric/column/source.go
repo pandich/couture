@@ -19,7 +19,12 @@ func newSourceColumn(layout layout.ColumnLayout) column {
 }
 
 func (col sourceColumn) render(event event.SinkEvent) string {
-	return cfmt.Sprintf(col.formatWithSuffix(event.SourceURL.HashString()), event.SourceURL.ShortForm())
+	path := event.SourceURL.Path
+	if uint(len(event.SourceURL.Path)) > col.colLayout.Width {
+		path = event.SourceURL.Path[len(event.SourceURL.Path)-int(col.colLayout.Width):]
+	}
+
+	return cfmt.Sprintf(col.formatWithSuffix(event.SourceURL.HashString()), path)
 }
 
 // RegisterSourceStyle ...

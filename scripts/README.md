@@ -13,7 +13,7 @@
 	* [ ] TemplateByColumn
 	* [ ] Fields
 	* [ ] TextPattern
-	* [ ] One script per format identification type 
+	* [ ] One script per format identification type
 * [ ] `~/.user/config/couture/aliases.yaml`
 	* [ ] Simple Alias
 	* [ ] Alias to a group of sources
@@ -42,7 +42,7 @@
 	* [ ] ADD: --show-sources
 	* [ ] ADD: --show-defaults
 		* [ ] With config file
-	  	* [ ] Without config file 
+			* [ ] Without config file
 	* [ ] --show-mappings
 
 ### Formatting

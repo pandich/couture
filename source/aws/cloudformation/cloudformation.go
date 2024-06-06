@@ -94,9 +94,6 @@ type (
 		lookbackTime *time.Time
 		// includeStackEvents specifies whether to include stack events in the log.
 		includeStackEvents bool
-		// children represents all child sources added during stack-resource discovery.
-		// For example: a lambda's log group's cloudwatch.cloudwatchSource.
-		children []*source.Source
 		// cf represents the clo
 		cf        *cloudformation.Client
 		stackName string
@@ -108,7 +105,7 @@ type (
 )
 
 // newSource CloudFormation source.
-func newSource(since *time.Time, sourceURL event.SourceURL) (*source.Source, error) {
+func newSource(since *time.Time, sourceURL event.SourceURL) ([]source.Source, error) {
 	const maxRequestsPerMinute = 20
 
 	normalizeURL(&sourceURL)
@@ -120,7 +117,7 @@ func newSource(since *time.Time, sourceURL event.SourceURL) (*source.Source, err
 
 	cf := cloudformation.NewFromConfig(awsSource.Config())
 
-	var children []*source.Source
+	var sources []source.Source
 	// add lambda functions
 	lambdaResources, err := discoverLambdaResources(cf, stackName)
 	if err != nil {
@@ -128,25 +125,26 @@ func newSource(since *time.Time, sourceURL event.SourceURL) (*source.Source, err
 	}
 	for _, lambdaResource := range lambdaResources {
 		logGroupName := path.Join("/aws/lambda", *lambdaResource.PhysicalResourceId)
-		children = append(children, cloudwatch.New(awsSource, since, logGroupName))
+		src, err := aws.New(
+			'𝞴', &event.SourceURL{
+				Scheme:      "cloudwatch",
+				Host:        sourceURL.Host,
+				Path:        logGroupName,
+				RawFragment: sourceURL.RawFragment,
+				RawQuery:    sourceURL.RawQuery,
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		child := cloudwatch.New(src, since, logGroupName)
+		if child != nil {
+			sources = append(sources, *child)
+		}
 	}
 
-	var src source.Source = &cloudFormationSource{
-		Source:               awsSource,
-		lookbackTime:         since,
-		includeStackEvents:   sourceURL.QueryFlag(includeStackEventsFlag),
-		children:             children,
-		cf:                   cf,
-		stackName:            stackName,
-		stackEventsNextToken: nil,
-		stackEventTimes:      map[int64]bool{},
-		stackEventRateLimiter: ratelimit.New(
-			maxRequestsPerMinute,
-			ratelimit.Per(time.Minute),
-			ratelimit.WithSlack(maxRequestsPerMinute),
-		),
-	}
-	return &src, nil
+	return sources, nil
 }
 
 // normalizeURL take the sourceURL and expands any syntactic sugar.
@@ -161,18 +159,12 @@ func normalizeURL(sourceURL *event.SourceURL) {
 
 // Start ...
 func (src *cloudFormationSource) Start(
-	wg *sync.WaitGroup,
+	_ *sync.WaitGroup,
 	running func() bool,
-	srcChan chan source.Event,
+	_ chan source.Event,
 	snkChan chan event.SinkEvent,
 	errChan chan source.Error,
 ) error {
-	for _, child := range src.children {
-		err := (*child).Start(wg, running, srcChan, snkChan, errChan)
-		if err != nil {
-			return err
-		}
-	}
 	if src.includeStackEvents {
 		go func() {
 			for running() {

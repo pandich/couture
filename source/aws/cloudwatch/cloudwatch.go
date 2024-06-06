@@ -52,7 +52,7 @@ func Metadata() source.Metadata {
 			}[url.Scheme]
 			return ok
 		},
-		Creator:     newFromURL,
+		Creator:     source.Single(newFromURL),
 		ExampleURLs: exampleURLs,
 	}
 }
@@ -185,15 +185,23 @@ func (src *cloudwatchSource) Start(
 				}
 				continue
 			}
+
+			if logEvents.NextToken == nil {
+				// No more log events to fetch, exit the loop
+				break
+			}
+
 			src.nextToken = logEvents.NextToken
+
 			for _, logEvent := range logEvents.Events {
 				if logEvent.Message != nil {
-					if err != nil {
-						errChan <- source.Error{SourceURL: src.URL(), Error: err}
-					} else {
-						srcChan <- source.Event{Source: src, Event: *logEvent.Message}
-					}
+					srcChan <- source.Event{Source: src, Event: *logEvent.Message}
 				}
+			}
+
+			// Check if we have reached the end of the log events
+			if src.nextToken == nil || *src.nextToken == "" {
+				break
 			}
 		}
 	}()

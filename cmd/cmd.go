@@ -72,12 +72,12 @@ func parseOptions() ([]interface{}, error) {
 	var violations []error
 	for _, u := range cli.Source {
 		sourceURL := event.SourceURL(u)
-		src, err := manager.GetSource(cli.Since, sourceURL)
+		srcs, err := manager.GetSources(cli.Since, sourceURL)
 		if len(err) > 0 {
 			violations = append(violations, err...)
 		} else {
-			for _, s := range src {
-				sources = append(sources, s)
+			for _, src := range srcs {
+				sources = append(sources, src)
 			}
 		}
 	}

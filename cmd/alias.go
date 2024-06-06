@@ -3,16 +3,20 @@ package cmd
 // The alias mechanism provides short URIs which expand into command-line arguments/
 
 import (
+	"context"
 	"fmt"
 	"github.com/aymerick/raymond"
 	"github.com/coreos/etcd/pkg/fileutil"
 	"github.com/gagglepanda/couture/couture"
 	"github.com/hashicorp/go-multierror"
 	errors2 "github.com/pkg/errors"
+	"github.com/sethvargo/go-envconfig"
 	"io"
+	"log"
 	"net/url"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -53,6 +57,8 @@ type aliasConfig struct {
 	Groups map[string][]string `yaml:"groups,omitempty"`
 	// Aliases is a
 	Aliases map[string]string `yaml:"aliases,omitempty"`
+
+	Context map[string]string `yaml:"-" env:"COUTURE_CONTEXT"`
 }
 
 // expandAliases evaluates each argument and expands any aliases or groups.
@@ -138,6 +144,11 @@ func loadAliasConfig() (*aliasConfig, error) {
 		return nil, err
 	}
 
+	ctx := context.Background()
+	if err = envconfig.Process(ctx, config); err != nil {
+		log.Fatal(err)
+	}
+
 	return config, err
 }
 
@@ -150,17 +161,28 @@ func (config *aliasConfig) expandArgument(arg string) []string {
 	switch {
 
 	// is this a group reference?
-	case len(arg) > len(groupNamePrefix) && arg[:len(groupNamePrefix)] == groupNamePrefix:
+	case strings.HasPrefix(arg, groupNamePrefix):
 		// then expand the group into its aliases
 
 		groupName := arg[len(groupNamePrefix):]
+		query := ""
+		if strings.Contains(groupName, "?") {
+			parts := strings.SplitN(groupName, "?", 2)
+			groupName = parts[0]
+			query = parts[1]
+		}
+
 		group, ok := config.Groups[groupName]
 		if !ok {
 			return nil
 		}
 
 		for _, alias := range group {
-			args = append(args, aliasURIPrefix+alias)
+			v := aliasURIPrefix + alias
+			if query != "" {
+				v += "?" + query
+			}
+			args = append(args, v)
 		}
 
 	// is this an alias reference?
@@ -192,7 +214,11 @@ func expandAliasURL(config *aliasConfig, aliasURL *url.URL) (string, error) {
 			"${name}={{${name}.[0]}}"+
 			"{{/if}}",
 	)
-	return raymond.Render(alias, aliasContext(aliasURL))
+	m := aliasContext(aliasURL)
+	for k, v := range config.Context {
+		m[k] = []string{v}
+	}
+	return raymond.Render(alias, m)
 }
 
 // aliasContext sets up the global properties usable in an alias template.
@@ -201,7 +227,7 @@ func aliasContext(aliasURL *url.URL) map[string][]string {
 
 	now := time.Now()
 
-	context := map[string][]string{
+	ctx := map[string][]string{
 		"epoch": {fmt.Sprintf("%d", now.Unix())},
 		"yyyy":  {fmt.Sprintf("%04d", now.Year())},
 		"yy":    {fmt.Sprintf("%02d", now.Year()%century)},
@@ -219,16 +245,29 @@ func aliasContext(aliasURL *url.URL) map[string][]string {
 		"_path": {aliasURL.Path},
 	}
 
+	for _, v := range aliasURL.Query() {
+		ctx[v[0]] = v[1:]
+	}
+
 	if aliasURL.User != nil {
-		context["_user"] = []string{aliasURL.User.Username()}
+		ctx["_user"] = []string{aliasURL.User.Username()}
 		if password, ok := aliasURL.User.Password(); ok {
-			context["_password"] = []string{password}
+			ctx["_password"] = []string{password}
 		}
 	}
 
 	for k, v := range aliasURL.Query() {
-		context[k] = v
+		ctx[k] = v
 	}
 
-	return context
+	for _, s := range os.Environ() {
+		parts := strings.SplitN(s, "=", 2)
+		k, v := parts[0], parts[1]
+		if strings.HasPrefix(k, "COUTURE_CONTEXT_") {
+			effectiveKey := strings.TrimPrefix(k, "COUTURE_CONTEXT_")
+			ctx[effectiveKey] = []string{v}
+		}
+	}
+
+	return ctx
 }

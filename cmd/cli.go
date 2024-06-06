@@ -33,6 +33,5 @@ var cli struct {
 
 	Column     columns    `group:"content" help:"Specify columns to display: ${enum}." placeholder:"column" enum:"${columnNames}" env:"COUTURE_COLUMN_NAMES"`
 	TimeFormat timeFormat `group:"content" help:"Use a Go-standard or named time format: ${timeFormatNames}. See Go time format constants." short:"t" default:"stamp" env:"COUTURE_TIME_FORMAT"`
-
-	Source []url.URL `arg:"true" help:"Specify log event source URL, alias, or alias group." name:"source-url"`
+	Source     []url.URL  `arg:"true" help:"Specify log event source URL, alias, or alias group." name:"source-url"`
 }

@@ -29,5 +29,4 @@ If this is desired, please open an issue.
 
 #### ElasticSearch
 
-
 ## Outputs

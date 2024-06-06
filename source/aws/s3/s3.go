@@ -26,7 +26,7 @@ func Metadata() source.Metadata {
 			_, ok := map[string]bool{scheme: true}[url.Scheme]
 			return ok
 		},
-		Creator:     newSource,
+		Creator:     source.Single(newSource),
 		ExampleURLs: []string{fmt.Sprintf("%s://<path>", scheme)},
 	}
 }

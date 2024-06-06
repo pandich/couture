@@ -29,7 +29,7 @@ func Metadata() source.Metadata {
 			}[url.Scheme]
 			return ok
 		},
-		Creator: newSource,
+		Creator: source.Single(newSource),
 		ExampleURLs: []string{
 			"elasticsearch+http://...",
 			"elasticsearch+https://...",

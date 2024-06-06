@@ -18,7 +18,7 @@ func Metadata() source.Metadata {
 		Name:        "SSH",
 		Type:        reflect.TypeOf(sshSource{}),
 		CanHandle:   func(url event.SourceURL) bool { return url.Scheme == "ssh" },
-		Creator:     newSource,
+		Creator:     source.Single(newSource),
 		ExampleURLs: []string{"ssh://user:passphrase@host:port/<path>"},
 	}
 }

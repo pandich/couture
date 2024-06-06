@@ -51,11 +51,11 @@ S3 files are read from `s3://` URIs.
 CloudWatch logs are read from `cloudwatch://`, `logs://` and `cw://` URIs, with additional
 short forms for common AWS services:
 
-| Short Form              | Expansion                             | Example                     |
-|-------------------------|---------------------------------------|-----------------------------|
-| `rdsc://`               | `cloudwatch://aws/rds/cluster`        | `rdsc://my-cluster`         |
-| `rdsi://`               | `cloudwatch://aws/rds/instance`       | `rdsi://my-instance`        |
-| `api://`                | `cloudwatch://aws/appsync/apis`       | `api://bookstore`           |
+| Short Form | Expansion                       | Example              |
+|------------|---------------------------------|----------------------|
+| `rdsc://`  | `cloudwatch://aws/rds/cluster`  | `rdsc://my-cluster`  |
+| `rdsi://`  | `cloudwatch://aws/rds/instance` | `rdsi://my-instance` |
+| `api://`   | `cloudwatch://aws/appsync/apis` | `api://bookstore`    |
 
 #### CloudFormation
 

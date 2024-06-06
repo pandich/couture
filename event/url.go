@@ -3,9 +3,8 @@ package event
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
-	"net"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 )
@@ -76,23 +75,11 @@ func (u *SourceURL) Normalize() {
 
 // ShortForm returns a
 func (u *SourceURL) ShortForm() string {
-	const tldComponentCount = 2
-	var host = u.Host
-	u.RawQuery = strings.TrimRight(u.RawQuery, "&")
-	if net.ParseIP(host) == nil {
-		hostParts := strings.Split(host, ".")
-		if len(hostParts) > tldComponentCount {
-			host = strings.Join(hostParts[0:len(hostParts)-tldComponentCount], ".")
-		}
+	base := path.Base(u.Path)
+	if base == "" {
+		base = u.Scheme
 	}
-	path := strings.Split(strings.TrimLeft(u.Path, "/"), "/")[0]
-	if path == "" {
-		if host == "" {
-			return fmt.Sprintf("%s[%s]", u.Scheme, u.RawQuery)
-		}
-		return fmt.Sprintf("%s[%s?%s]", u.Scheme, host, u.RawQuery)
-	}
-	return fmt.Sprintf("%s[%s/%s]", u.Scheme, host, path)
+	return base
 }
 
 func (u *SourceURL) hashBytes() []byte {

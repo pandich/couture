@@ -21,7 +21,7 @@ func Metadata() source.Metadata {
 		Name:        "Local File",
 		Type:        reflect.TypeOf(fileSource{}),
 		CanHandle:   func(url event.SourceURL) bool { return url.Scheme == "file" },
-		Creator:     newSource,
+		Creator:     source.Single(newSource),
 		ExampleURLs: []string{"file://<path>"},
 	}
 }

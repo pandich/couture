@@ -67,31 +67,31 @@ undocumented `--dump-unknown` command.
 ### Filtering
 
 - [ ] Filter: --filter="XXX"
-  - [ ] Positive
-  - [ ] Negative
-  - [ ] Trigger
+	- [ ] Positive
+	- [ ] Negative
+	- [ ] Trigger
 - [ ] Highlight: --highlight="XXX"
-  - [ ] Enabled
-  - [ ] Disabled
-  - [ ] Includes
-  - [ ] $COUTURE_HIGHLIGHT
+	- [ ] Enabled
+	- [ ] Disabled
+	- [ ] Includes
+	- [ ] $COUTURE_HIGHLIGHT
 - [ ] Log Level
-  - [ ] Gaggle standard files
-  - [ ] AWS common files
-  - [ ] Files with no levels
-  - [ ] $COUTURE_LEVEL
+	- [ ] Gaggle standard files
+	- [ ] AWS common files
+	- [ ] Files with no levels
+	- [ ] $COUTURE_LEVEL
 - [ ] Since: --since="XXX"
-  - [ ] Time
-  - [ ] Duration
-  - [ ] Human
-  - [ ] Sources without time filtering
+	- [ ] Time
+	- [ ] Duration
+	- [ ] Human
+	- [ ] Sources without time filtering
 - [ ] `~/.user/config/couture/mappings.yaml`
-  - [ ] Name
-  - [ ] Format
-  - [ ] Priority
-  - [ ] PredicatesByField
-  - [ ] FieldByColumn
-  - [ ] TemplateByColumn
-  - [ ] Fields
-  - [ ] TextPattern
-  - [ ] One script per format identification type
+	- [ ] Name
+	- [ ] Format
+	- [ ] Priority
+	- [ ] PredicatesByField
+	- [ ] FieldByColumn
+	- [ ] TemplateByColumn
+	- [ ] Fields
+	- [ ] TextPattern
+	- [ ] One script per format identification type
