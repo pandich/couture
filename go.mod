@@ -41,6 +41,7 @@ require (
 	github.com/sethvargo/go-envconfig v1.0.3
 	github.com/tidwall/gjson v1.17.1
 	github.com/tidwall/pretty v1.2.1
+	github.com/tj/go-naturaldate v1.3.0
 	go.uber.org/ratelimit v0.3.1
 	golang.org/x/text v0.15.0
 	gopkg.in/multierror.v1 v1.0.2

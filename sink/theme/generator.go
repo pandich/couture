@@ -48,16 +48,16 @@ type generator struct {
 }
 
 func (p generator) asTheme() *Theme {
-	th := Theme{}
+	th := &Theme{}
 
 	// order is important in this block
-	p.applyEntity(&th)
-	p.applyHeader(&th)
-	p.applyLevels(&th)
-	p.applyMessages(&th)
-	p.applySources(&th)
+	p.applyEntity(th)
+	p.applyHeader(th)
+	p.applyLevels(th)
+	p.applyMessages(th)
+	p.applySources(th)
 
-	return &th
+	return th
 }
 
 func (p generator) applySources(th *Theme) {

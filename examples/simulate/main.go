@@ -9,10 +9,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/brianvoe/gofakeit/v6"
 	"math/rand"
+	"os"
+	"os/signal"
 	"path"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -23,14 +26,9 @@ type message struct {
 }
 
 var (
-	now    = time.Now().Add(-100 * time.Hour * 244)
 	faker  = gofakeit.NewCrypto()
 	random = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
-
-func advance() {
-	now = now.Add(time.Duration(random.Intn(int(3*time.Second))) + 1*time.Millisecond)
-}
 
 type logEvent struct {
 	SourceHost  string    `json:"source_host"`
@@ -188,8 +186,6 @@ func init() {
 }
 
 func generateLogEvent() logEvent {
-	defer advance()
-
 	application := []string{"greedy-turnip", "mangled-horseshoe", "funky-cherub"}[random.Intn(3)]
 	class := classNames[application][random.Intn(len(classNames[application]))]
 	method := methodNames[class][random.Intn(len(methodNames[class]))]
@@ -202,7 +198,7 @@ func generateLogEvent() logEvent {
 		Level:       msg.level,
 		Message:     msg.body,
 		Environment: []string{"dev", "staging", "prod"}[random.Intn(3)],
-		Timestamp:   now,
+		Timestamp:   time.Now(),
 		Application: application,
 		UserId:      0,
 		LineNumber:  strconv.Itoa(int(msg.line)),
@@ -244,21 +240,30 @@ func main() {
 		panic(err)
 	}
 	svc := lambda.NewFromConfig(cfg)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	wg := sync.WaitGroup{}
+	running := true
+	wg := &sync.WaitGroup{}
 	wg.Add(workerCount)
 	for w := 0; w < workerCount; w++ {
 		go func() {
 			defer wg.Done()
-
-			for i := 0; i < eventCount; i++ {
-				err = sendEvent(svc, i+1)
+			id := w + 1
+			for running {
+				time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
+				err := sendEvent(svc, id)
 				if err != nil {
 					panic(err)
 				}
 			}
 		}()
 	}
+	go func() {
+		<-sigs
+		running = false
+		wg.Wait()
+	}()
 
 	wg.Wait()
 }

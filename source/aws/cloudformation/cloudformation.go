@@ -137,7 +137,14 @@ func newSource(since *time.Time, sourceURL event.SourceURL) ([]source.Source, er
 		if err != nil {
 			return nil, err
 		}
-
+		url := src.URL()
+		if val, found := url.QueryKey("lookbackTime"); found {
+			dur, err := time.ParseDuration(val)
+			if err == nil {
+				local := time.Now().Add(-dur)
+				since = &local
+			}
+		}
 		child := cloudwatch.New(src, since, logGroupName)
 		if child != nil {
 			sources = append(sources, *child)
@@ -173,7 +180,9 @@ func (src *cloudFormationSource) Start(
 					errChan <- source.Error{SourceURL: src.URL(), Error: err}
 				}
 				for _, evt := range stackEvents {
-					snkChan <- evt
+					if src.lookbackTime == nil || time.Time(evt.Timestamp).After(*src.lookbackTime) {
+						snkChan <- evt
+					}
 				}
 			}
 		}()

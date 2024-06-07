@@ -80,6 +80,7 @@ type cloudwatchSource struct {
 	logGroupName string
 	// nextToken for calls to get log events.
 	nextToken             *string
+	recentEvents          map[string]bool
 	cloudWatchRateLimiter ratelimit.Limiter
 }
 
@@ -146,6 +147,7 @@ func normalizeURL(sourceURL *event.SourceURL) {
 }
 
 // Start ...
+// Start ...
 func (src *cloudwatchSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
@@ -168,6 +170,7 @@ func (src *cloudwatchSource) Start(
 
 	go func() {
 		defer wg.Done()
+		src.recentEvents = make(map[string]bool)
 		for running() {
 			src.cloudWatchRateLimiter.Take()
 			logEvents, err := src.logs.FilterLogEvents(
@@ -186,23 +189,31 @@ func (src *cloudwatchSource) Start(
 				continue
 			}
 
-			if logEvents.NextToken == nil {
-				// No more log events to fetch, exit the loop
-				break
-			}
-
-			src.nextToken = logEvents.NextToken
-
+			newEvents := false
 			for _, logEvent := range logEvents.Events {
 				if logEvent.Message != nil {
-					srcChan <- source.Event{Source: src, Event: *logEvent.Message}
+					_, found := src.recentEvents[*logEvent.EventId]
+					if !found && (src.lookbackTime == nil || logEvent.Timestamp == nil || *logEvent.Timestamp > src.lookbackTime.UnixMilli()) {
+						newEvents = true
+						srcChan <- source.Event{Source: src, Event: *logEvent.Message}
+					}
 				}
 			}
 
-			// Check if we have reached the end of the log events
-			if src.nextToken == nil || *src.nextToken == "" {
-				break
+			if newEvents {
+				src.recentEvents = make(map[string]bool)
+				for _, logEvent := range logEvents.Events {
+					id := *logEvent.EventId
+					src.recentEvents[id] = true
+				}
 			}
+
+			if logEvents.NextToken == nil || *logEvents.NextToken == "" {
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
+			src.nextToken = logEvents.NextToken
 		}
 	}()
 	return nil

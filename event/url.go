@@ -84,7 +84,9 @@ func (u *SourceURL) ShortForm() string {
 
 func (u *SourceURL) hashBytes() []byte {
 	hasher := sha256.New()
-	hasher.Write([]byte(u.String()))
+	hasher.Write([]byte(u.Scheme))
+	hasher.Write([]byte(u.Host))
+	hasher.Write([]byte(u.Path))
 	return hasher.Sum(nil)
 }
 

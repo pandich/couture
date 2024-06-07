@@ -7,14 +7,14 @@ GOPRIVATE		= github.com/gaggle-net/*
 VERSION			= $(shell cat VERSION)
 
 .PHONY: build
-build: clean tidy test
+build: clean quality test
 
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)/
 
 .PHONY: test
-test:
+test: quality
 	@mkdir -p $(BUILD_DIR)/
 	go mod verify
 
@@ -28,12 +28,22 @@ test:
 	@command -v gocov > /dev/null || go install github.com/axw/gocov/gocov@v1.0.0
 	@gocov convert $(COVERAGE_OUT) | gocov-xml > $(BUILD_DIR)/coverage.xml
 
+.PHONY: quality quality-mod quality-lint quality-staticcheck
+quality: quality-mod quality-lint quality-staticcheck
+quality-mod:
+	go mod tidy
+	go mod verify
+quality-lint:
+	@command -v golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	golangci-lint --timeout=10s run ./...
+quality-staticcheck:
+	@command -v staticcheck > /dev/null || go install honnef.co/go/tools/cmd/staticcheck@latest
+	staticcheck -tests -f stylish ./...
+
 .PHONY: tidy
-tidy:
 tidy:
 	go mod tidy
 	go fix ./...
-	go fmt ./...
 
 
 .PHONY: release

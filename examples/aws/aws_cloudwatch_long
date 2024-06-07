@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-couture cloudwatch://aws/lambda/gsm-appsync-api-CustomS3AutoDeleteObjectsCustomRes-13MNZpZE2uim
