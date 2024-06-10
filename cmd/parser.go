@@ -24,6 +24,7 @@ var parser = kong.Must(
 		kong.HelpOptions{
 			Summary:   true,
 			FlagsLast: true,
+			Compact:   true,
 		},
 	),
 

@@ -78,14 +78,12 @@ var classNames = map[string][]string{
 	"funky-cherub": {
 		"com.gaggle.funky.cherub.App",
 		"com.gaggle.funky.cherub.Logger",
+		"com.gaggle.funky.cherub.Serializer",
 		"com.gaggle.funky.cherub.util.Util",
 	},
 }
 var methodNames = map[string][]string{
 	"com.gaggle.greedy.turnip.Model": {
-		"getName",
-		"setName",
-		"getAge",
 		"setAge",
 	},
 	"com.gaggle.greedy.turnip.Controller": {
@@ -173,9 +171,34 @@ func init() {
 					level = "TRACE"
 				}
 
+				sentence := staticFaker.Sentence(10)
+				if class == "com.gaggle.funky.cherub.Serializer" {
+					if ba, err := faker.JSON(
+						&gofakeit.JSONOptions{
+							Type:     "object",
+							RowCount: 1,
+							Fields: []gofakeit.Field{
+								{
+									Name:     "widgetCount",
+									Function: "number",
+								},
+								{
+									Name:     "action",
+									Function: "verb",
+								},
+								{
+									Name:     "model",
+									Function: "noun",
+								},
+							},
+						},
+					); err == nil {
+						sentence = string(ba)
+					}
+				}
 				messages[class][method] = append(
 					messages[class][method], message{
-						body:  staticFaker.Sentence(10),
+						body:  sentence,
 						line:  uint(staticFaker.Uint64()%10_000 + 1),
 						level: level,
 					},
@@ -186,6 +209,11 @@ func init() {
 }
 
 func generateLogEvent() logEvent {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
 	application := []string{"greedy-turnip", "mangled-horseshoe", "funky-cherub"}[random.Intn(3)]
 	class := classNames[application][random.Intn(len(classNames[application]))]
 	method := methodNames[class][random.Intn(len(methodNames[class]))]
@@ -233,7 +261,6 @@ func sendEvent(svc *lambda.Client, n int) error {
 
 func main() {
 	const workerCount = 9
-	const eventCount = 10
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"))
 	if err != nil {

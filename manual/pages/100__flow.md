@@ -1,6 +1,10 @@
-# FLOW
+COUTURE
+=======
 
-## OVERVIEW
+FLOW
+----
+
+## EVENT LIFECYCLE
 
 Events flow from external sources to external outputs. Each event is identified, mapped, filtered,
 styled, and outputted.

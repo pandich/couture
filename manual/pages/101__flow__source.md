@@ -1,6 +1,10 @@
-# FLOW
+COUTURE
+=======
 
-## § SOURCE
+FLOW
+----
+
+## EVENT SOURCE
 
 A source is an abstraction of a pull or push-drive event system.
 Its only requirement is to emit textual events of a consistent
@@ -11,7 +15,7 @@ For instance, it is not possible to get lookback history on `stdin`.
 
 No detail usage is provided here. See `--help` for more information.
 
-## Flat Files
+### Flat Files
 
 Flat files are processed line-by-line. Each line must contain
 structured or semi-structure data. Unstructured data is appears

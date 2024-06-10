@@ -29,7 +29,7 @@ var cli struct {
 	Filter    filterLike `group:"filter" help:"Apply filter regular expressions." placeholder:"[+|-|!]regex" short:"f" sep:"|"`
 	Highlight highlight  `group:"filter" help:"Highlight matches from specified patterns in --include." negatable:"true" env:"COUTURE_HIGHLIGHT"`
 	Level     levelLike  `group:"filter" help:"Set the minimum log level to display: ${enum}." default:"trace" short:"l" enum:"trace,debug,info,warn,error" env:"COUTURE_LEVEL"`
-	Since     *time.Time `group:"filter" help:"Look for events from a specific time or duration back. Supports various formats." placeholder:"(time|duration)" short:"s"`
+	Since     *time.Time `group:"filter" help:"Look for events since a specific time." placeholder:"(time|duration)" short:"s"`
 
 	Column     columns    `group:"content" help:"Specify columns to display: ${enum}." placeholder:"column" enum:"${columnNames}" env:"COUTURE_COLUMN_NAMES"`
 	TimeFormat timeFormat `group:"content" help:"Use a Go-standard or named time format: ${timeFormatNames}. See Go time format constants." short:"t" default:"stamp" env:"COUTURE_TIME_FORMAT"`

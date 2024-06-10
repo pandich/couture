@@ -1,12 +1,12 @@
 package sink
 
 import (
+	"github.com/gagglepanda/couture/event"
 	"github.com/gagglepanda/couture/sink/layout"
 	theme2 "github.com/gagglepanda/couture/sink/theme"
 	"github.com/mattn/go-isatty"
 	"github.com/olekukonko/ts"
 	"os"
-	"time"
 )
 
 var (
@@ -16,7 +16,7 @@ var (
 	Disabled = false
 
 	// DefaultTimeFormat is the default time format used by the sink.
-	DefaultTimeFormat = time.Stamp
+	DefaultTimeFormat = event.HumanTimeFormat
 )
 
 // DefaultConfig returns default configuration for the sink.

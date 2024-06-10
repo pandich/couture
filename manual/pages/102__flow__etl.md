@@ -1,6 +1,10 @@
-# FLOW
+COUTURE
+=======
 
-## § EVENT IDENTIFICATION AND MAPPING
+FLOW
+----
+
+## EVENT IDENTIFICATION AND MAPPING
 
 Events are identified by the comparing the first event in the stream
 to a series of predicates mapped to log formats. The first predicate
@@ -16,20 +20,20 @@ mapper is asked if it recognizes the JSON structure.
 
 ```yaml
 logstash:
-  format: json
-  priority: 100
-  predicates:
-    "@version": "^1$"
-  mapping:
-    timestamp: "@timestamp"
-    level: level
-    application: application
-    context: thread_name
-    entity: class
-    action: method
-    line: line_number
-    message: message
-    error: exception.stacktrace
+	format: json
+	priority: 100
+	predicates:
+		"@version": "^1$"
+	mapping:
+		timestamp: "@timestamp"
+		level: level
+		application: application
+		context: thread_name
+		entity: class
+		action: method
+		line: line_number
+		message: message
+		error: exception.stacktrace
 ```
 
 #### Semi-Structured?
@@ -42,20 +46,20 @@ detect the structure of the event.
 
 ```yaml
 aws-billing-report:
-  format: text
-  priority: 90
-  predicates:
-    _: "^(?P<message>REPORT (?P<entity>RequestId):\\s+(?P<action>\\S+)\\s+.+)$"
+	format: text
+	priority: 90
+	predicates:
+		_: "^(?P<message>REPORT (?P<entity>RequestId):\\s+(?P<action>\\S+)\\s+.+)$"
 aws-billing-start:
-  format: text
-  priority: 90
-  predicates:
-    _: "^(?P<message>START (?P<entity>RequestId):(?P<action>\\s+\\S+).+)$"
+	format: text
+	priority: 90
+	predicates:
+		_: "^(?P<message>START (?P<entity>RequestId):(?P<action>\\s+\\S+).+)$"
 aws-billing-end:
-  format: text
-  priority: 90
-  predicates:
-    _: "^(?P<message>END (?P<entity>RequestId):\\s+(?P<action>\\S+)\\s+.+)$"
+	format: text
+	priority: 90
+	predicates:
+		_: "^(?P<message>END (?P<entity>RequestId):\\s+(?P<action>\\S+)\\s+.+)$"
 ```
 
 #### Unstructured

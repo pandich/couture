@@ -1,32 +1,34 @@
-USAGE
-=====
+COUTURE
+=======
 
-LIMITATIONS
------------
+FLOW
+----
+
+## LIMITATIONS
 
 Most sources do not fully support all configuration and command-line option.
 The options are intended to be a reasonable superset of all possible optionns.
 This is in contrast with having a more detail separation of options by source.
 If this is desired, please open an issue.
 
-## Sources
+### Sources
 
-### Flat Files
+#### Flat Files
 
-#### Local
+##### Local
 
-#### Pipe
+##### Pipe
 
-#### Remote
+##### Remote
 
-### AWS
+#### AWS
 
-#### CloudWatch
+##### CloudWatch
 
-#### CloudFormation
+##### CloudFormation
 
-### Other
+#### Other
 
-#### ElasticSearch
+##### ElasticSearch
 
-## Outputs
+### Outputs

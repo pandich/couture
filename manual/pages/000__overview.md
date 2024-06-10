@@ -1,12 +1,16 @@
-# COUTURE: OVERVIEW
+COUTURE
+=======
+
+OVERVIEW
+--------
+
+## ARCHITECTURE
 
 Modern software architectures mean logs exist in many places and modalities.
 This makes it difficult to aggregate and analyze logs in a single place.
 The slow cognitive toll of context switching between different log sources
 can be a significant productivity drain. It is also far harder to correlate
 events across different log sources.
-
-## ARCHITECTURE
 
 ```mermaid
 flowchart TB
