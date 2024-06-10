@@ -50,6 +50,9 @@ tidy:
 release: build
 	git tag $(VERSION)
 	git push origin $(VERSION)
+	rm -rf dist/
+	goreleaser
+
 
 .PHONY: docs
 docs:
