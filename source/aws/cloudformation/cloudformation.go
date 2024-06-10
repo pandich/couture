@@ -47,11 +47,6 @@ func Metadata() source.Metadata {
 	}
 }
 
-const (
-	// includeStackEventsFlag is the url.URL query parameter indicating whether stack events should be included.
-	includeStackEventsFlag = "events"
-)
-
 // logLevelByResourceStatus maps each possible resource status to a log level.
 var logLevelByResourceStatus = map[types.ResourceStatus]level.Level{
 	types.ResourceStatusCreateInProgress: level.Info,
@@ -106,8 +101,6 @@ type (
 
 // newSource CloudFormation source.
 func newSource(since *time.Time, sourceURL event.SourceURL) ([]source.Source, error) {
-	const maxRequestsPerMinute = 20
-
 	normalizeURL(&sourceURL)
 	stackName := sourceURL.Path[1:]
 	awsSource, err := aws.New('☁', &sourceURL)
