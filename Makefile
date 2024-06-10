@@ -44,8 +44,8 @@ clean:
 	rm -rf dist/ build/
 build: neat
 	go build -o build/$(APPLICATION) .
-release: goreleaser neat
-	goreleaser build --snapshot --rm-dist
+release: goreleaser
+	goreleaser
 
 
 #
