@@ -23,7 +23,7 @@ archives:
 
 release:
   github:
-    owner: gagglepanda
+    owner: pandich
     name: couture
   draft: true
 
