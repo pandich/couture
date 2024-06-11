@@ -47,10 +47,10 @@ tidy:
 
 
 .PHONY: release
-release: build
+release:
 	git tag $(VERSION)
 	git push origin $(VERSION)
-	rm -rf dist/
+	rm -rf dist/ build/
 	goreleaser
 
 
