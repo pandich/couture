@@ -9,11 +9,19 @@ builds:
       - linux
       - windows
     goarch:
-      - "amd64"
-      - "arm64"
-      - "386"
+      - amd64
+      - arm64
     ldflags:
       - -s -w
+    hooks:
+      post: |
+        if [[ "{{ .Os }}" == "darwin" ]]; then
+          codesign --deep --force --verbose --sign "Developer ID Application: Stephen Pandich (D9W3Q7D7N3)" --entitlements .sign/entitlements.mac.plist --options=runtime dist/couture_{{ .Os }}_{{ .Arch }}/couture
+          hdiutil create -volname Couture -srcfolder dist/couture_{{ .Os }}_{{ .Arch }} -ov -format UDZO dist/couture_{{ .Os }}_{{ .Arch }}.dmg
+          xcrun notarytool submit dist/couture_{{ .Os }}_{{ .Arch }}.dmg --key .sign/AuthKey_WX54UD585Y.p8 --key-id WX54UD585Y --issuer 76e8081d-f643-42b9-a772-11481959ad52 --wait
+          xcrun stapler staple dist/couture_{{ .Os }}_{{ .Arch }}.dmg
+          xcrun stapler validate dist/couture_{{ .Os }}_{{ .Arch }}.dmg
+        fi
 
 archives:
   - format: tar.gz
@@ -32,3 +40,14 @@ snapshot:
 
 env:
   - CGO_ENABLED=0
+
+signs:
+  - cmd: cosign
+    stdin: "{{ .Env.COSIGN_PWD }}"
+    args:
+      - "sign-blob"
+      - "--key=cosign.key"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+      - "--yes" # needed on cosign 2.0.0+
+    artifacts: all

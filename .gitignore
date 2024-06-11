@@ -51,3 +51,6 @@ dist/
 *.peg.go
 statik.go
 .lastbuild
+*.cer
+*.provisionprofile
+.sign/

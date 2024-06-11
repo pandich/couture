@@ -39,12 +39,14 @@ asciicast2gif:
 
 #
 # Build
-.PHONY: clean build release
+.PHONY: clean build release sign
 clean:
 	rm -rf dist/ build/
 build: neat
 	go build -o build/$(APPLICATION) .
 release: go-release
+sign:
+	codesign --deep --force --verbose --sign "Apple Development: Stephen Pandich (D9W3Q7D7N3)"  --provisioning-profile Couture.provisionprofile build/couture
 
 
 #
