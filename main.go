@@ -4,8 +4,8 @@ package main
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gagglepanda/couture/cmd"
-	"github.com/gagglepanda/couture/manual"
+	"github.com/pandich/couture/cmd"
+	"github.com/pandich/couture/manual"
 	"os"
 )
 

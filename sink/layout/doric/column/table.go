@@ -1,10 +1,10 @@
 package column
 
 import (
-	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/event/level"
-	"github.com/gagglepanda/couture/mapping"
-	"github.com/gagglepanda/couture/sink"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/event/level"
+	"github.com/pandich/couture/mapping"
+	"github.com/pandich/couture/sink"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/termenv"
 )

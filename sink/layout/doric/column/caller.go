@@ -3,9 +3,9 @@ package column
 import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/sink/color"
-	"github.com/gagglepanda/couture/sink/layout"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/sink/color"
+	"github.com/pandich/couture/sink/layout"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 

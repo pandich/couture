@@ -1,10 +1,10 @@
 package column
 
 import (
-	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/mapping"
-	"github.com/gagglepanda/couture/sink/color"
-	"github.com/gagglepanda/couture/sink/layout"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/mapping"
+	"github.com/pandich/couture/sink/color"
+	"github.com/pandich/couture/sink/layout"
 )
 
 func newContextColumn(style color.FgBgTuple, layout layout.ColumnLayout) column {

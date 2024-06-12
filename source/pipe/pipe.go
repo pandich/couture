@@ -2,8 +2,8 @@ package pipe
 
 import (
 	"bufio"
-	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/source"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/source"
 	"io"
 	"sync"
 )

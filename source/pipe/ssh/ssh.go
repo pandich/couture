@@ -3,9 +3,9 @@
 package ssh
 
 import (
-	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/source"
-	"github.com/gagglepanda/couture/source/pipe"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/source"
+	"github.com/pandich/couture/source/pipe"
 	"github.com/melbahja/goph"
 	"reflect"
 	"sync"

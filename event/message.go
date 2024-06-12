@@ -1,6 +1,6 @@
 package event
 
-import "github.com/gagglepanda/couture/model"
+import "github.com/pandich/couture/model"
 
 // Message ...
 type (

@@ -1,11 +1,11 @@
 package manager
 
 import (
-	"github.com/gagglepanda/couture/event/level"
-	"github.com/gagglepanda/couture/mapping"
-	"github.com/gagglepanda/couture/model"
-	"github.com/gagglepanda/couture/sink"
-	"github.com/gagglepanda/couture/source"
+	"github.com/pandich/couture/event/level"
+	"github.com/pandich/couture/mapping"
+	"github.com/pandich/couture/model"
+	"github.com/pandich/couture/sink"
+	"github.com/pandich/couture/source"
 	errors2 "github.com/pkg/errors"
 	"sync"
 )

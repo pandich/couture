@@ -3,7 +3,7 @@ package source
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/gagglepanda/couture/event"
+	"github.com/pandich/couture/event"
 	"net/url"
 	"reflect"
 	"strings"

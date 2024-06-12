@@ -3,7 +3,7 @@ package mapping
 import (
 	"embed"
 	"github.com/coreos/etcd/pkg/fileutil"
-	"github.com/gagglepanda/couture/couture"
+	"github.com/pandich/couture/couture"
 	"gopkg.in/yaml.v3"
 	"io"
 	"os"

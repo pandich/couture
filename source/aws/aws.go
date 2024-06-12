@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/source"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/source"
 )
 
 const (

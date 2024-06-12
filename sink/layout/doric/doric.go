@@ -1,10 +1,10 @@
 package doric
 
 import (
-	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/sink"
-	column2 "github.com/gagglepanda/couture/sink/layout/doric/column"
-	"github.com/gagglepanda/couture/source"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/sink"
+	column2 "github.com/pandich/couture/sink/layout/doric/column"
+	"github.com/pandich/couture/source"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 

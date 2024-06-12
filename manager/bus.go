@@ -2,11 +2,11 @@ package manager
 
 import (
 	"fmt"
-	"github.com/gagglepanda/couture/couture"
-	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/mapping"
-	"github.com/gagglepanda/couture/model"
-	"github.com/gagglepanda/couture/source"
+	"github.com/pandich/couture/couture"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/mapping"
+	"github.com/pandich/couture/model"
+	"github.com/pandich/couture/source"
 	"github.com/joomcode/errorx"
 	"github.com/rcrowley/go-metrics"
 	"go.uber.org/ratelimit"

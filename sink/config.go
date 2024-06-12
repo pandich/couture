@@ -1,9 +1,9 @@
 package sink
 
 import (
-	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/sink/layout"
-	theme2 "github.com/gagglepanda/couture/sink/theme"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/sink/layout"
+	theme2 "github.com/pandich/couture/sink/theme"
 	"github.com/mattn/go-isatty"
 	"github.com/olekukonko/ts"
 	"os"

@@ -3,9 +3,9 @@ package manager
 import (
 	"bytes"
 	"github.com/araddon/dateparse"
-	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/event/level"
-	"github.com/gagglepanda/couture/mapping"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/event/level"
+	"github.com/pandich/couture/mapping"
 	"github.com/tidwall/gjson"
 	"html/template"
 	"strings"

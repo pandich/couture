@@ -3,9 +3,9 @@ package cmd
 import (
 	"github.com/alecthomas/kong"
 	"github.com/araddon/dateparse"
-	"github.com/gagglepanda/couture/event"
-	"github.com/gagglepanda/couture/event/level"
-	"github.com/gagglepanda/couture/model"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/event/level"
+	"github.com/pandich/couture/model"
 	errors2 "github.com/pkg/errors"
 	"reflect"
 	"regexp"
@@ -14,7 +14,7 @@ import (
 )
 
 import (
-	"github.com/gagglepanda/couture/sink"
+	"github.com/pandich/couture/sink"
 )
 
 // custom type declarations to add functionakity to kong.

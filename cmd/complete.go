@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"github.com/alecthomas/kong"
-	"github.com/gagglepanda/couture/couture"
-	"github.com/gagglepanda/couture/mapping"
-	"github.com/gagglepanda/couture/sink/theme"
+	"github.com/pandich/couture/couture"
+	"github.com/pandich/couture/mapping"
+	"github.com/pandich/couture/sink/theme"
 	"github.com/iancoleman/strcase"
 	"github.com/pkg/errors"
 	"github.com/posener/complete/v2"

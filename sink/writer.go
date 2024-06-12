@@ -1,7 +1,7 @@
 package sink
 
 import (
-	"github.com/gagglepanda/couture/source"
+	"github.com/pandich/couture/source"
 	"io"
 	"strings"
 	"sync"

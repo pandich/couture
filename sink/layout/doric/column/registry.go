@@ -2,10 +2,10 @@ package column
 
 import (
 	"fmt"
-	"github.com/gagglepanda/couture/mapping"
-	"github.com/gagglepanda/couture/sink"
-	"github.com/gagglepanda/couture/sink/color"
-	"github.com/gagglepanda/couture/sink/layout"
+	"github.com/pandich/couture/mapping"
+	"github.com/pandich/couture/sink"
+	"github.com/pandich/couture/sink/color"
+	"github.com/pandich/couture/sink/layout"
 	"github.com/i582/cfmt/cmd/cfmt"
 )
 

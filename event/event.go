@@ -4,9 +4,9 @@ package event
 
 import (
 	"fmt"
-	"github.com/gagglepanda/couture/event/level"
-	"github.com/gagglepanda/couture/mapping"
-	"github.com/gagglepanda/couture/model"
+	"github.com/pandich/couture/event/level"
+	"github.com/pandich/couture/mapping"
+	"github.com/pandich/couture/model"
 	"github.com/rcrowley/go-metrics"
 	"math"
 )

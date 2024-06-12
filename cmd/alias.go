@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/aymerick/raymond"
 	"github.com/coreos/etcd/pkg/fileutil"
-	"github.com/gagglepanda/couture/couture"
+	"github.com/pandich/couture/couture"
 	"github.com/hashicorp/go-multierror"
 	errors2 "github.com/pkg/errors"
 	"github.com/sethvargo/go-envconfig"

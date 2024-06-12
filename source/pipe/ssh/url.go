@@ -1,7 +1,7 @@
 package ssh
 
 import (
-	"github.com/gagglepanda/couture/event"
+	"github.com/pandich/couture/event"
 	"github.com/melbahja/goph"
 	"net/url"
 	"os"

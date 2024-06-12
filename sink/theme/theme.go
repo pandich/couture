@@ -2,9 +2,9 @@ package theme
 
 import (
 	"fmt"
-	"github.com/gagglepanda/couture/event/level"
-	"github.com/gagglepanda/couture/sink/color"
-	"github.com/gagglepanda/couture/source"
+	"github.com/pandich/couture/event/level"
+	"github.com/pandich/couture/sink/color"
+	"github.com/pandich/couture/source"
 	"github.com/muesli/gamut"
 	"github.com/muesli/gamut/palette"
 	"github.com/tidwall/pretty"
