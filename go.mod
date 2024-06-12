@@ -1,4 +1,4 @@
-module github.com/gagglepanda/couture
+module github.com/pandich/couture
 
 go 1.22
 
