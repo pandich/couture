@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"github.com/alecthomas/kong"
+	"github.com/iancoleman/strcase"
 	"github.com/pandich/couture/couture"
 	"github.com/pandich/couture/mapping"
 	"github.com/pandich/couture/sink/theme"
-	"github.com/iancoleman/strcase"
 	"github.com/pkg/errors"
 	"github.com/posener/complete/v2"
 	"github.com/posener/complete/v2/predict"

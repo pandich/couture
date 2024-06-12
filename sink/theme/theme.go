@@ -2,11 +2,11 @@ package theme
 
 import (
 	"fmt"
+	"github.com/muesli/gamut"
+	"github.com/muesli/gamut/palette"
 	"github.com/pandich/couture/event/level"
 	"github.com/pandich/couture/sink/color"
 	"github.com/pandich/couture/source"
-	"github.com/muesli/gamut"
-	"github.com/muesli/gamut/palette"
 	"github.com/tidwall/pretty"
 	"math/rand"
 	"slices"

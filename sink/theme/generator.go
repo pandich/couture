@@ -1,9 +1,9 @@
 package theme
 
 import (
+	"github.com/muesli/gamut/palette"
 	"github.com/pandich/couture/event/level"
 	"github.com/pandich/couture/sink/color"
-	"github.com/muesli/gamut/palette"
 	errors2 "github.com/pkg/errors"
 )
 

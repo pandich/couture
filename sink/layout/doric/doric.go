@@ -1,11 +1,11 @@
 package doric
 
 import (
+	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/sink"
 	column2 "github.com/pandich/couture/sink/layout/doric/column"
 	"github.com/pandich/couture/source"
-	"github.com/i582/cfmt/cmd/cfmt"
 )
 
 const sinkName = "doric"

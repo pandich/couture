@@ -1,12 +1,12 @@
 package column
 
 import (
+	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/event/level"
 	"github.com/pandich/couture/mapping"
 	"github.com/pandich/couture/sink/color"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/i582/cfmt/cmd/cfmt"
 )
 
 type levelColumn struct {

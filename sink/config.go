@@ -1,11 +1,11 @@
 package sink
 
 import (
+	"github.com/mattn/go-isatty"
+	"github.com/olekukonko/ts"
 	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/sink/layout"
 	theme2 "github.com/pandich/couture/sink/theme"
-	"github.com/mattn/go-isatty"
-	"github.com/olekukonko/ts"
 	"os"
 )
 

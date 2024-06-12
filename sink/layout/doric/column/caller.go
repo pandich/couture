@@ -3,10 +3,10 @@ package column
 import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/i582/cfmt/cmd/cfmt"
 	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/sink/color"
 	"github.com/pandich/couture/sink/layout"
-	"github.com/i582/cfmt/cmd/cfmt"
 )
 
 const (

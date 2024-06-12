@@ -2,12 +2,12 @@ package manager
 
 import (
 	"fmt"
+	"github.com/joomcode/errorx"
 	"github.com/pandich/couture/couture"
 	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/mapping"
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/source"
-	"github.com/joomcode/errorx"
 	"github.com/rcrowley/go-metrics"
 	"go.uber.org/ratelimit"
 	"os"

@@ -1,8 +1,8 @@
 package ssh
 
 import (
-	"github.com/pandich/couture/event"
 	"github.com/melbahja/goph"
+	"github.com/pandich/couture/event"
 	"net/url"
 	"os"
 	"os/user"

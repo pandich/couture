@@ -1,14 +1,14 @@
 package column
 
 import (
+	"github.com/i582/cfmt/cmd/cfmt"
+	"github.com/muesli/reflow/indent"
 	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/event/level"
 	"github.com/pandich/couture/mapping"
 	"github.com/pandich/couture/sink/color"
 	"github.com/pandich/couture/sink/layout"
 	theme2 "github.com/pandich/couture/sink/theme"
-	"github.com/i582/cfmt/cmd/cfmt"
-	"github.com/muesli/reflow/indent"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
 	"strconv"

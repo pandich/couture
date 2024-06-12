@@ -3,10 +3,10 @@
 package ssh
 
 import (
+	"github.com/melbahja/goph"
 	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/source"
 	"github.com/pandich/couture/source/pipe"
-	"github.com/melbahja/goph"
 	"reflect"
 	"sync"
 	"time"

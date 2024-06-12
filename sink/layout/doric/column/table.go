@@ -1,12 +1,12 @@
 package column
 
 import (
+	"github.com/muesli/reflow/wordwrap"
+	"github.com/muesli/termenv"
 	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/event/level"
 	"github.com/pandich/couture/mapping"
 	"github.com/pandich/couture/sink"
-	"github.com/muesli/reflow/wordwrap"
-	"github.com/muesli/termenv"
 )
 
 // Table ...
