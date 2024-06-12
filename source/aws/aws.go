@@ -4,12 +4,9 @@ import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/pandich/couture/model"
+	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/source"
 )
-
-// LambdaLogGroupPrefix ...
-const LambdaLogGroupPrefix = "/aws/lambda"
 
 const (
 	// regionQueryFlag is the url.URL query parameter used to indicate the AWS region.
@@ -28,7 +25,7 @@ type Source struct {
 }
 
 // New parses the baseSource.sourceURL into region, profile, and entity.
-func New(sigil rune, sourceURL *model.SourceURL) (Source, error) {
+func New(sigil rune, sourceURL *event.SourceURL) (Source, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(), configOptions(sourceURL)...)
 	if err != nil {
 		return Source{}, err
@@ -40,7 +37,7 @@ func New(sigil rune, sourceURL *model.SourceURL) (Source, error) {
 	}, nil
 }
 
-func configOptions(sourceURL *model.SourceURL) []func(*config.LoadOptions) error {
+func configOptions(sourceURL *event.SourceURL) []func(*config.LoadOptions) error {
 	var options []func(*config.LoadOptions) error
 	if region, ok := sourceURL.QueryKey(regionQueryFlag); ok {
 		options = append(options, config.WithRegion(region))

@@ -1,10 +1,14 @@
+// Package local provides a source that tails a local file.
+// TODO replace with github.com/nxadm/tail
 package local
 
 import (
-	"github.com/pandich/couture/model"
+	"bufio"
+	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/source"
 	"github.com/pandich/couture/source/pipe"
-	"os/exec"
+	"io"
+	"os"
 	"path/filepath"
 	"reflect"
 	"sync"
@@ -16,8 +20,8 @@ func Metadata() source.Metadata {
 	return source.Metadata{
 		Name:        "Local File",
 		Type:        reflect.TypeOf(fileSource{}),
-		CanHandle:   func(url model.SourceURL) bool { return url.Scheme == "file" },
-		Creator:     newSource,
+		CanHandle:   func(url event.SourceURL) bool { return url.Scheme == "file" },
+		Creator:     source.Single(newSource),
 		ExampleURLs: []string{"file://<path>"},
 	}
 }
@@ -27,7 +31,7 @@ type fileSource struct {
 	filename string
 }
 
-func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(_ *time.Time, sourceURL event.SourceURL) (*source.Source, error) {
 	sourceURL.Normalize()
 	var src source.Source = fileSource{
 		BaseSource: source.New('⫽', sourceURL),
@@ -41,7 +45,7 @@ func (src fileSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
-	snkChan chan model.SinkEvent,
+	snkChan chan event.SinkEvent,
 	errChan chan source.Error,
 ) error {
 	// get the safe path to the file
@@ -50,18 +54,92 @@ func (src fileSource) Start(
 		return err
 	}
 
-	// create the command
-	tail := exec.Command("tail", "-F", path)
+	out := make(chan string)
+	pr, pw := io.Pipe()
 
-	// capture its output
-	in, err := tail.StdoutPipe()
-	if err != nil {
-		return err
-	}
+	go func() {
+		defer pw.Close()
+		writer := bufio.NewWriter(pw)
+		for line := range out {
+			_, err := writer.WriteString(line)
+			if err != nil {
+				errChan <- source.Error{Error: err}
+			} else {
+				writer.Flush()
+			}
+		}
+	}()
 
-	// and start it
-	if err = tail.Start(); err != nil {
-		return err
-	}
+	go func() {
+		var err error
+		if src.filename == "/-" {
+			err = tailStdin(out)
+		} else {
+			err = tailFile(path, out)
+		}
+		if err != nil {
+			errChan <- source.Error{Error: err}
+			close(out)
+		}
+	}()
+
+	in := bufio.NewReader(pr)
 	return pipe.Start(wg, running, src, srcChan, snkChan, errChan, func() {}, in)
+}
+
+func tailStdin(out chan<- string) error {
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		line, err := reader.ReadString('\n')
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		out <- line
+	}
+	close(out)
+	return nil
+}
+
+func tailFile(filePath string, out chan<- string) error {
+	for {
+		file, err := os.Open(filePath)
+		if err != nil {
+			return err
+		}
+
+		// TODO lookback
+		_, err = file.Seek(0, io.SeekEnd)
+		if err != nil {
+			return err
+		}
+
+		reader := bufio.NewReader(file)
+
+		for {
+			var line string
+			line, err = reader.ReadString('\n')
+			if err == nil {
+				out <- line
+				continue
+			}
+
+			if err != io.EOF {
+				return err
+			}
+
+			if _, statErr := os.Stat(filePath); os.IsNotExist(statErr) {
+				file.Close()
+				break
+			}
+
+			// wait for the file to be written to
+			time.Sleep(100 * time.Millisecond)
+		}
+
+		// wait for the file to exist
+		time.Sleep(100 * time.Millisecond)
+	}
 }

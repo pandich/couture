@@ -1,8 +1,10 @@
+// Package ssh provides a source for reading from a remote file over SSH.
+// TODO replace with https://pkg.go.dev/golang.org/x/crypto/ssh
 package ssh
 
 import (
 	"github.com/melbahja/goph"
-	"github.com/pandich/couture/model"
+	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/source"
 	"github.com/pandich/couture/source/pipe"
 	"reflect"
@@ -15,8 +17,8 @@ func Metadata() source.Metadata {
 	return source.Metadata{
 		Name:        "SSH",
 		Type:        reflect.TypeOf(sshSource{}),
-		CanHandle:   func(url model.SourceURL) bool { return url.Scheme == "ssh" },
-		Creator:     newSource,
+		CanHandle:   func(url event.SourceURL) bool { return url.Scheme == "ssh" },
+		Creator:     source.Single(newSource),
 		ExampleURLs: []string{"ssh://user:passphrase@host:port/<path>"},
 	}
 }
@@ -27,7 +29,7 @@ type sshSource struct {
 	filename string
 }
 
-func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(_ *time.Time, sourceURL event.SourceURL) (*source.Source, error) {
 	client, err := sshURL(sourceURL).getClient()
 	if err != nil {
 		return nil, err
@@ -46,7 +48,7 @@ func (src sshSource) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
-	snkChan chan model.SinkEvent,
+	snkChan chan event.SinkEvent,
 	errChan chan source.Error,
 ) error {
 	// create the command

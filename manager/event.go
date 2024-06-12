@@ -3,22 +3,22 @@ package manager
 import (
 	"bytes"
 	"github.com/araddon/dateparse"
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/schema"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/event/level"
+	"github.com/pandich/couture/mapping"
 	"github.com/tidwall/gjson"
 	"html/template"
 	"strings"
 	"time"
 )
 
-func unmarshallEvent(sch *schema.Schema, s string) *model.Event {
-	var evt *model.Event
+func unmarshallEvent(sch *mapping.Mapping, s string) *event.Event {
+	var evt *event.Event
 	if sch != nil {
 		switch sch.Format {
-		case schema.JSON:
+		case mapping.JSON:
 			evt = unmarshallJSONEvent(sch, s)
-		case schema.Text:
+		case mapping.Text:
 			fallthrough
 		default:
 			evt = unmarshallTextEvent(sch, s)
@@ -30,81 +30,86 @@ func unmarshallEvent(sch *schema.Schema, s string) *model.Event {
 	return evt
 }
 
-func unmarshallJSONEvent(sch *schema.Schema, s string) *model.Event {
+func unmarshallJSONEvent(sch *mapping.Mapping, s string) *event.Event {
 	values := map[string]gjson.Result{}
 	for i, value := range gjson.GetMany(s, sch.Fields...) {
 		field := sch.Fields[i]
 		values[field] = value
 	}
 
-	event := model.Event{}
+	evt := event.Event{}
 	for col, field := range sch.FieldByColumn {
 		updateEvent(
-			&event,
+			&evt,
 			col,
 			field,
 			values,
 			sch.TemplateByColumn[col],
 		)
 	}
-	return &event
+	return &evt
 }
 
-func unmarshallTextEvent(sch *schema.Schema, s string) *model.Event {
+func unmarshallTextEvent(sch *mapping.Mapping, s string) *event.Event {
 	if sch.TextPattern == nil {
 		return nil
 	}
 
-	event := model.Event{}
-	err := sch.TextPattern.MatchToTarget(strings.TrimRight(s, "\n"), &event)
+	evt := event.Event{}
+	err := sch.TextPattern.MatchToTarget(strings.TrimRight(s, "\n"), &evt)
 	if err != nil {
 		return nil
 	}
-	return &event
+	return &evt
 }
 
-func unmarshallUnknown(msg string) *model.Event {
-	return &model.Event{
-		Timestamp: model.Timestamp(time.Now()),
+func unmarshallUnknown(msg string) *event.Event {
+	return &event.Event{
+		Timestamp: event.Timestamp(time.Now()),
 		Level:     level.Info,
-		Message:   model.Message(msg),
+		Message:   event.Message(msg),
 	}
 }
 
-func updateEvent(event *model.Event, col string, field string, values map[string]gjson.Result, tmpl string) {
+func updateEvent(evt *event.Event, col string, field string, values map[string]gjson.Result, tmpl string) {
 	rawValue := values[field]
+
 	value := getValue(tmpl, values, rawValue)
-	switch schema.Column(col) {
-	case schema.Timestamp:
+
+	switch mapping.Column(col) {
+
+	case mapping.Timestamp:
 		s := value
 		if s != "" {
 			t, _ := dateparse.ParseAny(s)
-			event.Timestamp = model.Timestamp(t)
+			evt.Timestamp = event.Timestamp(t)
 		}
-	case schema.Application:
-		event.Application = model.Application(value)
-	case schema.Context:
-		event.Context = model.Context(value)
-	case schema.Entity:
-		event.Entity = model.Entity(value)
-	case schema.Action:
-		event.Action = model.Action(value)
-	case schema.Line:
+
+	case mapping.Application:
+		evt.Application = event.Application(value)
+
+	case mapping.Context:
+		evt.Context = event.Context(value)
+
+	case mapping.Entity:
+		evt.Entity = event.Entity(value)
+
+	case mapping.Action:
+		evt.Action = event.Action(value)
+
+	case mapping.Line:
 		if rawValue.Exists() {
-			event.Line = model.Line(rawValue.Int())
+			evt.Line = event.Line(rawValue.Int())
 		}
-	case schema.Level:
-		s := value
-		const defaultLevel = level.Info
-		if s != "" {
-			event.Level = level.ByName(s, defaultLevel)
-		} else {
-			event.Level = defaultLevel
-		}
-	case schema.Message:
-		event.Message = model.Message(value)
-	case schema.Error:
-		event.Error = model.Error(value)
+
+	case mapping.Level:
+		evt.Level = level.ByName(value)
+
+	case mapping.Message:
+		evt.Message = event.Message(value)
+
+	case mapping.Error:
+		evt.Error = event.Error(value)
 	}
 }
 
@@ -122,6 +127,7 @@ func getValue(tmpl string, data interface{}, defaultValue gjson.Result) string {
 	}
 
 	var txt bytes.Buffer
+
 	err = t.Execute(&txt, data)
 	if err != nil {
 		return "%%error:execute%%"

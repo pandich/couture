@@ -1,21 +1,17 @@
 package manager
 
 import (
+	"github.com/pandich/couture/event/level"
+	"github.com/pandich/couture/mapping"
 	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/model/level"
-	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/source"
 	errors2 "github.com/pkg/errors"
-	"runtime"
 	"sync"
 )
 
 // New creates an empty Manager.
 func New(config Config, opts ...interface{}) (*model.Manager, error) {
-	if runtime.GOOS == "windows" {
-		return nil, errors2.Errorf("unsupported operating system: %s", runtime.GOOS)
-	}
 	publisher := busManager{config: config, wg: &sync.WaitGroup{}}
 	if err := publisher.Register(opts...); err != nil {
 		return nil, err
@@ -29,7 +25,7 @@ type (
 	busManager struct {
 		// wg wait group for the Manager and its registry.
 		wg *sync.WaitGroup
-		// running whether or not this Manager has been started.
+		// running whether this Manager has been started.
 		running bool
 
 		// config contains general settings and toggles.
@@ -48,7 +44,7 @@ type (
 		DumpUnknown bool
 		Level       level.Level
 		Filters     []model.Filter
-		Schemas     []schema.Schema
+		Mappings    []mapping.Mapping
 		RateLimit   uint
 	}
 )

@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"github.com/joomcode/errorx"
 	"github.com/pandich/couture/couture"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/mapping"
 	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/schema"
 	"github.com/pandich/couture/source"
 	"github.com/rcrowley/go-metrics"
 	"go.uber.org/ratelimit"
@@ -18,9 +19,11 @@ const (
 	snkChanMeterName = "manager.snkChan.in"
 )
 
-var errChanMeter = metrics.NewMeter()
-var snkChanMeter = metrics.NewMeter()
-var srcChanMeter = metrics.NewMeter()
+var (
+	errChanMeter = metrics.NewMeter()
+	snkChanMeter = metrics.NewMeter()
+	srcChanMeter = metrics.NewMeter()
+)
 
 func init() {
 	metrics.GetOrRegister(errChanMeterame, errChanMeter)
@@ -28,35 +31,40 @@ func init() {
 	metrics.GetOrRegister(srcChanMeterName, srcChanMeter)
 }
 
-func (mgr *busManager) createChannels() (chan source.Event, chan model.SinkEvent, chan source.Error) {
+func (mgr *busManager) createChannels() (chan source.Event, chan event.SinkEvent, chan source.Error) {
 	errChan := mgr.makeErrChan()
 	alertChan := mgr.makeAlertChan(errChan)
-	unknownChan := mgr.makeUnknownhan()
+	unknownChan := mgr.makeUnknownChan()
 	snkChan := mgr.makeSnkChan(errChan)
 	srcChan := mgr.makeSrcChan(snkChan, alertChan, unknownChan)
 	return srcChan, snkChan, errChan
 }
 
-func (mgr *busManager) makeUnknownhan() chan string {
+func (mgr *busManager) makeUnknownChan() chan string {
 	unknownChan := make(chan string)
 	go func() {
 		for {
 			s := <-unknownChan
 			if mgr.config.DumpUnknown {
-				fmt.Fprintln(os.Stderr, s)
+				_, err := fmt.Fprintln(os.Stderr, s)
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}()
 	return unknownChan
 }
 
-func (mgr *busManager) makeAlertChan(errChan chan source.Error) chan model.SinkEvent {
-	alertChan := make(chan model.SinkEvent)
+func (mgr *busManager) makeAlertChan(errChan chan source.Error) chan event.SinkEvent {
+	alertChan := make(chan event.SinkEvent)
 	go func() {
 		for {
 			alert := <-alertChan
 			title := fmt.Sprintf("%s: %s (%s)", couture.Name, alert.Application, alert.SourceURL.ShortForm())
 			message := fmt.Sprintf("[%s] %s", alert.Level, alert.Message)
+
+			// this will block when a rate-limit is exceeded -- not sure this is ideal
 			if err := notifyOS(title, message); err != nil {
 				errChan <- source.Error{SourceURL: alert.SourceURL, Error: err}
 			}
@@ -65,6 +73,7 @@ func (mgr *busManager) makeAlertChan(errChan chan source.Error) chan model.SinkE
 	return alertChan
 }
 
+// makeErrChan for all errors occurring
 func (mgr *busManager) makeErrChan() chan source.Error {
 	errChan := make(chan source.Error)
 
@@ -94,8 +103,8 @@ func (mgr *busManager) makeErrChan() chan source.Error {
 }
 
 func (mgr *busManager) makeSrcChan(
-	snkChan chan model.SinkEvent,
-	alertChan chan model.SinkEvent,
+	snkChan chan event.SinkEvent,
+	alertChan chan event.SinkEvent,
 	unknownChan chan string,
 ) chan source.Event {
 	srcChan := make(chan source.Event)
@@ -110,18 +119,18 @@ func (mgr *busManager) makeSrcChan(
 				metrics.NewMeter(),
 			).(metrics.Meter)
 			srcChanSrcMeter.Mark(1)
-			sch := schema.GuessSchema(sourceEvent.Event, mgr.config.Schemas...)
+			sch := mapping.GuessMapping(sourceEvent.Event, mgr.config.Mappings...)
 			if sch == nil {
 				unknownChan <- sourceEvent.Event
 			}
 			modelEvent := unmarshallEvent(sch, sourceEvent.Event)
 			filterKind := mgr.filter(modelEvent)
-			modelEvent.AsCodeLocation().Mark(string(modelEvent.Level))
-			evt := model.SinkEvent{
+			modelEvent.CodeLocation().Mark(string(modelEvent.Level))
+			evt := event.SinkEvent{
 				SourceURL: sourceURL,
 				Event:     *modelEvent,
 				Filters:   mgr.config.Filters,
-				Schema:    sch,
+				Mapping:   sch,
 			}
 			switch filterKind {
 			case model.Exclude:
@@ -131,29 +140,35 @@ func (mgr *busManager) makeSrcChan(
 			case model.AlertOnce:
 				snkChan <- evt
 				alertChan <- evt
+			case model.None:
+				// do nothing
 			}
 		}
 	}()
 	return srcChan
 }
 
-func (mgr *busManager) makeSnkChan(errChan chan source.Error) chan model.SinkEvent {
-	snkChan := make(chan model.SinkEvent)
+// makeSnkChan creates the sink channel. The errChan is used to report out-of-band errors, and not error-level log
+// messages.
+func (mgr *busManager) makeSnkChan(errChan chan source.Error) chan event.SinkEvent {
+	snkChan := make(chan event.SinkEvent)
+
 	var limiter ratelimit.Limiter
 	if mgr.config.RateLimit == 0 {
 		limiter = ratelimit.NewUnlimited()
 	} else {
 		limiter = ratelimit.New(int(mgr.config.RateLimit))
+
 	}
 	go func() {
 		defer close(snkChan)
 		for {
-			event := <-snkChan
+			evt := <-snkChan
 			limiter.Take()
 			snkChanMeter.Mark(1)
 			for _, snk := range mgr.sinks {
-				if err := (*snk).Accept(event); err != nil {
-					errChan <- source.Error{SourceURL: event.SourceURL, Error: err}
+				if err := (*snk).Accept(evt); err != nil {
+					errChan <- source.Error{SourceURL: evt.SourceURL, Error: err}
 				}
 			}
 		}

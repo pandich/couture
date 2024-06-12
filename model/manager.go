@@ -24,7 +24,8 @@ type Manager interface {
 type FilterKind int
 
 const (
-	none FilterKind = iota
+	// None ...
+	None FilterKind = iota
 	// Exclude ...
 	Exclude
 	// AlertOnce ...
@@ -39,7 +40,12 @@ type Filter struct {
 	Kind    FilterKind
 }
 
-type filters []Filter
+// Filters provides a mechansim to filter events in one of the following ways:
+//   - None: Do not filter the event.
+//   - Exclude: Filter the event by excluding it.
+//   - AlertOnce: Filter the event by alerting it once and only once.
+//   - Include: Filter the event by including it.
+type Filters []Filter
 
 func (f FilterKind) isHighlighted() bool {
 	return f == Include
@@ -53,7 +59,7 @@ func (f Filter) replaceAllStringFunc(s string, replacer func(string) string) str
 }
 
 // ReplaceAllStringFunc ...
-func (fs filters) ReplaceAllStringFunc(s string, replacer func(string) string) string {
+func (fs Filters) ReplaceAllStringFunc(s string, replacer func(string) string) string {
 	for _, filter := range fs {
 		s = filter.replaceAllStringFunc(s, replacer)
 	}

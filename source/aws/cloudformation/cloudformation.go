@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
-	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/model/level"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/event/level"
+	"github.com/pandich/couture/global"
 	"github.com/pandich/couture/source"
 	"github.com/pandich/couture/source/aws"
 	"github.com/pandich/couture/source/aws/cloudwatch"
@@ -22,14 +23,18 @@ import (
 func Metadata() source.Metadata {
 	var exampleURLs []string
 	for _, scheme := range []string{scheme, schemeAliasShort, schemeAliasFriendly} {
-		exampleURLs = append(exampleURLs,
-			fmt.Sprintf("%s://<stack-name>?profile=<profile>&region=<region>&lookbackTime=<interval|date>&events(=<true|false>)", scheme),
+		exampleURLs = append(
+			exampleURLs,
+			fmt.Sprintf(
+				"%s://<stack-name>?profile=<profile>&region=<region>&lookbackTime=<interval|date>&events(=<true|false>)",
+				scheme,
+			),
 		)
 	}
 	return source.Metadata{
 		Name: "AWS CloudFormation",
 		Type: reflect.TypeOf(cloudFormationSource{}),
-		CanHandle: func(url model.SourceURL) bool {
+		CanHandle: func(url event.SourceURL) bool {
 			_, ok := map[string]bool{
 				scheme:              true,
 				schemeAliasShort:    true,
@@ -41,11 +46,6 @@ func Metadata() source.Metadata {
 		ExampleURLs: exampleURLs,
 	}
 }
-
-const (
-	// includeStackEventsFlag is the url.URL query parameter indicating whether stack events should be included.
-	includeStackEventsFlag = "events"
-)
 
 // logLevelByResourceStatus maps each possible resource status to a log level.
 var logLevelByResourceStatus = map[types.ResourceStatus]level.Level{
@@ -87,11 +87,8 @@ type (
 		aws.Source
 		// lookbackTime is how far back to look for log events.
 		lookbackTime *time.Time
-		// includeStackEvents specifies whether or not to include stack events in the log.
+		// includeStackEvents specifies whether to include stack events in the log.
 		includeStackEvents bool
-		// children represents all child sources added during stack-resource discovery.
-		// For example: a lambda's log group's cloudwatch.cloudwatchSource.
-		children []*source.Source
 		// cf represents the clo
 		cf        *cloudformation.Client
 		stackName string
@@ -103,9 +100,7 @@ type (
 )
 
 // newSource CloudFormation source.
-func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
-	const maxRequestsPerMinute = 20
-
+func newSource(since *time.Time, sourceURL event.SourceURL) ([]source.Source, error) {
 	normalizeURL(&sourceURL)
 	stackName := sourceURL.Path[1:]
 	awsSource, err := aws.New('☁', &sourceURL)
@@ -115,37 +110,45 @@ func newSource(since *time.Time, sourceURL model.SourceURL) (*source.Source, err
 
 	cf := cloudformation.NewFromConfig(awsSource.Config())
 
-	var children []*source.Source
+	var sources []source.Source
 	// add lambda functions
 	lambdaResources, err := discoverLambdaResources(cf, stackName)
 	if err != nil {
 		return nil, err
 	}
 	for _, lambdaResource := range lambdaResources {
-		logGroupName := path.Join(aws.LambdaLogGroupPrefix, *lambdaResource.PhysicalResourceId)
-		children = append(children, cloudwatch.New(awsSource, since, logGroupName))
+		logGroupName := path.Join("/aws/lambda", *lambdaResource.PhysicalResourceId)
+		src, err := aws.New(
+			'𝞴', &event.SourceURL{
+				Scheme:      "cloudwatch",
+				Host:        sourceURL.Host,
+				Path:        logGroupName,
+				RawFragment: sourceURL.RawFragment,
+				RawQuery:    sourceURL.RawQuery,
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+		url := src.URL()
+		if val, found := url.QueryKey("lookbackTime"); found {
+			dur, err := time.ParseDuration(val)
+			if err == nil {
+				local := time.Now().Add(-dur)
+				since = &local
+			}
+		}
+		child := cloudwatch.New(src, since, logGroupName)
+		if child != nil {
+			sources = append(sources, *child)
+		}
 	}
 
-	var src source.Source = cloudFormationSource{
-		Source:               awsSource,
-		lookbackTime:         since,
-		includeStackEvents:   sourceURL.QueryFlag(includeStackEventsFlag),
-		children:             children,
-		cf:                   cf,
-		stackName:            stackName,
-		stackEventsNextToken: nil,
-		stackEventTimes:      map[int64]bool{},
-		stackEventRateLimiter: ratelimit.New(
-			maxRequestsPerMinute,
-			ratelimit.Per(time.Minute),
-			ratelimit.WithSlack(maxRequestsPerMinute),
-		),
-	}
-	return &src, nil
+	return sources, nil
 }
 
 // normalizeURL take the sourceURL and expands any syntactic sugar.
-func normalizeURL(sourceURL *model.SourceURL) {
+func normalizeURL(sourceURL *event.SourceURL) {
 	sourceURL.Normalize()
 	switch {
 	case sourceURL.Scheme == schemeAliasShort:
@@ -155,19 +158,13 @@ func normalizeURL(sourceURL *model.SourceURL) {
 }
 
 // Start ...
-func (src cloudFormationSource) Start(
-	wg *sync.WaitGroup,
+func (src *cloudFormationSource) Start(
+	_ *sync.WaitGroup,
 	running func() bool,
-	srcChan chan source.Event,
-	snkChan chan model.SinkEvent,
+	_ chan source.Event,
+	snkChan chan event.SinkEvent,
 	errChan chan source.Error,
 ) error {
-	for _, child := range src.children {
-		err := (*child).Start(wg, running, srcChan, snkChan, errChan)
-		if err != nil {
-			return err
-		}
-	}
 	if src.includeStackEvents {
 		go func() {
 			for running() {
@@ -176,7 +173,9 @@ func (src cloudFormationSource) Start(
 					errChan <- source.Error{SourceURL: src.URL(), Error: err}
 				}
 				for _, evt := range stackEvents {
-					snkChan <- evt
+					if src.lookbackTime == nil || time.Time(evt.Timestamp).After(*src.lookbackTime) {
+						snkChan <- evt
+					}
 				}
 			}
 		}()
@@ -185,12 +184,14 @@ func (src cloudFormationSource) Start(
 }
 
 // getChildEvents retrieves CloudFormation events for this stack.
-func (src *cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
+func (src *cloudFormationSource) getStackEvents() ([]event.SinkEvent, error) {
 	src.stackEventRateLimiter.Take()
-	stackEvents, err := src.cf.DescribeStackEvents(context.TODO(), &cloudformation.DescribeStackEventsInput{
-		NextToken: src.stackEventsNextToken,
-		StackName: &src.stackName,
-	})
+	stackEvents, err := src.cf.DescribeStackEvents(
+		context.TODO(), &cloudformation.DescribeStackEventsInput{
+			NextToken: src.stackEventsNextToken,
+			StackName: &src.stackName,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -208,41 +209,41 @@ func (src *cloudFormationSource) getStackEvents() ([]model.SinkEvent, error) {
 
 func (src *cloudFormationSource) stackEventsToModelEvents(
 	stackEvents *cloudformation.DescribeStackEventsOutput,
-) ([]model.SinkEvent, error) {
-	var events []model.SinkEvent
+) ([]event.SinkEvent, error) {
+	var events []event.SinkEvent
 	for _, stackEvent := range stackEvents.StackEvents {
-		event := src.stackEventToModelEvent(stackEvent)
-		events = append(events, model.SinkEvent{Event: event, SourceURL: src.URL()})
+		evt := src.stackEventToModelEvent(stackEvent)
+		events = append(events, event.SinkEvent{Event: evt, SourceURL: src.URL()})
 	}
 	return events, nil
 }
 
-func (src *cloudFormationSource) stackEventToModelEvent(stackEvent types.StackEvent) model.Event {
-	var message model.Message
-	var evtError model.Error
+func (src *cloudFormationSource) stackEventToModelEvent(stackEvent types.StackEvent) event.Event {
+	var message event.Message
+	var evtError event.Error
 
 	lvl := logLevelByResourceStatus[stackEvent.ResourceStatus]
 	if lvl == level.Error {
-		evtError = model.Error(stackEvent.ResourceStatus)
+		evtError = event.Error(stackEvent.ResourceStatus)
 	} else {
-		message = model.Message(stackEvent.ResourceStatus)
+		message = event.Message(stackEvent.ResourceStatus)
 	}
-	var entity = model.Entity(*stackEvent.StackName)
+	var entity = event.Entity(*stackEvent.StackName)
 	if s := stackEvent.PhysicalResourceId; s != nil && *s != "" {
-		entity = model.Entity(*s)
+		entity = event.Entity(*s)
 	}
-	event := model.Event{
-		Timestamp:   model.Timestamp(*stackEvent.Timestamp),
-		Application: model.Application(*stackEvent.ResourceType),
-		Context:     model.Context(*stackEvent.EventId),
+	evt := event.Event{
+		Timestamp:   event.Timestamp(*stackEvent.Timestamp),
+		Application: event.Application(*stackEvent.ResourceType),
+		Context:     event.Context(*stackEvent.EventId),
 		Entity:      entity,
-		Action:      model.Action(""),
-		Line:        model.NoLineNumber,
+		Action:      event.Action(""),
+		Line:        event.NoLineNumber,
 		Level:       lvl,
 		Message:     message,
 		Error:       evtError,
 	}
-	return event
+	return evt
 }
 
 // discoverLambdaResources discovers all lambdas under the stack or its child stacks.
@@ -258,12 +259,24 @@ func discoverLambdaResources(cf *cloudformation.Client, stackName string) ([]typ
 	for _, resource := range resources.StackResources {
 		switch *resource.ResourceType {
 		case "AWS::Lambda::Function":
+			global.DiscoveryBus <- global.Resource{
+				Kind: "aws::lambda::function",
+				Name: *resource.PhysicalResourceId,
+			}
 			lambdaFunctions = append(lambdaFunctions, resource)
 		case "AWS::CloudFormation::Stack":
 			subResources, err := discoverLambdaResources(cf, *resource.LogicalResourceId)
 			if err != nil {
 				return nil, err
 			}
+
+			for _, subResource := range subResources {
+				global.DiscoveryBus <- global.Resource{
+					Kind: "aws::cloudformation=>aws::lambda::function",
+					Name: *subResource.PhysicalResourceId,
+				}
+			}
+
 			lambdaFunctions = append(lambdaFunctions, subResources...)
 		}
 	}

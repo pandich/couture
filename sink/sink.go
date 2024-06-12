@@ -1,7 +1,7 @@
 package sink
 
 import (
-	"github.com/pandich/couture/model"
+	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/source"
 )
 
@@ -10,5 +10,5 @@ type Sink interface {
 	// Init called prior to the beginning of logging.
 	Init(sources []*source.Source)
 	// Accept consumes an event, typically for display.
-	Accept(event model.SinkEvent) error
+	Accept(event event.SinkEvent) error
 }

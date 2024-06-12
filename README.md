@@ -1,47 +1,64 @@
-![Couture](docs/couture.png)
+COUTURE
+=======
 
-[![Go Report Card](http://goreportcard.com/badge/github.com/pandich/couture)](https://goreportcard.com/badge/github.com/pandich/couture)
-[![goreleaser](http://github.com/pandich/couture/actions/workflows/goreleaser.yml/badge.svg)](https://github.com/pandich/couture/actions/workflows/goreleaser.yml)
-[![CodeQL](https://github.com/pandich/couture/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/pandich/couture/actions/workflows/codeql-analysis.yml)
+A purely CLI logging experience.
 
----
 
-Couture combines multiple log streams from disparate sources into human-friendly output.
+EXAMPLES
+--------
 
-### Installation
+## AWS
 
-	go get -u github.com/pandich/couture	
+### AWS Profile and Region
 
-### Usage:
+```shell
+couture cloudwatch:///aws/lambda/someLambda?profile=developer-alice&region=us-east-1
+```
 
-	couture --help
+### CloudWatch Logs
 
-### Configuration
+```shell
+couture cloudwatch:///aws/...your log group ...
+```
 
-SSH logging depends on passwordless login. See [ssh-copy-id](https://www.ssh.com/academy/ssh/copy-id) for information on
-how to easily do so.
+### S3
 
-[comment]: <> (TODO config doc)
+```shell
+ couture s3:///my-bucket/my-key
+```
 
----
+### CloudFormation
 
-### Examples:
+```shell
+couture cloudformation:///my-stack
+```
 
-#### Single-line
+#### Short Forms
 
-	couture \
-		--highlight --filter=+distincto --filter=+'\"first_name\"\s*:\s*\"B' --filter=+quinoa \ 
-		fake://?style=hacker \
-		fake://?style=lorem \
-		fake://?style=hipster
+```shell
+# cloudwatch
+couture cw:///...
+couture logs:///...
+# /aws/lambda/...
+couture cf:///my-stack
+couture stack:///my-stack
+couture lambda:///...
+# /aws/appsync/apis/...
+couture appsync:///...
+# codebuild base
+couture codebuild:///...
+# /aws/rds/...
+couture rds:///...
+# /aws/rds/instance/...
+couture rdsi:///...
+# /aws/rds/cluster/...
+couture rdsc:///...
+```
 
-![Couture](docs/example-fake-single-line.gif)
+### Further Examples
 
-#### Multi-line
-
-	couture --expand --multiline \
-		fake://?style=hacker \
-		fake://?style=lorem \
-		fake://?style=hipster
-
-![Couture](docs/example-fake-multi-line.gif)
+```shell
+couture rdsi:///my-db-integration-imp/error
+couture appsync://xyvwetblljgkahzew5w5pqeije
+couture cf:///my-stack
+```

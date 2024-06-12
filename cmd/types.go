@@ -3,8 +3,9 @@ package cmd
 import (
 	"github.com/alecthomas/kong"
 	"github.com/araddon/dateparse"
+	"github.com/pandich/couture/event"
+	"github.com/pandich/couture/event/level"
 	"github.com/pandich/couture/model"
-	"github.com/pandich/couture/model/level"
 	errors2 "github.com/pkg/errors"
 	"reflect"
 	"regexp"
@@ -16,15 +17,19 @@ import (
 	"github.com/pandich/couture/sink"
 )
 
+// custom type declarations to add functionakity to kong.
+
+const (
+	colorModeAuto  colorMode = "auto"
+	colorModeDark  colorMode = "dark"
+	colorModeLight colorMode = "light"
+)
+
 var (
-	enabled, disabled = true, false
-
-	defaultTimeFormat = time.Stamp
-
-	cliDoricConfig = sink.Config{}
+	sinkConfig = sink.DefaultConfig()
 
 	timeFormatNames = []string{
-		model.HumanTimeFormat,
+		event.HumanTimeFormat,
 		"c",
 		"iso8601",
 		"iso8601-nanos",
@@ -63,243 +68,243 @@ type (
 	wrap             bool
 	dumpMetrics      bool
 	dumpUnknown      bool
-	showSchema       bool
+	showMapping      bool
 	rateLimit        uint
 	filterLike       []string
+	colorMode        string
 )
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// sink configuration:
+
+// AfterApply provides additional functionality to CLI processor.
 func (v *autoResize) AfterApply() error {
 	if v == nil {
 		return nil
 	}
 	b := bool(*v)
-	cliDoricConfig.AutoResize = &b
+	sinkConfig.AutoResize = &b
 	return nil
 }
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *noColor) AfterApply() error {
 	if v == nil {
 		return nil
 	}
 	b := !bool(*v)
-	cliDoricConfig.Color = &b
+	sinkConfig.Color = &b
 	return nil
 }
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v columns) AfterApply() error { cliDoricConfig.Columns = v; return nil }
+// AfterApply provides additional functionality to CLI processor.
+func (v columns) AfterApply() error { sinkConfig.Columns = v; return nil }
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *consistentColors) AfterApply() error {
 	if v == nil {
 		return nil
 	}
 	b := bool(*v)
-	cliDoricConfig.ConsistentColors = &b
+	sinkConfig.ConsistentColors = &b
 	return nil
 }
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *expand) AfterApply() error {
 	if v == nil {
 		return nil
 	}
 	b := bool(*v)
-	cliDoricConfig.Expand = &b
+	sinkConfig.Expand = &b
 	return nil
 }
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *highlight) AfterApply() error {
 	if v == nil {
 		return nil
 	}
 	b := bool(*v)
-	cliDoricConfig.Highlight = &b
+	sinkConfig.Highlight = &b
 	return nil
 }
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *multiLine) AfterApply() error {
 	if v == nil {
 		return nil
 	}
 	b := bool(*v)
-	cliDoricConfig.MultiLine = &b
+	sinkConfig.MultiLine = &b
 	return nil
 }
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *levelMeter) AfterApply() error {
 	if v == nil {
 		return nil
 	}
 	b := bool(*v)
-	cliDoricConfig.LevelMeter = &b
+	sinkConfig.LevelMeter = &b
 	return nil
 }
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v tty) AfterApply() error { cliDoricConfig.TTY = bool(v); return nil }
+// AfterApply provides additional functionality to CLI processor.
+func (v tty) AfterApply() error { sinkConfig.TTY = bool(v); return nil }
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *width) AfterApply() error {
 	if v == nil {
 		return nil
 	}
 	ui := uint(*v)
-	cliDoricConfig.Width = &ui
+	sinkConfig.Width = &ui
 	return nil
 }
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (v *wrap) AfterApply() error {
 	if v == nil {
 		return nil
 	}
 	b := bool(*v)
-	cliDoricConfig.Wrap = &b
+	sinkConfig.Wrap = &b
 	return nil
 }
 
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v dumpMetrics) AfterApply() error { managerConfig.DumpMetrics = bool(v); return nil }
-
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v dumpUnknown) AfterApply() error { managerConfig.DumpUnknown = bool(v); return nil }
-
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v *showSchema) AfterApply() error {
-	if v == nil {
-		return nil
-	}
-	b := bool(*v)
-	cliDoricConfig.ShowSchema = &b
-	return nil
-}
-
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v rateLimit) AfterApply() error { managerConfig.RateLimit = uint(v); return nil }
-
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (v levelLike) AfterApply() error { managerConfig.Level = level.Level(v); return nil }
-
-// AfterApply ...
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
-func (f filterLike) AfterApply() (err error) {
-	managerConfig.Filters, err = f.asFilters()
-	return
-}
-
-// AfterApply ...
-//nolint: funlen
-//goland:noinspection GoUnnecessarilyExportedIdentifiers
+// AfterApply provides additional functionality to CLI processor.
 func (t *timeFormat) AfterApply() error {
 	if t == nil {
 		return nil
 	}
 	format := strings.ToLower(string(*t))
 	switch format {
-	case model.HumanTimeFormat:
-		cliDoricConfig.TimeFormat = &format
+	case event.HumanTimeFormat:
+		sinkConfig.TimeFormat = &format
 	case "c":
 		s := time.ANSIC
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "unix":
 		s := time.UnixDate
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "ruby":
 		s := time.RubyDate
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "rfc822":
 		s := time.RFC822
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "rfc822-utc":
 		s := time.RFC822Z
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "rfc850":
 		s := time.RFC850
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "rfc1123":
 		s := time.RFC1123
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "rfc1123-utc":
 		s := time.RFC1123Z
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "rfc3339", "iso8601":
 		s := time.RFC3339
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "rfc3339-nanos", "iso8601-nanos":
 		s := time.RFC3339Nano
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "kitchen":
 		s := time.Kitchen
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "stamp":
 		s := time.Stamp
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "stamp-millis":
 		s := time.StampMilli
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "stamp-micros":
 		s := time.StampMicro
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	case "stamp-nanos":
 		s := time.StampNano
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	default:
 		s := "stamp"
-		cliDoricConfig.TimeFormat = &s
+		sinkConfig.TimeFormat = &s
 	}
 	return nil
 }
 
+// logging manager configuration:
+
+// AfterApply provides additional functionality to CLI processor.
+func (v dumpMetrics) AfterApply() error { mgrCfg.DumpMetrics = bool(v); return nil }
+
+// AfterApply provides additional functionality to CLI processor.
+func (v dumpUnknown) AfterApply() error { mgrCfg.DumpUnknown = bool(v); return nil }
+
+// AfterApply provides additional functionality to CLI processor.
+func (v rateLimit) AfterApply() error { mgrCfg.RateLimit = uint(v); return nil }
+
+// AfterApply provides additional functionality to CLI processor.
+func (v levelLike) AfterApply() error { mgrCfg.Level = level.Level(v); return nil }
+
+// AfterApply provides additional functionality to CLI processor.
+func (f filterLike) AfterApply() (err error) {
+	mgrCfg.Filters, err = f.asFilters()
+	return
+}
+
+// helpers
+
+// timeLikeDecoder create a kong function to provide flexible time/duration parsing.
 func timeLikeDecoder() kong.MapperFunc {
+	startupTime := time.Now()
+
 	return func(ctx *kong.DecodeContext, target reflect.Value) error {
+		var t time.Time
+
 		var value string
+
+		// get the value
 		if err := ctx.Scan.PopValueInto("(time|duration)", &value); err != nil {
 			return err
 		}
-		var t time.Time
+
+		// if this is a valid duration
 		d, err := time.ParseDuration(value)
 		if err == nil {
-			t = now.Add(-d)
+			// subtract it from startup time
+			t = startupTime.Add(-d)
 		} else {
+			// otherwise try to parse it as a datetime
 			t, err = dateparse.ParseAny(value)
 			if err != nil {
-				return errors2.Errorf("expected duration but got %q: %s", value, err)
+				return errors2.Errorf("expected time or duration but got %q: %s", value, err)
 			}
 		}
-		v := reflect.ValueOf(&t)
-		target.Set(v)
+
+		// set the value
+		target.Set(reflect.ValueOf(&t))
+
+		// success
 		return nil
 	}
 }
 
+// asFilters converts filterLike values into model.Filter values. filters allow
+// inclusion/exclusion of lines, as well a fire-once alert feature.
 func (f filterLike) asFilters() ([]model.Filter, error) {
-	const alert = '@'
-	const include = '+'
-	const exclude = '-'
+	const (
+		// alert indicates that the source definition should stop after the first event received.
+		alert = '@'
+		// include the events matching this filter
+		include = '+'
+		// exclude the events matching this filter
+		exclude = '-'
+	)
 
 	var filters []model.Filter
+
+	// convert a string pattern into a regex filter and add it to the list of filters
 	addPattern := func(pattern string, kind model.FilterKind) error {
 		re, err := regexp.Compile(pattern)
 		if err != nil {
@@ -309,22 +314,28 @@ func (f filterLike) asFilters() ([]model.Filter, error) {
 		return nil
 	}
 
-	for _, value := range f {
+	var value string
+	for i := range f {
+		value = f[i]
 		flag := value[0]
+
 		switch flag {
 		case alert:
 			if err := addPattern(value[1:], model.AlertOnce); err != nil {
 				return nil, err
 			}
+
 		case include:
 			if err := addPattern(value[1:], model.Include); err != nil {
 				return nil, err
 			}
+
 		case exclude:
 			if err := addPattern(value[1:], model.Exclude); err != nil {
 				return nil, err
 			}
-		default:
+
+		default: //  implicit include
 			if err := addPattern(value, model.Include); err != nil {
 				return nil, err
 			}

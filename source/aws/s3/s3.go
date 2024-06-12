@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/pandich/couture/model"
+	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/sink"
 	"github.com/pandich/couture/source"
 	"github.com/pandich/couture/source/aws"
@@ -22,11 +22,11 @@ func Metadata() source.Metadata {
 	return source.Metadata{
 		Name: "AWS S3",
 		Type: reflect.TypeOf(s3Source{}),
-		CanHandle: func(url model.SourceURL) bool {
+		CanHandle: func(url event.SourceURL) bool {
 			_, ok := map[string]bool{scheme: true}[url.Scheme]
 			return ok
 		},
-		Creator:     newSource,
+		Creator:     source.Single(newSource),
 		ExampleURLs: []string{fmt.Sprintf("%s://<path>", scheme)},
 	}
 }
@@ -40,7 +40,7 @@ type s3Source struct {
 }
 
 // newSource S3 source.
-func newSource(_ *time.Time, sourceURL model.SourceURL) (*source.Source, error) {
+func newSource(_ *time.Time, sourceURL event.SourceURL) (*source.Source, error) {
 	awsSource, err := aws.New('☂', &sourceURL)
 	if err != nil {
 		return nil, errors2.Wrapf(err, "bad S3 URL: %+v\n", sourceURL)
@@ -60,7 +60,7 @@ func (src *s3Source) Start(
 	wg *sync.WaitGroup,
 	running func() bool,
 	srcChan chan source.Event,
-	_ chan model.SinkEvent,
+	_ chan event.SinkEvent,
 	_ chan source.Error,
 ) error {
 	const partSize = 16 * 1024
@@ -68,10 +68,12 @@ func (src *s3Source) Start(
 	request := &s3.GetObjectInput{Bucket: &src.bucket, Key: &src.key}
 
 	writer := sink.NewChanWriterAt(src, srcChan)
-	downloader := manager.NewDownloader(src.s3, func(d *manager.Downloader) {
-		d.PartSize = partSize
-		d.Concurrency = 1
-	})
+	downloader := manager.NewDownloader(
+		src.s3, func(d *manager.Downloader) {
+			d.PartSize = partSize
+			d.Concurrency = 1
+		},
+	)
 	ctx := context.Background()
 	if _, err := downloader.Download(ctx, writer, request); err != nil {
 		return err

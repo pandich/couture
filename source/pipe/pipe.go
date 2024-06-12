@@ -2,7 +2,7 @@ package pipe
 
 import (
 	"bufio"
-	"github.com/pandich/couture/model"
+	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/source"
 	"io"
 	"sync"
@@ -14,7 +14,7 @@ func Start(
 	running func() bool,
 	src source.Source,
 	srcChan chan source.Event,
-	_ chan model.SinkEvent,
+	_ chan event.SinkEvent,
 	_ chan source.Error,
 	closer func(),
 	in io.Reader,

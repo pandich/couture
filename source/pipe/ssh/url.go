@@ -2,7 +2,7 @@ package ssh
 
 import (
 	"github.com/melbahja/goph"
-	"github.com/pandich/couture/model"
+	"github.com/pandich/couture/event"
 	"net/url"
 	"os"
 	"os/user"
@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-type sshURL model.SourceURL
+type sshURL event.SourceURL
 
 // FEATURE rsa key configurable and ability to use PEM key
 // see: client.Config.Auth, err = goph.Key() etc

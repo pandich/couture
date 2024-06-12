@@ -3,15 +3,42 @@ package sink
 import (
 	"github.com/mattn/go-isatty"
 	"github.com/olekukonko/ts"
+	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/sink/layout"
 	theme2 "github.com/pandich/couture/sink/theme"
 	"os"
 )
 
+var (
+	// Enabled specifies that a feature is enabled.
+	Enabled = true
+	// Disabled specifies that a feature is disabled.
+	Disabled = false
+
+	// DefaultTimeFormat is the default time format used by the sink.
+	DefaultTimeFormat = event.HumanTimeFormat
+)
+
+// DefaultConfig returns default configuration for the sink.
+func DefaultConfig() Config {
+	return Config{
+		AutoResize:       &Enabled,
+		Color:            &Enabled,
+		ConsistentColors: &Enabled,
+		Expand:           &Disabled,
+		Highlight:        &Disabled,
+		MultiLine:        &Disabled,
+		Wrap:             &Disabled,
+		Layout:           &layout.Default,
+		Out:              os.Stdout,
+		Theme:            nil,
+		TimeFormat:       &DefaultTimeFormat,
+	}
+}
+
 // Config ...
 type Config struct {
 	AutoResize       *bool          `yaml:"auto_resize,omitempty"`
-	ShowSchema       *bool          `yaml:"show_schema,omitempty"`
 	Color            *bool          `yaml:"color,omitempty"`
 	Columns          []string       `yaml:"columns,omitempty"`
 	ConsistentColors *bool          `yaml:"consistent_colors,omitempty"`
@@ -29,7 +56,7 @@ type Config struct {
 }
 
 // EffectiveTerminalWidth ...
-func (config Config) EffectiveTerminalWidth() uint {
+func (config *Config) EffectiveTerminalWidth() uint {
 	if config.Width != nil && *config.Width > 0 {
 		return *config.Width
 	}
@@ -48,7 +75,7 @@ func terminalWidth() int {
 }
 
 // EffectiveIsTTY ...
-func (config Config) EffectiveIsTTY() bool {
+func (config *Config) EffectiveIsTTY() bool {
 	return isatty.IsTerminal(config.Out.Fd()) || config.TTY
 }
 
@@ -56,9 +83,6 @@ func (config Config) EffectiveIsTTY() bool {
 func (config *Config) PopulateMissing(other Config) *Config {
 	if config.AutoResize == nil {
 		config.AutoResize = other.AutoResize
-	}
-	if config.ShowSchema == nil {
-		config.ShowSchema = other.ShowSchema
 	}
 	if config.Color == nil {
 		config.Color = other.Color
@@ -83,9 +107,6 @@ func (config *Config) PopulateMissing(other Config) *Config {
 	}
 	if config.MultiLine == nil {
 		config.MultiLine = other.MultiLine
-	}
-	if config.ShowSchema == nil {
-		config.ShowSchema = other.ShowSchema
 	}
 	if config.Theme == nil {
 		config.Theme = other.Theme

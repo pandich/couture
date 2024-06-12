@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"github.com/pandich/couture/event"
 	"github.com/pandich/couture/model"
 	"github.com/pandich/couture/source"
 	"github.com/pandich/couture/source/aws/cloudformation"
@@ -25,8 +26,8 @@ var AvailableSources = []source.Metadata{
 	ssh.Metadata(),
 }
 
-// GetSource gets a source, if possible, for the specified sourceURL.
-func GetSource(since *time.Time, sourceURL model.SourceURL) ([]source.Source, []error) {
+// GetSources gets a source, if possible, for the specified sourceURL.
+func GetSources(since *time.Time, sourceURL event.SourceURL) ([]source.Source, []error) {
 	if sourceURL.Scheme == "complete" {
 		return nil, nil
 	}
@@ -34,11 +35,11 @@ func GetSource(since *time.Time, sourceURL model.SourceURL) ([]source.Source, []
 	var violations []error
 	metadata := getSourceMetadata(sourceURL)
 	if metadata != nil {
-		configuredSource, err := metadata.Creator(since, sourceURL)
+		configuredSources, err := metadata.Creator(since, sourceURL)
 		if err != nil {
 			violations = append(violations, err)
 		} else {
-			sources = append(sources, *configuredSource)
+			sources = append(sources, configuredSources...)
 		}
 	} else {
 		violations = append(violations, errors2.Errorf("invalid source URL: %+v\n", sourceURL))
@@ -46,7 +47,7 @@ func GetSource(since *time.Time, sourceURL model.SourceURL) ([]source.Source, []
 	return sources, violations
 }
 
-func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
+func getSourceMetadata(sourceURL event.SourceURL) *source.Metadata {
 	for _, metadata := range AvailableSources {
 		if metadata.CanHandle(sourceURL) {
 			return &metadata
@@ -55,7 +56,7 @@ func getSourceMetadata(sourceURL model.SourceURL) *source.Metadata {
 	return nil
 }
 
-func (mgr *busManager) filter(evt *model.Event) model.FilterKind {
+func (mgr *busManager) filter(evt *event.Event) model.FilterKind {
 	if !evt.Level.IsAtLeast(mgr.config.Level) {
 		return model.Exclude
 	}
